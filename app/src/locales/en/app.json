@@ -104,5 +104,7 @@
   "translateLabel": "The summaries' model translates it, leaving the original as it is:",
   "currentTranslation": "Current one",
   "translateNeedsModel": "Needs a language model: Gemma downloaded, or Claude or ChatGPT connected in Settings › Intelligence.",
-  "moreActions": "More actions"
+  "moreActions": "More actions",
+  "whisperCaOffer": "There's a new Whisper for Catalan",
+  "whisperCaOfferText": "The Barcelona Supercomputing Center's: in our tests, better than the current one for Central, Valencian and Balearic Catalan. It takes {{size}}."
 }

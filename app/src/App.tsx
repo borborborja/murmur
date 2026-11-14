@@ -44,7 +44,7 @@ import { locale, t as translate } from "@/lib/i18n";
 import { cloudModelName, coverEngine, coverReady, loadCloudModels, useCloud } from "@/lib/cloud";
 import { translateMeeting, useTranslating } from "@/lib/translate";
 import { offerGlossary } from "@/lib/glossary";
-import { downloadModel, modelInstalled, useModels } from "@/lib/models";
+import { bytes, downloadModel, modelInstalled, useModels } from "@/lib/models";
 import { ensurePermissions } from "@/lib/permissions";
 import { usePostProcess } from "@/lib/postprocess";
 import { MarkdownSwitch, RoomMenu, StartOptions, type StartChoice } from "@/components/StartOptions";
@@ -995,6 +995,27 @@ export default function App() {
     checkedOnOpen.current = true;
     setUpdates({ run: 1, manual: false });
   }, [state.loaded, onboarding.open, transcriptionReady, settings.checkUpdates]);
+
+  // Meetings in Catalan and no BSC Whisper yet (0.12): offer it once, never downloading 1.1 GB unasked.
+  const offeredCatalanWhisper = useRef(false);
+  useEffect(() => {
+    if (offeredCatalanWhisper.current || !state.loaded || !models.loaded || onboarding.open || whatsNew) return;
+    const status = models.status["whisper-ca"];
+    if (settings.language !== "ca" || !status || status.installed || !status.downloadable) return;
+    offeredCatalanWhisper.current = true;
+    const key = "murmur.whisperCaOffered.v1";
+    try {
+      if (localStorage.getItem(key)) return;
+      localStorage.setItem(key, "1");
+    } catch {
+      return;
+    }
+    toast(t("whisperCaOffer"), {
+      description: t("whisperCaOfferText", { size: bytes(status.bytes) }),
+      duration: 20_000,
+      action: { label: t("settings:model.download"), onClick: () => void downloadModel("whisper-ca") },
+    });
+  }, [state.loaded, models.loaded, models.status, onboarding.open, whatsNew, settings.language, t]);
 
   // Recording stopped: back to the full window, where the cover and processing show.
   useEffect(() => {

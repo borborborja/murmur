@@ -137,6 +137,7 @@
     "parakeetModel": "Parakeet, de NVIDIA (inglés en directo)",
     "whisperModel": "Whisper large-v3-turbo, de OpenAI",
     "whisperCaModel": "Whisper catalán, del BSC",
+    "whisperTurboOther": "Whisper large-v3-turbo, para las reuniones en castellano o inglés y para adivinar el idioma de los archivos",
     "liveSpeakers": "Hablantes en directo",
     "roomSpeakers": "Hay más gente conmigo en la sala",
     "roomSpeakersHint": "En una llamada, todo lo que entra por el micrófono es «Tú». Actívalo si sois más de una persona delante del mismo ordenador.",

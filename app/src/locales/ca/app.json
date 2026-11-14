@@ -104,5 +104,7 @@
   "translateLabel": "El model dels resums la tradueix, sense tocar l'original:",
   "currentTranslation": "La que hi ha",
   "translateNeedsModel": "Cal un model de llenguatge: Gemma descarregat, o Claude o ChatGPT connectats a Configuració › Intel·ligència.",
-  "moreActions": "Més accions"
+  "moreActions": "Més accions",
+  "whisperCaOffer": "Hi ha un Whisper nou per al català",
+  "whisperCaOfferText": "El del Barcelona Supercomputing Center: en les nostres proves, millor que l'actual amb el central, el valencià i el balear. Ocupa {{size}}."
 }

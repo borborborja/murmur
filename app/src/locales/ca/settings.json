@@ -137,6 +137,7 @@
     "parakeetModel": "Parakeet, d'NVIDIA (anglès en directe)",
     "whisperModel": "Whisper large-v3-turbo, d'OpenAI",
     "whisperCaModel": "Whisper català, del BSC",
+    "whisperTurboOther": "Whisper large-v3-turbo, per a les reunions en castellà o anglès i per endevinar l'idioma dels fitxers",
     "liveSpeakers": "Parlants en directe",
     "roomSpeakers": "Hi ha més gent amb mi a la sala",
     "roomSpeakersHint": "En una trucada, tot el que entra pel micròfon és «Tu». Activa-ho si sou més d'una persona davant del mateix ordinador.",

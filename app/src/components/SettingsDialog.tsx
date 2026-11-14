@@ -740,7 +740,12 @@ function TranscriptionTab({ settings, onChange }: { settings: Settings; onChange
           <ModelRow id="english" name={t("transcription.parakeetModel")} enabled onDisable={() => onChange({ language: "ca-es" })} />
         )}
         {settings.language === "ca" && <ModelRow id="whisper-ca" name={t("transcription.whisperCaModel")} enabled onDisable={() => {}} />}
+        {/* The turbo does Spanish and English, and guesses the language of opened files: with
+            Catalan it shows only if it's there, saying what it's for, so it can be deleted. */}
         {(settings.language === "es" || settings.language === "en") && <ModelRow id="whisper" name={t("transcription.whisperModel")} enabled onDisable={() => {}} />}
+        {(settings.language === "ca" || settings.language === "ca-es") && models.status.whisper?.installed && (
+          <ModelRow id="whisper" name={t("transcription.whisperTurboOther")} enabled onDisable={() => {}} />
+        )}
       </Group>
       <GlossaryGroup />
       <Group title={t("transcription.liveSpeakers")}>

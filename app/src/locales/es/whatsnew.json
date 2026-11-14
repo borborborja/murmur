@@ -6,6 +6,18 @@
   "dontShowHint": "Se puede volver a activar en Ajustes › General.",
   "ok": "Entendido",
   "releases": {
+    "0.12.1": [
+      {
+        "title": "Los dos Whisper, siempre a la vista",
+        "text": "En Configuración › Transcripción › Al terminar la grabación están el Whisper catalán y el de castellano e inglés, cada uno con para qué sirve, y un interruptor para apagar la pasada de Whisper si no la quieres.",
+        "link": "transcription",
+        "linkLabel": "Abre la configuración"
+      },
+      {
+        "title": "Cuántas veces corrige el glosario",
+        "text": "Junto a cada palabra del glosario aparece cuántas veces la ha corregido, para ver cuáles trabajan."
+      }
+    ],
     "0.12.0": [
       {
         "title": "Murmur, también en Windows y Linux",

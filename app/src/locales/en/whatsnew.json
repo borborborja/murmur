@@ -6,6 +6,18 @@
   "dontShowHint": "You can turn it back on in Settings › General.",
   "ok": "Got It",
   "releases": {
+    "0.12.1": [
+      {
+        "title": "Both Whispers, always in view",
+        "text": "In Settings › Transcription › When Recording Ends you'll find the Catalan Whisper and the one for Spanish and English, each saying what it's for, and a switch to turn the Whisper pass off if you don't want it.",
+        "link": "transcription",
+        "linkLabel": "Open Settings"
+      },
+      {
+        "title": "How often the glossary corrects",
+        "text": "Next to each glossary word you'll see how many times it has corrected it, so you know which ones earn their place."
+      }
+    ],
     "0.12.0": [
       {
         "title": "Murmur on Windows and Linux too",

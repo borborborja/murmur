@@ -13,6 +13,10 @@ concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
+# Les proves només llegeixen el repositori.
+permissions:
+  contents: read
+
 env:
   CARGO_TERM_COLOR: always
 
@@ -24,8 +28,8 @@ jobs:
       run:
         working-directory: app
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 22
           cache: npm
@@ -43,7 +47,7 @@ jobs:
         os: [macos-latest, windows-2022, ubuntu-22.04]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
       - uses: ./.github/actions/preparar
       - name: Sidecar buit (els tests no el fan servir)
         shell: bash
@@ -71,7 +75,7 @@ jobs:
       MURMUR_E2E_MODELS: ${{ github.workspace }}/e2e-models
       MURMUR_E2E_REQUIRE_MODELS: "1"
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
       - uses: ./.github/actions/preparar
       - name: Compila l'app (sense instal·lador)
         working-directory: app
@@ -80,7 +84,7 @@ jobs:
       # no canviï el catàleg de models.
       - name: Model de transcripció (memòria cau)
         id: models
-        uses: actions/cache@v4
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
         with:
           path: e2e-models
           key: models-transcription-${{ hashFiles('app/src-tauri/src/models.rs') }}
@@ -138,7 +142,7 @@ jobs:
           fi
       - name: Captures de les proves
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: e2e-${{ matrix.os }}
           path: app/e2e/captures
@@ -159,7 +163,7 @@ jobs:
       MURMUR_E2E_MODELS: ${{ github.workspace }}/e2e-models
       MURMUR_E2E_REQUIRE_MODELS: "1"
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
       - uses: ./.github/actions/preparar
       - name: Clau d'actualitzacions d'un sol ús
         shell: bash
@@ -173,7 +177,7 @@ jobs:
         run: npm run tauri build
       - name: Model de transcripció (memòria cau)
         id: models
-        uses: actions/cache@v4
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
         with:
           path: e2e-models
           key: models-transcription-${{ hashFiles('app/src-tauri/src/models.rs') }}

@@ -4,11 +4,18 @@
 # a la del repositori del codi. El latest.json hi afegeix les plataformes noves sense treure les
 # que ja hi ha (el Mac, si l'ha publicat publish.sh). Tot el procés és a docs/PUBLICAR.md.
 #
-# Secrets:
-#   TAURI_SIGNING_PRIVATE_KEY, TAURI_SIGNING_PRIVATE_KEY_PASSWORD   signar els paquets d'actualització
+# Només s'engega amb la variable PC_RELEASE = true. Els secrets són a l'entorn «publica», que
+# només accepta etiquetes v* i demana l'aprovació de qui publica abans de cada feina que els fa
+# servir:
+#   TAURI_SIGNING_PRIVATE_KEY, TAURI_SIGNING_PRIVATE_KEY_PASSWORD   la clau d'actualitzacions de
+#                                                                    Windows i Linux, que no és la
+#                                                                    del Mac (tauri.windows.conf.json
+#                                                                    i tauri.linux.conf.json)
 #   RELEASES_TOKEN                                                   escriure a murmur-releases
-#   APPLE_CERTIFICATE, APPLE_CERTIFICATE_PASSWORD,                   només si MACOS_CI = true
-#   APPLE_API_KEY, APPLE_API_KEY_ID, APPLE_API_ISSUER
+#   APPLE_CERTIFICATE, APPLE_CERTIFICATE_PASSWORD,                   només si MACOS_CI = true, i
+#   APPLE_API_KEY, APPLE_API_KEY_ID, APPLE_API_ISSUER                llavors la clau ha de ser la del
+#                                                                    Mac. Ara el Mac es publica des
+#                                                                    del Mac i no en cal cap.
 name: Publica
 
 on:
@@ -25,7 +32,7 @@ concurrency:
   cancel-in-progress: false
 
 permissions:
-  contents: write
+  contents: read
 
 env:
   CARGO_TERM_COLOR: always
@@ -35,6 +42,8 @@ env:
 jobs:
   compila:
     name: Compila (${{ matrix.name }})
+    if: vars.PC_RELEASE == 'true'
+    environment: publica
     strategy:
       fail-fast: false
       matrix:
@@ -47,7 +56,7 @@ jobs:
             bundles: linux
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           ref: ${{ env.TAG }}
       - uses: ./.github/actions/preparar
@@ -74,7 +83,7 @@ jobs:
             cp $b/deb/*.deb.sig $b/rpm/*.rpm.sig dist/ 2>/dev/null || true
           fi
           ls -la dist
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: ${{ matrix.bundles }}
           path: dist/*
@@ -82,9 +91,10 @@ jobs:
   macos:
     name: Compila (macOS)
     if: vars.MACOS_CI == 'true'
+    environment: publica
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           ref: ${{ env.TAG }}
       - uses: ./.github/actions/preparar
@@ -119,7 +129,7 @@ jobs:
         run: |
           mkdir -p dist
           cp app/src-tauri/target/release/bundle/release/{*.dmg,Murmur.app.tar.gz,Murmur.app.tar.gz.sig} dist/
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: macos
           path: dist/*
@@ -129,12 +139,15 @@ jobs:
     needs: [compila, macos]
     # macos se salta si no hi ha els secrets d'Apple: la release surt igualment.
     if: ${{ !cancelled() && needs.compila.result == 'success' && needs.macos.result != 'failure' }}
+    environment: publica
+    permissions:
+      contents: write
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           ref: ${{ env.TAG }}
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
           path: dist
           merge-multiple: true

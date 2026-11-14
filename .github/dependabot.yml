@@ -1,0 +1,7 @@
+# Les accions dels workflows van fixades per commit; Dependabot obre una PR quan n'hi ha de noves.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directories: ["/", "/.github/actions/preparar"]
+    schedule:
+      interval: monthly

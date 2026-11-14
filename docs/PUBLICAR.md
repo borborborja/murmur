@@ -18,20 +18,30 @@ Publicar és públic i no es pot desfer per a qui ja s'hagi actualitzat: prova s
 |---|---|---|
 | Developer ID «We Are Mortensen S.L.» | Clauer de macOS | Signar l'app |
 | Credencials de notarització, perfil `murmur` | Clauer (`xcrun notarytool store-credentials murmur …`) | Notaritzar l'app i el `.dmg` |
-| Clau de les actualitzacions | `~/.tauri/murmur-updater.key` (còpia a 1Password) | Signar el paquet d'actualització |
+| Clau de les actualitzacions del Mac | `~/.tauri/murmur-updater.key` (còpia a 1Password). No surt mai del Mac | Signar el paquet d'actualització del Mac |
 | Contrasenya d'aquesta clau | Clauer, element `murmur-updater` (còpia a 1Password) | `release.sh` la llegeix sola |
 | `gh` amb sessió de `quicodomingo` | `gh auth status` | Pujar la *release* |
-| Secrets i variables de GitHub Actions | Repositori del codi › Settings › Secrets and variables › Actions | Compilar i publicar Windows i Linux (i macOS, si es vol) |
+| Entorn `publica` de GitHub Actions, amb els seus secrets | Repositori del codi › Settings › Environments | Compilar i publicar Windows i Linux |
 
-Els secrets de GitHub Actions (un sol cop):
+### Windows i Linux a GitHub Actions (un sol cop)
 
-| Secret | Què és |
-|---|---|
-| `TAURI_SIGNING_PRIVATE_KEY` | El contingut de `~/.tauri/murmur-updater.key` |
-| `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` | La contrasenya d'aquesta clau |
-| `RELEASES_TOKEN` | Un *fine-grained token* de `quicodomingo` amb permís *Contents: read and write* només a `murmur-releases` |
+Windows i Linux tenen **la seva pròpia clau d'actualitzacions**, perquè la del Mac no hagi de sortir mai del Mac. La pública és a `tauri.windows.conf.json` i `tauri.linux.conf.json` › `plugins.updater.pubkey`, i la privada només viu a l'entorn `publica`.
 
-Per compilar també el Mac a GitHub Actions (opcional; si no, es fa al Mac amb `release.sh` com sempre), la variable `MACOS_CI` = `true` i aquests secrets:
+1. **La clau.** Al Mac, `cd app && npm run tauri signer generate -- -w ~/.tauri/murmur-updater-pc.key`, amb una contrasenya nova. Desa la clau i la contrasenya a 1Password. El contingut de `~/.tauri/murmur-updater-pc.key.pub` va a `plugins.updater.pubkey` de tots dos fitxers (és pública, es pot pujar al repositori).
+2. **L'entorn `publica`** (Settings › Environments): *Required reviewers* amb `quicodomingo`, i a *Deployment branches and tags* només les etiquetes `v*`. Així el codi d'una PR o d'una branca no pot arribar mai als secrets, i cada publicació espera que l'aprovis a Actions.
+3. **Els secrets**, a l'entorn i no al repositori:
+
+   | Secret | Què és |
+   |---|---|
+   | `TAURI_SIGNING_PRIVATE_KEY` | `gh secret set TAURI_SIGNING_PRIVATE_KEY --env publica < ~/.tauri/murmur-updater-pc.key` |
+   | `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` | `gh secret set TAURI_SIGNING_PRIVATE_KEY_PASSWORD --env publica` (la demana) |
+   | `RELEASES_TOKEN` | Un *fine-grained token* de `quicodomingo` només per a `murmur-releases`, amb *Contents: read and write* i caducitat d'un any: `gh secret set RELEASES_TOKEN --env publica` |
+
+4. **La variable** `PC_RELEASE` = `true` (Settings › Secrets and variables › Actions › Variables). Sense ella, l'etiqueta no compila res i el Mac es publica com sempre.
+
+Les accions dels workflows van fixades per commit i Dependabot proposa les noves cada mes. Una regla d'etiquetes (Settings › Rules › Rulesets, `v*`) que només et deixi a tu crear-les i esborrar-les tanca el cercle.
+
+Per compilar també el Mac a GitHub Actions (opcional, i ara no es fa: caldria pujar-hi la clau del Mac), la variable `MACOS_CI` = `true` i aquests secrets a l'entorn `publica`:
 
 | Secret | Què és |
 |---|---|
@@ -39,7 +49,7 @@ Per compilar també el Mac a GitHub Actions (opcional; si no, es fa al Mac amb `
 | `APPLE_CERTIFICATE_PASSWORD` | La contrasenya del `.p12` |
 | `APPLE_API_KEY`, `APPLE_API_KEY_ID`, `APPLE_API_ISSUER` | La clau d'App Store Connect per notaritzar (el contingut de l'`AuthKey_….p8`, el seu id i l'emissor) |
 
-La clau pública és a `app/src-tauri/tauri.conf.json` › `plugins.updater.pubkey`. **Si es perd la clau privada, les apps instal·lades no podran rebre més actualitzacions**: caldria reinstal·lar-les a mà amb una versió que porti una clau nova.
+La clau pública del Mac és a `app/src-tauri/tauri.conf.json` › `plugins.updater.pubkey`, i la de Windows i Linux, a `tauri.windows.conf.json` i `tauri.linux.conf.json`. **Si es perd la clau privada, les apps instal·lades no podran rebre més actualitzacions**: caldria reinstal·lar-les a mà amb una versió que porti una clau nova.
 
 ## Publicar una versió de l'app
 
@@ -84,7 +94,7 @@ La clau pública és a `app/src-tauri/tauri.conf.json` › `plugins.updater.pubk
    ```
    Crea la *release* `v<versió>` al repositori públic amb els quatre fitxers del Mac, puja el codi i l'etiqueta `v<versió>` al repositori del codi (`git push`) i hi crea la mateixa *release* amb el `.dmg`. Les notes van a GitHub, a `latest.json` i al missatge de l'etiqueta: són el que l'app mostra a la finestra «Actualitzant Murmur».
 
-   L'etiqueta engega la compilació de Windows i Linux ([Actions › Publica](https://github.com/quicodomingo/murmur/actions/workflows/release.yml), uns 30 minuts). Quan acaba, totes dues *releases* tenen els instal·ladors i `latest.json` les tres plataformes. Si el Mac també es compila a GitHub Actions (`MACOS_CI`), es pot saltar el pas 4 i fer només `./scripts/publish.sh --no-mac`.
+   Si `PC_RELEASE` és `true`, l'etiqueta engega la compilació de Windows i Linux ([Actions › Publica](https://github.com/quicodomingo/murmur/actions/workflows/release.yml), uns 30 minuts). Espera la teva aprovació dues vegades, abans de compilar i abans de publicar (*Review deployments › Approve*). Quan acaba, totes dues *releases* tenen els instal·ladors i `latest.json` les tres plataformes. Si el Mac també es compila a GitHub Actions (`MACOS_CI`), es pot saltar el pas 4 i fer només `./scripts/publish.sh --no-mac`.
 
    Si alguna compilació falla, es pot tornar a llançar a Actions › Publica › *Run workflow*, amb l'etiqueta: no toca el que ja s'hi ha publicat del Mac.
 

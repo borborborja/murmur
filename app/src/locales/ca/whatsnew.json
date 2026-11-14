@@ -8,6 +8,10 @@
   "releases": {
     "0.12.0": [
       {
+        "title": "Murmur, també a Windows i Linux",
+        "text": "Ara Murmur també funciona a Windows i Linux, gràcies a la feina de @xaviviro. Les descàrregues són a la web, i s'actualitzen soles com al Mac."
+      },
+      {
         "title": "Un Whisper per al català",
         "text": "Les reunions en català les torna a escoltar un Whisper del Barcelona Supercomputing Center, el millor de les nostres proves amb el català central, el valencià i el balear. Si fas reunions en català, descarrega'l (1,1 GB).",
         "link": "transcription",

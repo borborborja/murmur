@@ -8,6 +8,10 @@
   "releases": {
     "0.12.0": [
       {
+        "title": "Murmur on Windows and Linux too",
+        "text": "Murmur now runs on Windows and Linux as well, thanks to @xaviviro's work. The downloads are on the website, and they update themselves just like on the Mac."
+      },
+      {
         "title": "A Whisper for Catalan",
         "text": "Meetings in Catalan are now listened to again by a Whisper from the Barcelona Supercomputing Center, the best in our tests for Central, Valencian and Balearic Catalan. If you have meetings in Catalan, download it (1.1 GB).",
         "link": "transcription",

@@ -9,6 +9,8 @@
   "generatedBy": "Generat amb {{model}}, fora d'aquest ordinador. Cada punt enllaça al moment de la reunió d'on surt.",
   "regenerate": "Torna a generar",
   "print": "PDF o envia…",
+  "languageMenu": "Idioma del resum: {{language}}",
+  "languageLabel": "Torna a escriure el resum en",
   "outdated": "La transcripció o les notes han canviat des que es va generar el resum.",
   "tone": "To",
   "talk": "Qui ha parlat",

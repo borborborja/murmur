@@ -1,5 +1,5 @@
 import { Fragment, useEffect, useRef, useState, type ReactNode } from "react";
-import { ArrowDown, Coffee, Copy, Play, StickyNote } from "lucide-react";
+import { ArrowDown, Coffee, Copy, Languages, Play, StickyNote, X } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
@@ -10,7 +10,8 @@ import { meetingWhen, pauseLabel, pauses } from "@/lib/parts";
 import { notesDoc, notesFromDoc } from "@/lib/notes";
 import { hasAudio, playAt, usePlayer } from "@/lib/player";
 import type { Jump, State } from "@/lib/store";
-import { SYSTEM_SPEAKER_BASE, type Channel, type Meeting, type PostStage, type Screen, type Utterance } from "@/lib/types";
+import { SYSTEM_SPEAKER_BASE, type Channel, type Meeting, type PostStage, type Screen, type Translation, type Utterance } from "@/lib/types";
+import { Segmented } from "@/components/SettingsDialog";
 import { cn } from "@/lib/utils";
 
 type Props = {
@@ -33,6 +34,11 @@ type Props = {
   onRemoveScreen?: (s: Screen) => void;
   /** The meeting's tags (MeetingTags), unless they're on the cover, the bigger panel. */
   tags?: ReactNode;
+  /** Its translation being written now (lib/translate.ts): lines done of all. */
+  translating?: { lang: Translation["lang"]; done: number; total: number } | null;
+  /** The name of a translation's language, as the user's variant says it ("Valencià"). */
+  languageName: (lang: Translation["lang"]) => string;
+  onRemoveTranslation: () => void;
 };
 
 /** Which utterance each note belongs to: the last one that started before the note was written. */
@@ -58,6 +64,15 @@ function screenAnchors(meeting: Meeting): Map<string, Screen[]> {
 export function Transcript(props: Props) {
   const { t } = useTranslation("transcript");
   const { meeting, partial } = props;
+  // The original or its translation; a translation that starts is shown as it comes in.
+  const [view, setView] = useState<"original" | "translation">("original");
+  const translation = meeting.translation ?? null;
+  const translating = props.translating ?? null;
+  useEffect(() => setView("original"), [meeting.id]);
+  useEffect(() => {
+    if (translating) setView("translation");
+  }, [!!translating]); // eslint-disable-line react-hooks/exhaustive-deps
+  const showTranslation = view === "translation" && !!translation;
   const live = (Object.entries(partial) as [Channel, string][]).filter(([, text]) => text);
   const speakers = speakerIds(meeting).map((id) => ({ id, name: speakerName(meeting, id), you: isYou(meeting, id) }));
   const anchors = noteAnchors(meeting);
@@ -131,6 +146,7 @@ export function Transcript(props: Props) {
     <div className="relative h-full">
       <div
         ref={scroller}
+        data-reveal-viewport
         className="h-full overflow-y-auto"
         onScroll={(e) => {
           const el = e.currentTarget;
@@ -153,6 +169,34 @@ export function Transcript(props: Props) {
           {props.tags}
 
           {props.finalPass && <FinalPassBanner {...props.finalPass} pausedBy={props.postPause} />}
+          {translating && <TranslatingBanner name={props.languageName(translating.lang)} done={translating.done} total={translating.total} />}
+          {translation && (
+            <div className="mt-6 flex items-center gap-2">
+              <Segmented
+                value={view}
+                options={[
+                  { value: "original", label: t("original") },
+                  { value: "translation", label: props.languageName(translation.lang) },
+                ]}
+                onChange={setView}
+              />
+              {!translating && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setView("original");
+                    props.onRemoveTranslation();
+                  }}
+                  aria-label={t("removeTranslation")}
+                  title={t("removeTranslation")}
+                  className="grid size-6 place-items-center rounded-md text-muted-foreground hover:bg-mm-fill-subtle hover:text-foreground"
+                >
+                  <X className="size-3.5" />
+                </button>
+              )}
+              {showTranslation && translation.writtenBy && <span className="text-[12px] text-muted-foreground">{t("translatedBy", { model: translation.writtenBy })}</span>}
+            </div>
+          )}
 
           {meeting.utterances.length === 0 && live.length === 0 && (
             <p className="mt-12 text-[15px] text-text-secondary">
@@ -160,7 +204,9 @@ export function Transcript(props: Props) {
             </p>
           )}
 
-          <div className="mt-10 flex flex-col gap-1">
+          {/* The aurora reveals Whisper's text here (lib/reveal.ts). */}
+          <div data-reveal-host className="relative mt-10">
+          <div data-reveal="transcript" data-meeting={meeting.id} className="flex flex-col gap-1">
             {meeting.utterances.map((u, i) => (
               <Fragment key={u.id}>
                 {pauseAt.has(i) && <PauseLine label={pauseLabel(pauseAt.get(i)!)} />}
@@ -185,6 +231,7 @@ export function Transcript(props: Props) {
                     />
                   }
                   onEdit={(text) => props.onEdit(u.id, text)}
+                  translated={showTranslation ? { text: translation.texts[u.id] ?? null, outdated: !!translation.sources[u.id] && translation.sources[u.id] !== u.text } : undefined}
                 />
                 {screens.has(u.id) && <ScreenThumbs screens={screens.get(u.id)!} onRemove={props.onRemoveScreen} className="mb-2 mt-1 px-3" />}
               </Fragment>
@@ -206,7 +253,8 @@ export function Transcript(props: Props) {
                 </div>
               );
             })}
-            </div>
+          </div>
+          </div>
         </article>
       </div>
       {recording && detached && (
@@ -282,9 +330,11 @@ type RowProps = {
   onHoverNote: (id: string | null) => void;
   flag: React.ReactNode;
   onEdit: (text: string) => void;
+  /** Showing the translation: this line's (null: not translated yet), which can't be edited. */
+  translated?: { text: string | null; outdated: boolean };
 };
 
-function UtteranceRow({ utterance: u, flash, heard, onPlay, showFlag, notes, hoveredNote, onHoverNote, flag, onEdit }: RowProps) {
+function UtteranceRow({ utterance: u, flash, heard, onPlay, showFlag, notes, hoveredNote, onHoverNote, flag, onEdit, translated }: RowProps) {
   const { t } = useTranslation("transcript");
   const [editing, setEditing] = useState(false);
   const linked = notes.includes(hoveredNote ?? "");
@@ -335,7 +385,13 @@ function UtteranceRow({ utterance: u, flash, heard, onPlay, showFlag, notes, hov
           {u.edited && <span className="text-[11px] text-text-secondary">{t("edited")}</span>}
         </div>
       )}
-      {editing ? (
+      {translated ? (
+        // The translation: read only (corrections go to the original).
+        <p className={cn("selectable -mx-1.5 rounded-md px-1.5 text-[16px] leading-[1.65]", !translated.text && "text-muted-foreground")}>
+          {translated.text ?? u.text}
+          {translated.outdated && <span className="ml-2 text-[11px] text-text-secondary">{t("translationOfOlder")}</span>}
+        </p>
+      ) : editing ? (
         <EditBox text={u.text} onDone={finish} />
       ) : (
         <p onClick={() => setEditing(true)} className="selectable -mx-1.5 cursor-text rounded-md px-1.5 text-[16px] leading-[1.65]">
@@ -345,11 +401,32 @@ function UtteranceRow({ utterance: u, flash, heard, onPlay, showFlag, notes, hov
       <button
         type="button"
         aria-label={t("copy")}
-        onClick={() => navigator.clipboard.writeText(u.text).then(() => toast(t("copied")))}
+        onClick={() => navigator.clipboard.writeText(translated?.text ?? u.text).then(() => toast(t("copied")))}
         className="absolute right-2 top-2 hidden rounded-md p-1 text-muted-foreground hover:bg-black/5 group-hover:block"
       >
         <Copy className="size-3.5" />
       </button>
+    </div>
+  );
+}
+
+/** The translation being written: lines done of all. */
+function TranslatingBanner({ name, done, total }: { name: string; done: number; total: number }) {
+  const { t } = useTranslation("transcript");
+  return (
+    <div role="status" className="mt-5 rounded-lg bg-muted px-3.5 py-3">
+      <div className="flex items-center gap-2 text-[13px]">
+        <Languages className="size-3.5 text-text-secondary" aria-hidden />
+        <span className="font-medium">{t("translating", { language: name })}</span>
+        <span className="tabular-nums text-muted-foreground">{t("translatingLines", { done, total })}</span>
+      </div>
+      <div className="mt-2.5 h-1 overflow-hidden rounded-full bg-mm-meter-off">
+        {done > 0 ? (
+          <div className="h-full rounded-full bg-primary transition-[width] duration-500" style={{ width: `${(done / Math.max(1, total)) * 100}%` }} />
+        ) : (
+          <div className="mm-shine h-full w-full rounded-full" />
+        )}
+      </div>
     </div>
   );
 }

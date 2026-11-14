@@ -9,6 +9,8 @@
   "generatedBy": "Generated with {{model}}, outside this computer. Each point links to the moment in the meeting it comes from.",
   "regenerate": "Generate Again",
   "print": "PDF or Send…",
+  "languageMenu": "Summary language: {{language}}",
+  "languageLabel": "Write the summary again in",
   "outdated": "The transcript or the notes have changed since the summary was generated.",
   "tone": "Tone",
   "talk": "Who spoke",

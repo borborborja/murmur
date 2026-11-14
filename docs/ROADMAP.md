@@ -31,6 +31,13 @@ En aturar la gravació, reprocessar l'àudio desat:
 - [x] **Passada final amb Whisper** large-v3-turbo (whisper.cpp + Metal, procés a part `murmur-whisper`) quan la reunió és d'una sola llengua: torna a escriure cada frase amb puntuació i majúscules, sense tocar parlants ni frases corregides a mà. RTF ~0,1 a l'M4 (uns 6 min per hora). Amb «Català + castellà» no hi passa: forçat a una llengua, Whisper tradueix l'altra.
 - [ ] Provar la passada de Whisper en una reunió real sencera i en una trucada (micròfon + sistema), i mesurar-ne el temps en un M1.
 - [ ] Comparar Whisper turbo amb el Whisper català d'AINA (cal convertir-lo a whisper.cpp) amb una referència manual (WER).
+- [x] **Whisper català del BSC** per a la passada final de les reunions en català (`whisper-3cat-balearic`, large-v3 afinat, convertit a whisper.cpp q5_0, 1,1 GB), i després la puntuació de Softcatalà. Mesurat amb `bench/dialects.py`: és el millor per al català central, el valencià i el balear, i també a les Corts Valencianes; el turbo continua per al castellà i l'anglès. Hi havia un selector de variant (central, valencià, balear), però amb aquestes xifres no calia.
+- [x] Publicar el model convertit a huggingface.co/quicodomingo/murmur-models (Apache 2.0, amb el crèdit al BSC, `LICENSE` i `NOTICE`).
+- [x] **L'aurora** en acabar (`lib/reveal.ts`): el text de Whisper i el resum apareixen amb una llum que baixa, i el lloc del resum brilla mentre s'escriu.
+- [x] **Tradueix la transcripció** al català, al castellà o a l'anglès amb el model dels resums (Gemma, Claude o ChatGPT), sense tocar l'original: un segmentat Original / traducció a la transcripció (`lib/translate.ts`, columna `translation`).
+- [ ] La traducció a les exportacions (Word, Markdown, PDF) i als enllaços compartits.
+- [x] **Idioma del resum** a la portada: un menú al costat de «Torna a generar» el torna a escriure en català, castellà o anglès.
+- [x] **Barra superior endreçada:** la marca a 30 pt amb «murmur», el títol en gris i sense menú, les accions de la reunió al botó «···» i les exportacions totes a Exporta.
 - [ ] Triar l'idioma per reunió (ara és un sol valor a Configuració), o endevinar-lo del calendari.
 - [x] **Prova de LLM local** (reunió real de 20 min = 6.426 tokens ≈ 19K tokens/hora; M4 base, llama.cpp + Metal). Resultats a `results/llm/`:
   - Gemma 4 E2B: ràpid (lectura 345 t/s, escriptura 36 t/s) però català fluix i es deixa contingut.

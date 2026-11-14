@@ -42,7 +42,7 @@ Captura: `01-reunio` (o `02-reunio-fosc` si la pàgina és fosca).
 
 | Català | Castellà | Anglès |
 |---|---|---|
-| **Va néixer per a reunions en català.** La majoria de serveis de transcripció s'equivoquen quan la gent passa del català al castellà dins la mateixa frase. Murmur fa servir un model entrenat per a totes dues llengües alhora. I quan la reunió és en una sola llengua, en acabar Whisper la torna a escoltar per posar-hi la puntuació i els noms propis. | **Nació para reuniones en catalán.** La mayoría de servicios de transcripción se equivocan cuando la gente pasa del catalán al castellano en la misma frase. Murmur usa un modelo entrenado para las dos lenguas a la vez. Y cuando la reunión es en una sola lengua, al terminar Whisper la vuelve a escuchar para poner la puntuación y los nombres propios. | **Built for meetings in Catalan.** Most transcription services trip up when people switch between Catalan and Spanish mid-sentence. Murmur uses a model trained on both languages at once. It works in English too, and when a meeting is in a single language, Whisper listens again at the end to add punctuation and proper names. |
+| **Va néixer per a reunions en català.** La majoria de serveis de transcripció s'equivoquen quan la gent passa del català al castellà dins la mateixa frase. Murmur fa servir un model entrenat per a totes dues llengües alhora. I quan la reunió és en una sola llengua, en acabar Whisper la torna a escoltar per posar-hi la puntuació i els noms propis. En català, ho fa un Whisper del Barcelona Supercomputing Center, que entén igual de bé el central, el valencià i el balear. | **Nació para reuniones en catalán.** La mayoría de servicios de transcripción se equivocan cuando la gente pasa del catalán al castellano en la misma frase. Murmur usa un modelo entrenado para las dos lenguas a la vez. Y cuando la reunión es en una sola lengua, al terminar Whisper la vuelve a escuchar para poner la puntuación y los nombres propios. En catalán, lo hace un Whisper del Barcelona Supercomputing Center, que entiende igual de bien el central, el valenciano y el balear. | **Built for meetings in Catalan.** Most transcription services trip up when people switch between Catalan and Spanish mid-sentence. Murmur uses a model trained on both languages at once. It works in English too, and when a meeting is in a single language, Whisper listens again at the end to add punctuation and proper names. In Catalan, that's a Whisper by the Barcelona Supercomputing Center, which handles Central, Valencian and Balearic Catalan equally well. |
 
 ### 3. Com funciona (tres passos)
 
@@ -89,7 +89,7 @@ Nota que ha de sortir a prop: **per gravar una reunió cal el consentiment de to
 
 ### 7. Peu
 
-Codi obert (MIT) · GitHub · amb models del projecte AINA (BSC), NVIDIA, OpenAI i Google (la taula de models és al README, amb les llicències).
+Codi obert (MIT) · GitHub · amb models del projecte AINA i del BSC, NVIDIA, OpenAI, Softcatalà i Google (la taula de models és al README, amb les llicències).
 
 ## Captures
 

@@ -124,7 +124,7 @@
   "transcription": {
     "languages": {
       "ca": "Catalan",
-      "caHint": "When it's over, Whisper listens to the meeting again and rewrites the text with punctuation and capitals (about 6 minutes per hour of meeting). If Spanish is spoken, choose “Catalan + Spanish”: Whisper would turn it into Catalan.",
+      "caHint": "When it's over, the BSC's Catalan Whisper listens to the meeting again and rewrites the text (about 11 minutes per hour of meeting), and Softcatalà's model adds punctuation and capitals. If Spanish is spoken, choose “Catalan + Spanish”: Whisper would turn it into Catalan.",
       "es": "Spanish",
       "esHint": "When it's over, Whisper listens to the meeting again and rewrites the text with punctuation and capitals (about 6 minutes per hour of meeting).",
       "caEs": "Catalan + Spanish",
@@ -136,6 +136,7 @@
     "meetingLanguage": "Meeting Language",
     "parakeetModel": "Parakeet, by NVIDIA (live English)",
     "whisperModel": "Whisper large-v3-turbo, by OpenAI",
+    "whisperCaModel": "Catalan Whisper, by the BSC",
     "liveSpeakers": "Live Speakers",
     "roomSpeakers": "There Are Other People in the Room with Me",
     "roomSpeakersHint": "In a call, everything coming through the microphone is “You”. Turn this on if more than one person is in front of the same computer.",

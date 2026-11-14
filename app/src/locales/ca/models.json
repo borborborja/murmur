@@ -4,7 +4,8 @@
     "punctuation": "El model de puntuació",
     "llm": "El model de llenguatge",
     "english": "El model d'anglès",
-    "whisper": "Whisper"
+    "whisper": "Whisper",
+    "whisper-ca": "El Whisper català"
   },
   "downloadFailed": "No s'ha pogut descarregar: {{error}}",
   "ready": "{{name}} ja és a punt"

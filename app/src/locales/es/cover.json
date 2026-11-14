@@ -9,6 +9,8 @@
   "generatedBy": "Generado con {{model}}, fuera de este ordenador. Cada punto enlaza con el momento de la reunión del que sale.",
   "regenerate": "Volver a generar",
   "print": "PDF o enviar…",
+  "languageMenu": "Idioma del resumen: {{language}}",
+  "languageLabel": "Vuelve a escribir el resumen en",
   "outdated": "La transcripción o las notas han cambiado desde que se generó el resumen.",
   "tone": "Tono",
   "talk": "Quién ha hablado",

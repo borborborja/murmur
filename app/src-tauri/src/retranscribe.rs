@@ -1,5 +1,5 @@
-//! Final pass for meetings in one language (Catalan, Spanish or English): Whisper large-v3-turbo
-//! listens again to each channel and every live utterance takes the words Whisper heard during
+//! Final pass for meetings in one language (Catalan, Spanish or English): the BSC's Catalan Whisper
+//! or large-v3-turbo (`model_for`) listens again to each channel and every live utterance takes the words Whisper heard during
 //! it. Speakers, times and lines stay as they were; only the text improves.
 //!
 //! Whisper runs in a process of its own, `murmur-whisper` (app/whisper): whisper.cpp and the
@@ -15,11 +15,25 @@ use anyhow::{Context, Result, anyhow};
 use serde::{Deserialize, Serialize};
 
 use crate::diarize::Span;
-use crate::models::WHISPER;
+use crate::models::{OptionalModel, WHISPER, WHISPER_CA};
+
+/// The model for a meeting in `language`: in Catalan, the BSC's (or the turbo, if that one isn't
+/// downloaded yet: what Catalan used before); in Spanish and English, large-v3-turbo.
+pub fn model_for(models: &Path, language: &str) -> &'static OptionalModel {
+    if language == "ca" && WHISPER_CA.installed(models) { &WHISPER_CA } else { &WHISPER }
+}
 
 /// Seconds of work per second of speech, measured on an M4 base (examples/whisper_probe), with
 /// margin for slower Macs. Only drives the estimate shown in the UI.
 pub const RTF_ESTIMATE: f32 = 0.15;
+/// The same for the BSC's Catalan model, a full large-v3: about twice as slow (11 min per hour of
+/// meeting on an M4, bench/dialects.py).
+pub const RTF_ESTIMATE_CA: f32 = 0.25;
+
+/// The estimate for a meeting in `language`, by the model that will run.
+pub fn rtf_estimate(models: &Path, language: &str) -> f32 {
+    if model_for(models, language).id == WHISPER_CA.id { RTF_ESTIMATE_CA } else { RTF_ESTIMATE }
+}
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Text {
@@ -50,7 +64,7 @@ fn sidecar() -> Result<PathBuf> {
 /// it). Utterances left out keep their live text. `glossary`: words to spell as given
 /// (glossary.rs). `progress` gets the share done, 0–1.
 pub fn transcribe(models: &Path, language: &str, channels: &[(&Path, &[Span])], glossary: &[String], progress: impl FnMut(f32)) -> Result<Vec<Vec<Text>>> {
-    let model = WHISPER.file(models, 0);
+    let model = model_for(models, language).file(models, 0);
     if !model.is_file() {
         return Err(anyhow!(tr!("model_missing", path = model.display())));
     }
@@ -153,4 +167,21 @@ pub fn detect(models: &Path, pcm: &Path, windows: &[Vec<Span>]) -> Result<Vec<cr
     })();
     crate::gate::whisper(None);
     result
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn catalan_goes_to_the_bscs_model_once_it_is_there() {
+        let dir = std::env::temp_dir().join(format!("murmur-model-for-{}", std::process::id()));
+        assert_eq!(model_for(&dir, "ca").id, "whisper");
+        let file = WHISPER_CA.file(&dir, 0);
+        std::fs::create_dir_all(file.parent().unwrap()).unwrap();
+        std::fs::write(&file, b"").unwrap();
+        assert_eq!(model_for(&dir, "ca").id, "whisper-ca");
+        assert_eq!(model_for(&dir, "es").id, "whisper");
+        let _ = std::fs::remove_dir_all(&dir);
+    }
 }

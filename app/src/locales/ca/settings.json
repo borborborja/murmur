@@ -124,7 +124,7 @@
   "transcription": {
     "languages": {
       "ca": "Català",
-      "caHint": "En acabar, Whisper torna a escoltar la reunió i reescriu el text amb puntuació i majúscules (uns 6 minuts per hora de reunió). Si es parla castellà, tria «Català + castellà»: Whisper el passaria al català.",
+      "caHint": "En acabar, el Whisper català del BSC torna a escoltar la reunió i reescriu el text (uns 11 minuts per hora de reunió), i el model de Softcatalà hi posa la puntuació i les majúscules. Si es parla castellà, tria «Català + castellà»: Whisper el passaria al català.",
       "es": "Castellà",
       "esHint": "En acabar, Whisper torna a escoltar la reunió i reescriu el text amb puntuació i majúscules (uns 6 minuts per hora de reunió).",
       "caEs": "Català + castellà",
@@ -136,6 +136,7 @@
     "meetingLanguage": "Idioma de les reunions",
     "parakeetModel": "Parakeet, d'NVIDIA (anglès en directe)",
     "whisperModel": "Whisper large-v3-turbo, d'OpenAI",
+    "whisperCaModel": "Whisper català, del BSC",
     "liveSpeakers": "Parlants en directe",
     "roomSpeakers": "Hi ha més gent amb mi a la sala",
     "roomSpeakersHint": "En una trucada, tot el que entra pel micròfon és «Tu». Activa-ho si sou més d'una persona davant del mateix ordinador.",

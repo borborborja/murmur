@@ -12,7 +12,8 @@
   "roles": {
     "transcription": "Transcripció",
     "english": "Transcripció en anglès",
-    "final": "Transcripció final",
+    "final": "Transcripció final en castellà i anglès",
+    "finalCa": "Transcripció final en català",
     "vad": "Detecció de veu",
     "speakers": "Parlants",
     "turns": "Torns de paraula",
@@ -22,8 +23,8 @@
   },
   "conformerName": "Conformer català i castellà",
   "conformerAuthor": "Projecte AINA (BSC), a partir d'un model d'NVIDIA",
+  "bscAuthor": "BSC, a partir de Whisper large-v3",
   "fullstopName": "Fullstop català",
-  "noLicense": "Llicència no indicada",
   "tool": "Eina",
   "tools": {
     "echo": "Cancel·lació d'eco WebRTC (sonora)",

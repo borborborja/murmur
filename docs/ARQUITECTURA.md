@@ -9,7 +9,7 @@ Murmur transcriu en directe amb models petits i ràpids. Quan s'atura la gravaci
 | Capa | En directe (latència d'1 a 3 s) | Passada final (en aturar) |
 |---|---|---|
 | Detecció de veu | Silero VAD | |
-| Transcripció | Conformer-Transducer català i castellà (Projecte AINA) amb sherpa-onnx; en anglès, Parakeet TDT-CTC 110M | Whisper large-v3-turbo (whisper.cpp), només en reunions d'una sola llengua |
+| Transcripció | Conformer-Transducer català i castellà (Projecte AINA) amb sherpa-onnx; en anglès, Parakeet TDT-CTC 110M | Whisper (whisper.cpp), només en reunions d'una sola llengua: el català del BSC en català, large-v3-turbo en castellà i anglès |
 | Parlants | Embeddings NeMo TitaNet-small i agrupació en línia | Segmentació pyannote 3.0 + embeddings 3D-Speaker |
 | Puntuació | | Model de Softcatalà (català, sense Whisper) |
 | Portada i resum | | Gemma 4 E4B local, opcional; o Claude / OpenAI amb la clau de l'usuari |
@@ -98,7 +98,7 @@ L'app es diu Murmur. El codi i el crate es diuen `transcriptor`, el nom antic. I
 
 - Tria el model en directe (`engine.rs`, `LiveModel`): el Conformer ca-es per a tot menys l'anglès, que fa servir **Parakeet TDT-CTC 110M** (`models/parakeet-en/`, model opcional `english`, 458 MB, ja posa puntuació).
 - En una sola llengua i amb el model `whisper` descarregat, la passada final hi afegeix Whisper.
-- La puntuació de Softcatalà només s'aplica a `ca` i `ca-es` sense Whisper.
+- La puntuació de Softcatalà s'aplica a `ca-es` i a `ca`, després del Whisper català del BSC (que escriu sense puntuació). Només se la salta el turbo, que ja puntua.
 - Cada reunió desa l'idioma en què es va gravar (`meeting.language`, columna `language`).
 
 ### Desar i escoltar l'àudio
@@ -230,6 +230,20 @@ La mateixa app, amb el que cada sistema permet. La interfície pregunta què hi 
 
 - Només per a reunions d'una sola llengua. Forçat a «català», Whisper passa el castellà al català; per això «Català + castellà» no en fa.
 - **Whisper large-v3-turbo q5_0** de whisper.cpp (`models/whisper-ggml/`, model opcional `whisper`, 574 MB, MIT) amb Metal.
+- **En català, el Whisper del BSC** (`whisper-3cat-balearic`, Apache 2.0, large-v3 afinat amb 3CatParla), convertit amb `convert-h5-to-ggml.py` de whisper.cpp i quantitzat a q5_0 (1,1 GB, model opcional `whisper-ca`). `retranscribe::model_for` el tria per a «ca» si és descarregat; si no, el turbo, com abans. Escriu sense puntuació ni majúscules: després hi passa el model de Softcatalà, també a `transcribe_file`. És uns dos cops més lent que el turbo (`RTF_ESTIMATE_CA`).
+- `murmur-whisper` llegeix a la capçalera del model quantes capes té el descodificador (4 el turbo, 32 un large-v3) i tria els caps d'alineació (DTW) que toquen. Els models del BSC escriuen la primera peça de cada frase sense espai davant: una peça que cau a l'inici d'una altra frase sempre comença una paraula nova («tardi» + «també» feia «tarditambé»).
+- **Mesura** (`bench/dialects.py`, com ho fa l'app: frases tallades pel VAD, empalmades en trossos de 28 s i paraules col·locades pel DTW; WER normalitzat, sense puntuació ni majúscules i amb els números en lletres). Common Voice 17 (proves, 150 frases per accent) i les Corts Valencianes (18 min de parla espontània). M4, 15 min d'àudio per conjunt.
+
+  | WER | directe | turbo | BSC valencià | BSC balear |
+  |---|---|---|---|---|
+  | Català central | (1,4%) | 8,8% | 6,5% | **3,7%** |
+  | Balear | (2,9%) | 13,6% | 9,2% | **5,7%** |
+  | Valencià | (1,9%) | 13,7% | 5,9% | **3,7%** |
+  | Corts Valencianes | 30,6% | 23,2% | 16,3% | **14,7%** |
+  | Castellà | 4,6% | **5,1%** | 10,3% | 7,2% |
+  | Anglès | | **11,6%** | 12,8% | 12,8% |
+
+  El directe surt tan bé a Common Voice perquè probablement s'hi va entrenar. El model valencià del BSC s'entrena amb les Corts i, tot i així, el balear el supera. En una reunió real en valencià (20 min), escoltada a mà, el balear amb la puntuació de Softcatalà va ser el millor. Temps: 227 s per a aquells 20 min (el turbo, 171 s).
 - Corre en un procés a part, **`murmur-whisper`** (`app/whisper/`, crate propi): whisper.cpp i llama.cpp porten cadascun el seu ggml i no es poden enllaçar al mateix binari. Així, a més, la memòria es retorna sencera en acabar. Es compila amb `npm run whisper` (ho fan `beforeDevCommand` i `beforeBuildCommand`) i va dins l'app com a `externalBin`.
 - Durant la gravació es desa cada canal en PCM a `<app_cache_dir>/final-pass/`. En aturar (després de la verificació de parlants), les frases de cada canal s'empalmen en trossos de fins a 28 s, amb 0,5 s de silenci entre elles. Els temps per paraula (DTW, preset large-v3-turbo) diuen a quina frase va cada paraula. La interfície (`retranscribed` a `store.ts`) substitueix el text de les frases que no s'han editat a mà.
 - Es descarta un tros si té més de 6 paraules per segon de veu, o una frase de 2 a 6 paraules repetida 4 cops seguits (d'una sola paraula, 8 cops: «clic, clic, clic, clic» és real). També es descarten les frases amb textos inventats típics («Subtítols realitzats per…»). Llavors es queda el text en directe.

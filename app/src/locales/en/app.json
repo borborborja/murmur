@@ -32,7 +32,6 @@
   "viewTranscript": "Transcript",
   "recording": "Recording",
   "stop": "Stop",
-  "durationValue": "Duration {{duration}}",
   "export": "Export",
   "exportDocx": "Word Document (.docx)…",
   "exportMarkdown": "Markdown (.md)…",
@@ -100,5 +99,10 @@
   "speakerReassigned": "Line assigned to {{name}}",
   "speakerMergeRest_one": "And {{name}}'s other line",
   "speakerMergeRest_other": "And {{name}}'s other {{count}}",
-  "speakersMerged": "All of {{from}}'s lines are now {{to}}'s"
+  "speakersMerged": "All of {{from}}'s lines are now {{to}}'s",
+  "translate": "Translate the transcript into",
+  "translateLabel": "The summaries' model translates it, leaving the original as it is:",
+  "currentTranslation": "Current one",
+  "translateNeedsModel": "Needs a language model: Gemma downloaded, or Claude or ChatGPT connected in Settings › Intelligence.",
+  "moreActions": "More actions"
 }

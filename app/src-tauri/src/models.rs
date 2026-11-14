@@ -139,7 +139,24 @@ pub const WHISPER: OptionalModel = OptionalModel {
     }],
 };
 
-pub const ALL: [&OptionalModel; 5] = [&TRANSCRIPTION, &PUNCTUATION, &LLM, &ENGLISH, &WHISPER];
+/// Final pass of meetings in Catalan: BSC's whisper-3cat-balearic (Apache 2.0, Whisper large-v3
+/// fine-tuned on 3CatParla), converted for whisper.cpp and quantized to 5 bits. The best of the
+/// ones we measured for every variety of Catalan, Valencian too (bench/dialects.py). Published at
+/// huggingface.co/quicodomingo/murmur-models. It writes without punctuation: the punctuation
+/// model comes after it.
+pub const WHISPER_CA: OptionalModel = OptionalModel {
+    id: "whisper-ca",
+    dir: "whisper-ggml",
+    required: false,
+    files: &[ModelFile {
+        name: "ggml-3cat-balearic-q5_0.bin",
+        url: Some("https://huggingface.co/quicodomingo/murmur-models/resolve/main/whisper-3cat-ggml/ggml-3cat-balearic-q5_0.bin"),
+        bytes: 1_081_140_203,
+        sha256: "d7821bdd6f827fb643f0ca1584cc1caf8a303bdc657bef73715239d90af8c9c4",
+    }],
+};
+
+pub const ALL: [&OptionalModel; 6] = [&TRANSCRIPTION, &PUNCTUATION, &LLM, &ENGLISH, &WHISPER, &WHISPER_CA];
 
 pub fn find(id: &str) -> Result<&'static OptionalModel> {
     ALL.into_iter()

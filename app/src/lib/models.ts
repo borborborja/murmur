@@ -18,7 +18,7 @@ export type ModelsState = {
   loaded: boolean;
 };
 
-const MODEL_IDS: ModelId[] = ["transcription", "punctuation", "llm", "english", "whisper"];
+const MODEL_IDS: ModelId[] = ["transcription", "punctuation", "llm", "english", "whisper", "whisper-ca"];
 
 /** Each model's name, as the subject of a sentence ("El model de transcripció"); read in the interface language. */
 export const MODEL_NAMES = Object.defineProperties(
@@ -34,7 +34,13 @@ const FAKE = import.meta.env.DEV && !backend.isTauri();
 const fakeStatus = (id: ModelId, bytes: number, downloadable = true): ModelStatus => ({ id, installed: false, bytes, downloaded: 0, downloadable, required: id === "transcription" });
 
 let state: ModelsState = {
-  status: FAKE ? { transcription: fakeStatus("transcription", 585_366_000), punctuation: fakeStatus("punctuation", 128_469_163, false), llm: fakeStatus("llm", 5_154_941_280) } : {},
+  status: FAKE
+    ? {
+        transcription: fakeStatus("transcription", 585_366_000),
+        punctuation: fakeStatus("punctuation", 128_469_163, false),
+        llm: fakeStatus("llm", 5_154_941_280),
+      }
+    : {},
   downloading: {},
   errors: {},
   queued: [],

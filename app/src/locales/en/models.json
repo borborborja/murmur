@@ -4,7 +4,8 @@
     "punctuation": "The punctuation model",
     "llm": "The language model",
     "english": "The English model",
-    "whisper": "Whisper"
+    "whisper": "Whisper",
+    "whisper-ca": "The Catalan Whisper"
   },
   "downloadFailed": "Couldn’t download: {{error}}",
   "ready": "{{name}} is ready"

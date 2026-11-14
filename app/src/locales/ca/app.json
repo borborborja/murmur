@@ -32,7 +32,6 @@
   "viewTranscript": "Transcripció",
   "recording": "Gravant",
   "stop": "Atura",
-  "durationValue": "Durada {{duration}}",
   "export": "Exporta",
   "exportDocx": "Document de Word (.docx)…",
   "exportMarkdown": "Markdown (.md)…",
@@ -100,5 +99,10 @@
   "speakerReassigned": "Frase assignada a {{name}}",
   "speakerMergeRest_one": "I l'altra de {{name}}",
   "speakerMergeRest_other": "I les altres {{count}} de {{name}}",
-  "speakersMerged": "Totes les frases de {{from}} són ara de {{to}}"
+  "speakersMerged": "Totes les frases de {{from}} són ara de {{to}}",
+  "translate": "Tradueix la transcripció a",
+  "translateLabel": "El model dels resums la tradueix, sense tocar l'original:",
+  "currentTranslation": "La que hi ha",
+  "translateNeedsModel": "Cal un model de llenguatge: Gemma descarregat, o Claude o ChatGPT connectats a Configuració › Intel·ligència.",
+  "moreActions": "Més accions"
 }

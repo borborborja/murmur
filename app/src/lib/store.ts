@@ -11,6 +11,7 @@ import {
   type Assignment,
   type Channel,
   type Cover,
+  type Translation,
   type Language,
   type Meeting,
   type MeetingPart,
@@ -92,6 +93,7 @@ export type Action =
   /** Texts sent to the punctuation model (`from`) and what came back; edited meanwhile = skipped. */
   | { type: "punctuated"; id: string; changes: { utteranceId: string; from: string; to: string }[] }
   | { type: "cover"; id: string; cover: Cover | null; title: string | null }
+  | { type: "translation"; id: string; translation: Translation | null }
   | { type: "coverTasks"; id: string; tasks: NonNullable<Cover["tasks"]> }
   | { type: "tags"; id: string; tags: string[] }
   /** A tag renamed (or merged into another, `to` already existing) or removed, in every meeting. */
@@ -276,6 +278,8 @@ export function reducer(state: State, action: Action): State {
     }
     case "cover":
       return updateMeeting(state, action.id, (m) => ({ ...m, cover: action.cover, title: action.title ?? m.title }));
+    case "translation":
+      return updateMeeting(state, action.id, (m) => ({ ...m, translation: action.translation }));
     case "tags":
       return updateMeeting(state, action.id, (m) => ({ ...m, tags: uniqueTags(action.tags) }));
     case "renameTag": {
@@ -436,6 +440,7 @@ function diff(saved: Meeting, next: Meeting): backend.Changes | null {
   if (saved.language !== next.language && next.language) meta.language = next.language;
   if (saved.audioPath !== next.audioPath) meta.audioPath = next.audioPath ?? null;
   if (saved.cover !== next.cover) meta.cover = next.cover ?? null;
+  if (saved.translation !== next.translation) meta.translation = next.translation ?? null;
   if (saved.guests !== next.guests && next.guests) meta.guests = next.guests;
   if (saved.screens !== next.screens && next.screens) meta.screens = next.screens;
   if (saved.tags !== next.tags && next.tags) meta.tags = next.tags;

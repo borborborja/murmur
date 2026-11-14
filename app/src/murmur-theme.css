@@ -36,6 +36,8 @@
   --mm-logo-background: #0B0B0B;
   --mm-logo-bar-1: #F5F5F5;
   --mm-logo-bar-2: #D4FF3A;
+  /* A hairline around the icon, so its dark square shows on a dark sidebar. */
+  --mm-logo-ring: transparent;
   --mm-toast-background: #FFFFFF;
   --mm-toast-text: #111111;
   --mm-toast-secondary: #6B6B6B;
@@ -45,6 +47,8 @@
   --mm-speaker-2: #F05A3C;
   --mm-speaker-3: #0E9AA7;
   --mm-speaker-4: #D9408F;
+  /* The aurora after a meeting (lib/reveal.ts): the warm step between the speakers' colours and the accent. */
+  --mm-reveal-warm: #FFB13B;
   --mm-speaker-1-tint: #6A55F524;
   --mm-speaker-1-text: #4733D1;
   --mm-speaker-2-tint: #F05A3C24;
@@ -92,6 +96,8 @@
   --mm-logo-background: #0B0B0B;
   --mm-logo-bar-1: #F5F5F5;
   --mm-logo-bar-2: #D4FF3A;
+  /* A hairline around the icon, so its dark square shows on a dark sidebar. */
+  --mm-logo-ring: #FFFFFF26;
   --mm-toast-background: #1E1E1E;
   --mm-toast-text: #F2F2F2;
   --mm-toast-secondary: #9A9A9A;
@@ -101,6 +107,8 @@
   --mm-speaker-2: #FF7A5C;
   --mm-speaker-3: #2EC4D0;
   --mm-speaker-4: #F062AE;
+  /* The aurora after a meeting (lib/reveal.ts): the warm step between the speakers' colours and the accent. */
+  --mm-reveal-warm: #FFC453;
   --mm-speaker-1-tint: #8F80FF2E;
   --mm-speaker-1-text: #A99DFF;
   --mm-speaker-2-tint: #FF7A5C2E;
@@ -148,6 +156,8 @@
   --mm-logo-background: #0A0A0A;
   --mm-logo-bar-1: #FFFFFF;
   --mm-logo-bar-2: #FFFFFF73;
+  /* A hairline around the icon, so its dark square shows on a dark sidebar. */
+  --mm-logo-ring: transparent;
   --mm-toast-background: #FFFFFF;
   --mm-toast-text: #111111;
   --mm-toast-secondary: #6B6B6B;
@@ -157,6 +167,8 @@
   --mm-speaker-2: #F05A3C;
   --mm-speaker-3: #0E9AA7;
   --mm-speaker-4: #D9408F;
+  /* The aurora after a meeting (lib/reveal.ts): the warm step between the speakers' colours and the accent. */
+  --mm-reveal-warm: #FFB13B;
   --mm-speaker-1-tint: #6A55F524;
   --mm-speaker-1-text: #4733D1;
   --mm-speaker-2-tint: #F05A3C24;
@@ -204,6 +216,8 @@
   --mm-logo-background: #F2F2F2;
   --mm-logo-bar-1: #0A0A0A;
   --mm-logo-bar-2: #0A0A0A66;
+  /* A hairline around the icon, so its dark square shows on a dark sidebar. */
+  --mm-logo-ring: #FFFFFF26;
   --mm-toast-background: #1E1E1E;
   --mm-toast-text: #F2F2F2;
   --mm-toast-secondary: #9A9A9A;
@@ -213,6 +227,8 @@
   --mm-speaker-2: #FF7A5C;
   --mm-speaker-3: #2EC4D0;
   --mm-speaker-4: #F062AE;
+  /* The aurora after a meeting (lib/reveal.ts): the warm step between the speakers' colours and the accent. */
+  --mm-reveal-warm: #FFC453;
   --mm-speaker-1-tint: #8F80FF2E;
   --mm-speaker-1-text: #A99DFF;
   --mm-speaker-2-tint: #FF7A5C2E;
@@ -260,6 +276,8 @@
   --mm-logo-background: #121212;
   --mm-logo-bar-1: #D3D4D1;
   --mm-logo-bar-2: #E10600;
+  /* A hairline around the icon, so its dark square shows on a dark sidebar. */
+  --mm-logo-ring: transparent;
   --mm-toast-background: #FFFFFF;
   --mm-toast-text: #111111;
   --mm-toast-secondary: #6B6B6B;
@@ -269,6 +287,8 @@
   --mm-speaker-2: #C98A00;
   --mm-speaker-3: #0E9AA7;
   --mm-speaker-4: #D9408F;
+  /* The aurora after a meeting (lib/reveal.ts): the warm step between the speakers' colours and the accent. */
+  --mm-reveal-warm: #FFB13B;
   --mm-speaker-1-tint: #6A55F524;
   --mm-speaker-1-text: #4733D1;
   --mm-speaker-2-tint: #C98A0029;
@@ -316,6 +336,8 @@
   --mm-logo-background: #2A2A27;
   --mm-logo-bar-1: #D3D4D1;
   --mm-logo-bar-2: #FF3B28;
+  /* A hairline around the icon, so its dark square shows on a dark sidebar. */
+  --mm-logo-ring: #FFFFFF26;
   --mm-toast-background: #1E1E1E;
   --mm-toast-text: #F2F2F2;
   --mm-toast-secondary: #9A9A9A;
@@ -325,6 +347,8 @@
   --mm-speaker-2: #E8B13A;
   --mm-speaker-3: #2EC4D0;
   --mm-speaker-4: #F062AE;
+  /* The aurora after a meeting (lib/reveal.ts): the warm step between the speakers' colours and the accent. */
+  --mm-reveal-warm: #FFC453;
   --mm-speaker-1-tint: #8F80FF2E;
   --mm-speaker-1-text: #A99DFF;
   --mm-speaker-2-tint: #E8B13A2E;

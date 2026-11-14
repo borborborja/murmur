@@ -26,15 +26,16 @@ It started as a tool for meetings in **Catalan**, where most transcription servi
 - **Live transcription** in Catalan, Spanish, Catalan + Spanish mixed, or English. You pick the language and whether there are more people in the room when you start, and you can transcribe a meeting again in another language later.
 - **Your mic and the call, separately.** Murmur records your microphone and the system audio (Zoom, Meet, Teams…) as two channels and removes the echo, so it works with speakers too, not just headphones. It never records the screen: it only takes a screenshot when you ask for one. System audio works on macOS and Windows; on Linux Murmur records the microphone for now.
 - **Speakers.** Voices are grouped live. When the meeting ends, a second pass over the whole recording checks who said what. Rename “Speaker 1” to a real name, or pick one from the calendar event's guests, and if one person shows up as two speakers, merge them in one click.
-- **Final pass with Whisper.** For single-language meetings, Whisper large-v3-turbo listens again after you stop and rewrites the text with punctuation, capitals and proper names. It doesn't touch the lines you corrected by hand.
-- **Softcatalà's punctuation.** When the meeting mixes Catalan and Spanish, or you don't have Whisper, Softcatalà's punctuation model adds full stops, commas and capitals when it finishes. It's optional (126 MB) and downloads from Settings › Transcription.
+- **Final pass with Whisper.** For single-language meetings, Whisper listens again after you stop and rewrites the text. It doesn't touch the lines you corrected by hand. In Catalan, that's a Whisper by the Barcelona Supercomputing Center, the best in our tests for Central, Valencian and Balearic Catalan. In Spanish and English, Whisper large-v3-turbo, which also adds punctuation and proper names. While it finishes, the summary's place shimmers, and the new text and summary come in as a light runs down over them.
+- **Softcatalà's punctuation.** For meetings in Catalan, and those that mix Catalan and Spanish, Softcatalà's punctuation model adds full stops, commas and capitals when it finishes. It's optional (126 MB) and downloads from Settings › Transcription.
 - **Continue a meeting.** If you stop too early or take a break, "Continue" records again within the same meeting. The break is marked in the transcript, the voices from the first part come back with their names, and the summary covers the whole meeting.
 - **Glossary.** Add the names, brands and acronyms the transcription gets wrong (WordPress, Softcatalà, a client's name) and Murmur will spell them right, live and when it finishes. When you correct a name by hand, it offers to add it. In a calendar meeting the guests' names count too, and the summary spells them the same way.
 - **Floating bar while you record.** A small pill on the edge of the screen stays on top of your call: it shows the audio level, brings Murmur back, stops the recording and takes a screenshot of the shared screen. Each screenshot is tied to the moment of the conversation, so it appears next to what was being said, and in the right part of the summary. Click the pill to turn Murmur into a narrow notes window beside the call.
 - **Transcribe from a file.** File › Transcribe from File… (⌘O, Ctrl+O on Windows and Linux) turns an mp3, m4a, wav, ogg or other audio file into a meeting, with speakers and the final pass. Murmur works out the language by itself. You can also send it an audio file from other apps' Share menu, with Open With (Finder, Explorer or your file manager), or by dropping it on the window or the Dock icon.
 - **Claude connector**, optional. Claude Desktop and Claude Code can read and search your meetings and transcribe audio files with Murmur, on your computer. Turn it on in Settings › Claude.
 - **Notes** with headings, lists, checkboxes and Tab indents. Each block remembers the minute it was written and shows up next to the transcript. ⌘+ and ⌘− (Ctrl+ and Ctrl− on Windows and Linux) make the notes text bigger or smaller.
-- **Meeting summary**, optional: a title, summary, tone, decisions and tasks, written by a local language model (Gemma 4 E4B). Tasks can be checked off, edited and assigned. If you prefer, it can be written by Claude or OpenAI with your own key: only the text is sent, never the audio.
+- **Meeting summary**, optional: a title, summary, tone, decisions and tasks, written by a local language model (Gemma 4 E4B). Tasks can be checked off, edited and assigned. If you prefer, it can be written by Claude or OpenAI with your own key: only the text is sent, never the audio. You choose the language it's written in (Catalan, Spanish or English), and can change it later.
+- **Translate the transcript** into Catalan, Spanish or English, with the same model that writes the summary. The original stays as it is: the translation sits beside it and you can switch between them.
 - **Tags** to organise meetings. Filter by them in the sidebar, search them, and rename, merge or delete them with a right click.
 - **Calendar.** Murmur reminds you two minutes before a meeting starts, and the recording takes the event's title and guests. It works with any calendar added to macOS: iCloud, Google, Exchange. Only on macOS for now.
 - **Share with a link.** Choose what goes in (summary, notes, transcript, screenshots, audio), when the link expires and whether it has a password. Murmur encrypts it on your computer and publishes it to your own Cloudflare account, which is free and is set up from the app.
@@ -56,7 +57,7 @@ It started as a tool for meetings in **Catalan**, where most transcription servi
 - **Windows:** Windows 10 or 11, 64-bit (x86-64), with a processor with AVX2 (Intel since 2013, AMD since 2015). WebView2 comes with Windows; the installer adds it if it's missing.
 - **Linux:** a 64-bit (x86-64) distribution with WebKitGTK 4.1, such as Ubuntu 22.04 or later, Debian 12, Fedora 38 or later, with a processor with AVX2. For the keys to be saved, a Secret Service (GNOME Keyring or KWallet).
 - 8 GB of memory. 16 GB is recommended for the local summary. On Windows and Linux everything runs on the processor, so the final pass and the summary are slower than on a Mac.
-- About 600 MB of disk for the base models. Optional models take more: English 458 MB, Whisper 574 MB, Gemma 5.2 GB.
+- About 600 MB of disk for the base models. Optional models take more: English 458 MB, Catalan Whisper 1.1 GB, Whisper for Spanish and English 574 MB, Gemma 5.2 GB.
 
 ## Install
 
@@ -92,7 +93,8 @@ The `.deb` and `.rpm` packages don't update themselves: install the new version 
 |---|---|---|---|
 | Catalan and Spanish, live | Conformer-Transducer ca-es | Projecte AINA (BSC), from NVIDIA | CC BY 4.0 |
 | English, live | Parakeet TDT-CTC 110M | NVIDIA | CC BY 4.0 |
-| Final pass | Whisper large-v3-turbo (whisper.cpp) | OpenAI | MIT |
+| Final pass in Catalan | whisper-3cat-balearic (whisper.cpp) | BSC, based on Whisper large-v3 | Apache 2.0 |
+| Final pass in Spanish and English | Whisper large-v3-turbo (whisper.cpp) | OpenAI | MIT |
 | Catalan punctuation | fullstop-catalan-punctuation-prediction | Softcatalà | MIT |
 | Voice activity | Silero VAD | Silero | MIT |
 | Speakers, live | TitaNet small | NVIDIA NeMo | Apache 2.0 |

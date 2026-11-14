@@ -21,6 +21,7 @@ import { bytes, deleteModel, downloadModel, useModels } from "@/lib/models";
 import { DEFAULT_SETTINGS, type Settings } from "@/lib/settings";
 import { connectShare, disconnectShare, setupShare, useShareStatus } from "@/lib/share";
 import type { CloudProvider, Language, LlmProgress, LlmResult, Meeting, ModelId } from "@/lib/types";
+import { preferredFinalModel } from "@/lib/finalpass";
 import { cn } from "@/lib/utils";
 import { MEETING_LANGUAGES } from "./StartOptions";
 import { capabilities, isMac } from "@/lib/platform";
@@ -707,7 +708,9 @@ function TranscriptionTab({ settings, onChange }: { settings: Settings; onChange
   /** A language that needs a model fetches it straight away. */
   const setLanguage = (value: Language) => {
     onChange({ language: value });
-    const needed: ModelId[] = [...(value === "en" ? (["english"] as const) : []), ...(value !== "ca-es" ? (["whisper"] as const) : [])];
+    // Catalan: the BSC's Whisper, which writes without punctuation, so the punctuation model too.
+    const final = preferredFinalModel(value);
+    const needed: ModelId[] = [...(value === "en" ? (["english"] as const) : []), ...(final ? [final] : []), ...(value === "ca" ? (["punctuation"] as const) : [])];
     for (const id of needed) enableWithModel(models, id, true, () => {});
   };
   const chooseMarkdownFolder = async () => {
@@ -736,7 +739,8 @@ function TranscriptionTab({ settings, onChange }: { settings: Settings; onChange
         {settings.language === "en" && (
           <ModelRow id="english" name={t("transcription.parakeetModel")} enabled onDisable={() => onChange({ language: "ca-es" })} />
         )}
-        {settings.language !== "ca-es" && <ModelRow id="whisper" name={t("transcription.whisperModel")} enabled onDisable={() => {}} />}
+        {settings.language === "ca" && <ModelRow id="whisper-ca" name={t("transcription.whisperCaModel")} enabled onDisable={() => {}} />}
+        {(settings.language === "es" || settings.language === "en") && <ModelRow id="whisper" name={t("transcription.whisperModel")} enabled onDisable={() => {}} />}
       </Group>
       <GlossaryGroup />
       <Group title={t("transcription.liveSpeakers")}>

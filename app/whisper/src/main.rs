@@ -93,6 +93,19 @@ fn main() {
     }
 }
 
+/// The DTW alignment heads depend on the model: large-v3-turbo has 4 text layers, large-v3 and
+/// the models fine-tuned from it (BSC's Valencian and Balearic) have 32. Read from the ggml header:
+/// magic, then n_vocab, n_audio_ctx, n_audio_state, n_audio_head, n_audio_layer, n_text_ctx,
+/// n_text_state, n_text_head, n_text_layer (i32 each).
+fn dtw_preset(model: &str) -> Result<DtwModelPreset> {
+    let mut header = [0u8; 40];
+    std::fs::File::open(model)
+        .and_then(|mut f| f.read_exact(&mut header))
+        .context("no s'ha pogut llegir el model")?;
+    let text_layers = i32::from_le_bytes(header[36..40].try_into()?);
+    Ok(if text_layers >= 32 { DtwModelPreset::LargeV3 } else { DtwModelPreset::LargeV3Turbo })
+}
+
 fn run() -> Result<()> {
     let args: Vec<String> = std::env::args().collect();
     let [_, model, language] = args.as_slice() else {
@@ -110,7 +123,7 @@ fn run() -> Result<()> {
     // DTW timestamps put the words in the right utterance; flash attention (20% faster) can't
     // give them and spills words into the next one.
     params.use_gpu(true).flash_attn(false).dtw_parameters(DtwParameters {
-        mode: DtwMode::ModelPreset { model_preset: DtwModelPreset::LargeV3Turbo },
+        mode: DtwMode::ModelPreset { model_preset: dtw_preset(model)? },
         ..Default::default()
     });
     let ctx = WhisperContext::new_with_params(model, params).context("no s'ha pogut carregar Whisper")?;
@@ -135,7 +148,8 @@ fn run() -> Result<()> {
                 buf.extend_from_slice(&samples[from..to]);
             }
             let speech: f32 = placed.iter().map(|p| p.len).sum();
-            let heard = decode(&mut state, eot, &buf, speech, language)?;
+            let starts: Vec<f32> = placed.iter().map(|p| p.offset).collect();
+            let heard = decode(&mut state, eot, &buf, speech, language, &starts)?;
             if std::env::var_os("MURMUR_WHISPER_DEBUG").is_some() {
                 let at: Vec<String> = placed.iter().map(|p| format!("{:.1}–{:.1}", p.offset, p.offset + p.len)).collect();
                 eprintln!("CHUNK {}", at.join(" "));
@@ -218,8 +232,9 @@ fn read_pcm(path: &str) -> Result<Vec<f32>> {
 }
 
 /// Whisper's words with the time (s into `audio`) each one starts at; None if it looks wrong.
-/// `eot`: the end-of-text token; every special token comes after it.
-fn decode(state: &mut WhisperState, eot: i32, audio: &[f32], speech_s: f32, language: &str) -> Result<Option<Vec<(f32, String)>>> {
+/// `eot`: the end-of-text token; every special token comes after it. `starts`: where each
+/// utterance begins in `audio`.
+fn decode(state: &mut WhisperState, eot: i32, audio: &[f32], speech_s: f32, language: &str, starts: &[f32]) -> Result<Option<Vec<(f32, String)>>> {
     let mut params = FullParams::new(SamplingStrategy::Greedy { best_of: 1 });
     params.set_language(Some(language));
     params.set_n_threads(4);
@@ -242,9 +257,11 @@ fn decode(state: &mut WhisperState, eot: i32, audio: &[f32], speech_s: f32, lang
     };
     state.full(params, audio)?;
 
-    // Words: a token starting with a space starts one. Bytes, not text: a token can hold half a
-    // character.
+    // Words: a token starting with a space starts one, and so does the first token of the next
+    // utterance (BSC's models write it without the space: "tardi" + "també" → "tarditambé"). Bytes,
+    // not text: a token can hold half a character.
     let mut words: Vec<(f32, Vec<u8>)> = vec![];
+    let mut previous = f32::NEG_INFINITY;
     for segment in state.as_iter() {
         for i in 0..segment.n_tokens() {
             let Some(token) = segment.get_token(i) else { continue };
@@ -255,8 +272,10 @@ fn decode(state: &mut WhisperState, eot: i32, audio: &[f32], speech_s: f32, lang
             }
             let bytes = token.to_bytes()?;
             let t = if data.t_dtw >= 0 { data.t_dtw } else { data.t0 } as f32 / 100.0;
+            let next_utterance = starts.iter().any(|&s| previous < s - 0.1 && t >= s - 0.1);
+            previous = t;
             match words.last_mut() {
-                Some(last) if !bytes.starts_with(b" ") => last.1.extend_from_slice(bytes),
+                Some(last) if !bytes.starts_with(b" ") && !next_utterance => last.1.extend_from_slice(bytes),
                 _ => words.push((t, bytes.to_vec())),
             }
         }

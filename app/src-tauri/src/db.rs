@@ -30,7 +30,8 @@ CREATE TABLE IF NOT EXISTS meetings (
     screens       TEXT,
     language      TEXT,
     shares        TEXT,
-    parts         TEXT
+    parts         TEXT,
+    translation   TEXT
 );
 
 CREATE TABLE IF NOT EXISTS utterances (
@@ -147,6 +148,9 @@ pub struct MetaPatch {
     pub shares: Option<Value>,
     /// Times it was recorded again after stopping ("Continua"): [{startedAt, at}].
     pub parts: Option<Value>,
+    /// Its transcript translated by the language model (lib/translate.ts): {lang, texts, …}; null removes it.
+    #[serde(default, deserialize_with = "present")]
+    pub translation: Option<Value>,
     /// Its tags, in order; replaces the ones it had.
     pub tags: Option<Vec<String>>,
 }
@@ -358,7 +362,7 @@ impl Db {
             .conn
             .query_row(
                 "SELECT id, title, created_at, duration, status, speaker_names, sources, audio_path,
-                        notes_doc, legacy_notes, cover, guests, screens, language, shares, parts
+                        notes_doc, legacy_notes, cover, guests, screens, language, shares, parts, translation
                  FROM meetings WHERE id = ?1",
                 [id],
                 |r| {
@@ -380,6 +384,7 @@ impl Db {
                         "language": r.get::<_, Option<String>>(13)?,
                         "shares": parse(r.get(14)?).unwrap_or(json!([])),
                         "parts": parse(r.get(15)?).unwrap_or(json!([])),
+                        "translation": parse(r.get(16)?),
                     }))
                 },
             )
@@ -430,8 +435,8 @@ impl Db {
         };
         tx.execute(
             "INSERT INTO meetings (id, title, created_at, duration, status, speaker_names, sources,
-                                   audio_path, notes_doc, legacy_notes, cover, guests, screens, language, shares, parts)
-             VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16)",
+                                   audio_path, notes_doc, legacy_notes, cover, guests, screens, language, shares, parts, translation)
+             VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16, ?17)",
             params![
                 id,
                 meeting
@@ -461,6 +466,7 @@ impl Db {
                 meeting.get("language").and_then(Value::as_str),
                 text("shares"),
                 text("parts"),
+                text("translation"),
             ],
         )?;
         let utterances: Vec<Utterance> =
@@ -544,6 +550,12 @@ impl Db {
                 tx.execute(
                     "UPDATE meetings SET parts = ?2 WHERE id = ?1",
                     params![id, v.to_string()],
+                )?;
+            }
+            if let Some(v) = meta.translation {
+                tx.execute(
+                    "UPDATE meetings SET translation = ?2 WHERE id = ?1",
+                    params![id, (!v.is_null()).then(|| v.to_string())],
                 )?;
             }
             if let Some(v) = meta.language {
@@ -657,6 +669,9 @@ fn migrate(conn: &Connection) -> Result<()> {
     }
     if !has("meetings", "parts")? {
         conn.execute("ALTER TABLE meetings ADD COLUMN parts TEXT", [])?;
+    }
+    if !has("meetings", "translation")? {
+        conn.execute("ALTER TABLE meetings ADD COLUMN translation TEXT", [])?;
     }
     Ok(())
 }
@@ -826,6 +841,19 @@ mod tests {
         assert_eq!(clear.meta.as_ref().unwrap().cover, Some(Value::Null));
         db.apply("m1", clear).unwrap();
         assert!(db.get("m1").unwrap().unwrap()["cover"].is_null());
+    }
+
+    #[test]
+    fn translation_is_saved_and_removed() {
+        let mut db = Db::in_memory().unwrap();
+        db.put(&meeting()).unwrap();
+        assert!(db.get("m1").unwrap().unwrap()["translation"].is_null());
+        let set: Changes = serde_json::from_value(json!({"meta": {"translation": {"lang": "es", "texts": {"u1": "Hola"}}}})).unwrap();
+        db.apply("m1", set).unwrap();
+        assert_eq!(db.get("m1").unwrap().unwrap()["translation"]["texts"]["u1"], "Hola");
+        let clear: Changes = serde_json::from_value(json!({"meta": {"translation": null}})).unwrap();
+        db.apply("m1", clear).unwrap();
+        assert!(db.get("m1").unwrap().unwrap()["translation"].is_null());
     }
 
     #[test]

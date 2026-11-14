@@ -89,9 +89,12 @@ export function Sidebar({ meetings, selectedId, canCreate, importingId, search, 
     <nav className="flex h-full w-[240px] shrink-0 flex-col border-r border-sidebar-border bg-sidebar" aria-label={t("nav")}>
       {/* Traffic lights on the left (native), the brand on the right; the strip drags the window. */}
       <div data-tauri-drag-region className="flex h-[52px] shrink-0 items-center justify-end pr-3.5">
-        <span data-tauri-drag-region className="flex items-center gap-1.5 text-[12px] font-bold tracking-[-0.02em]">
-          <LogoIcon size={22} />
-          murmur
+        {/* At 30 pt the mark's echo reads; the ring keeps its dark square visible on a dark sidebar. */}
+        <span data-tauri-drag-region className="flex items-center gap-2">
+          <LogoIcon size={30} className="rounded-[7px] shadow-[0_0_0_1px_var(--mm-logo-ring)]" />
+          <span data-tauri-drag-region className="text-[18px] font-bold leading-none tracking-[-0.045em]" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+            murmur
+          </span>
         </span>
       </div>
       <button

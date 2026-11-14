@@ -735,7 +735,7 @@ fn final_pass(app: AppHandle, meeting_id: String, tapped: Vec<pipeline::Tapped>,
                 return Ok(());
             }
             let speech: f32 = channels.iter().flat_map(|(_, spans)| spans).map(|s| s.end - s.start).sum();
-            started("text", 5.0 + speech * retranscribe::RTF_ESTIMATE);
+            started("text", 5.0 + speech * retranscribe::rtf_estimate(&models_dir(), language));
             let jobs: Vec<(&std::path::Path, &[diarize::Span])> =
                 channels.iter().map(|(t, spans)| (t.path.as_path(), spans.as_slice())).collect();
             let results = retranscribe::transcribe(&models_dir(), language, &jobs, &plan.glossary, |_| {})?;
@@ -778,7 +778,14 @@ struct RetranscribeChannel {
 /// "Torna a transcriure en…": Whisper listens to the saved recording again in another language,
 /// utterance by utterance, as the final pass does after recording. Same events ("final-pass"…).
 #[tauri::command]
-async fn retranscribe_meeting(app: AppHandle, meeting_id: String, audio_path: String, language: String, channels: Vec<RetranscribeChannel>, guests: Vec<String>) -> Result<(), String> {
+async fn retranscribe_meeting(
+    app: AppHandle,
+    meeting_id: String,
+    audio_path: String,
+    language: String,
+    channels: Vec<RetranscribeChannel>,
+    guests: Vec<String>,
+) -> Result<(), String> {
     if !["ca", "es", "en"].contains(&language.as_str()) {
         return Err(tr!("whisper_one_language").into());
     }

@@ -44,6 +44,8 @@ export type Meeting = {
   sources?: { mic: boolean; system: boolean };
   /** Written by the local language model after the recording (lib/cover.ts). */
   cover?: Cover | null;
+  /** The transcript translated by the language model, shown beside the original (lib/translate.ts). */
+  translation?: Translation | null;
   /** Guests of the calendar event it was recorded for: names offered for the speakers. */
   guests?: string[];
   /** Screenshots taken from the recording indicator: meeting time (s) and file. */
@@ -140,8 +142,14 @@ export type FinalPassText = { meetingId: string; base: number; texts: { start: n
 export type FinalPassDone = { meetingId: string; error: string | null };
 
 /** Optional models (models.rs). */
-export type ModelId = "transcription" | "punctuation" | "llm" | "english" | "whisper";
+export type ModelId = "transcription" | "punctuation" | "llm" | "english" | "whisper" | "whisper-ca";
 export type ModelStatus = { id: ModelId; installed: boolean; bytes: number; downloaded: number; downloadable: boolean; required: boolean };
+
+/**
+ * A meeting's transcript in another language, line by line (utterance id → text). `sources`: the
+ * text each line was translated from, to notice lines edited afterwards. `done`: every line is in.
+ */
+export type Translation = { lang: "ca" | "es" | "en"; texts: Record<string, string>; sources: Record<string, string>; done: boolean; writtenBy?: string };
 
 /** What the local language model is doing (lib.rs run_llm). */
 /** Who can write the cover instead of the local model, with the user's own API key (cloud.rs). */

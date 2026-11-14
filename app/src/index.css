@@ -234,6 +234,32 @@
 .mm-bar-2 { animation-delay: -0.45s; }
 .mm-caret { animation: mm-blink 1s steps(1) infinite; }
 
+/* A part of the cover still being written: a slow shine goes across its placeholder. */
+@keyframes mm-shine { to { transform: translateX(100%); } }
+.mm-shine { position: relative; overflow: hidden; }
+.mm-shine::after {
+  content: ""; position: absolute; inset: 0; transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--mm-background) 70%, transparent), transparent);
+  animation: mm-shine 1.8s ease-in-out infinite;
+}
+
+/* The aurora that reveals a finished meeting's text or cover (lib/reveal.ts sets its colours and
+   position). It blurs what's under it; its light is three soft blobs. */
+.mm-reveal {
+  position: absolute; left: 3%; right: 3%; top: 0; z-index: 5; pointer-events: none; opacity: 0;
+  -webkit-backdrop-filter: blur(7px); backdrop-filter: blur(7px);
+  -webkit-mask: radial-gradient(ellipse 58% 50% at 50% 50%, #000 35%, transparent 100%);
+  mask: radial-gradient(ellipse 58% 50% at 50% 50%, #000 35%, transparent 100%);
+}
+.mm-reveal::before {
+  content: ""; position: absolute; inset: -20%; filter: blur(18px); opacity: 0.55;
+  background:
+    radial-gradient(40% 60% at 22% 50%, var(--mm-reveal-1) 0%, transparent 70%),
+    radial-gradient(45% 60% at 78% 45%, var(--mm-reveal-3) 0%, transparent 70%),
+    radial-gradient(60% 70% at 50% 60%, var(--mm-reveal-2) 0%, transparent 75%);
+}
+.dark .mm-reveal::before { opacity: 0.42; mix-blend-mode: screen; }
+
 /* The floating alert's window is transparent: only its card shows. */
 .toast-window, .toast-window body { background: transparent !important; overflow: hidden; }
 

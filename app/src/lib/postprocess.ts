@@ -5,6 +5,7 @@ import * as backend from "./backend";
 import {
   buildCover,
   coverDocument,
+  coverLanguage,
   coverLanguageFor,
   coverEstimate,
   isDefaultTitle,
@@ -18,11 +19,13 @@ import {
 } from "./cover";
 import { cloudModelName, coverEngine, coverReady } from "./cloud";
 import { spellingNote } from "./glossary";
-import { locale, t } from "./i18n";
+import { locale, t, type UiLanguage } from "./i18n";
 import { modelInstalled } from "./models";
 import type { Settings } from "./settings";
 import type { Action, State } from "./store";
 import type { Language, Meeting, PostStage } from "./types";
+import { reveal } from "./reveal";
+import { finalPassModel } from "./finalpass";
 
 /**
  * What runs after a recording, in order: the speaker check and Whisper's new text (started by
@@ -35,16 +38,20 @@ export function usePostProcess(state: State, dispatch: Dispatch<Action>, setting
   latest.current = state;
   const config = useRef(settings);
   config.current = settings;
+  /** A cover asked for in a given language ("Torna a generar", its language menu). */
+  const coverLangs = useRef(new Map<string, UiLanguage>());
   /** Stages planned for each meeting, decided when its recording starts. */
   const plans = useRef(new Map<string, PostStage[]>());
 
-  /** `rustStages`: what Rust does first. Whisper's text and English already come punctuated, and
-   * the punctuation model only knows Catalan. */
+  /** `rustStages`: what Rust does first. Whisper large-v3-turbo's text and English already come
+   * punctuated; the BSC's Catalan Whisper writes without punctuation (lib/finalpass.ts). The
+   * punctuation model only knows Catalan. */
   const optionalStages = (rustStages: PostStage[], language: Language): PostStage[] => {
     const s = config.current;
     const stages: PostStage[] = [];
     const catalan = language === "ca" || language === "ca-es";
-    if (s.punctuate && catalan && !rustStages.includes("text") && modelInstalled("punctuation")) stages.push("punctuation");
+    const punctuated = rustStages.includes("text") && finalPassModel(language) === "whisper";
+    if (s.punctuate && catalan && !punctuated && modelInstalled("punctuation")) stages.push("punctuation");
     if (s.summarize && coverReady(s)) stages.push("cover");
     return stages;
   };
@@ -68,6 +75,9 @@ export function usePostProcess(state: State, dispatch: Dispatch<Action>, setting
     languages.current.set(id, language);
     plans.current.set(id, ["text", ...optionalStages(["text"], language)]);
   }, []);
+
+  /** Punctuation still comes after Whisper's text (lib/finalpass.ts): the aurora waits for it. */
+  const punctuatesAfter = useCallback((id: string) => !!plans.current.get(id)?.includes("punctuation"), []);
 
   /** Rust started one of its stages. */
   const rustStageStarted = useCallback(
@@ -95,7 +105,7 @@ export function usePostProcess(state: State, dispatch: Dispatch<Action>, setting
             );
             // Lines the user corrected keep their text (the store also skips lines edited meanwhile).
             const changes = sent.filter((u) => !u.edited).map((u) => ({ utteranceId: u.id, from: u.text, to: texts[sent.indexOf(u)] }));
-            dispatch({ type: "punctuated", id, changes });
+            reveal("transcript", id, () => dispatch({ type: "punctuated", id, changes }));
             // The cover reads the punctuated text.
             const byId = new Map(changes.map((c) => [c.utteranceId, c.to]));
             meeting = { ...meeting, utterances: meeting.utterances.map((u) => ({ ...u, text: byId.get(u.id) ?? u.text })) };
@@ -106,7 +116,8 @@ export function usePostProcess(state: State, dispatch: Dispatch<Action>, setting
         if (stage === "cover") {
           meeting = { ...meeting, ...latest.current.open[id], utterances: meeting.utterances };
           if (!meeting.utterances.length) continue;
-          const lng = coverLanguageFor(meeting, config.current.coverLanguage);
+          const lng = coverLangs.current.get(id) ?? coverLanguageFor(meeting, config.current.coverLanguage);
+          coverLangs.current.delete(id);
           const document = coverDocument(meeting, lng);
           const tasks = llmTasks(config.current.prompts, undefined, lng);
           const engine = coverEngine(config.current);
@@ -131,7 +142,7 @@ export function usePostProcess(state: State, dispatch: Dispatch<Action>, setting
             const cover = keepTaskEdits({ ...renamed, basis }, now.cover);
             // The model's title replaces the automatic one, never one the user wrote.
             const current = latest.current.open[id]?.title ?? meeting.title;
-            dispatch({ type: "cover", id, cover, title: title && isDefaultTitle(current) ? title : null });
+            reveal("cover", id, () => dispatch({ type: "cover", id, cover, title: title && isDefaultTitle(current) ? title : null }));
             const failed = Object.keys(cover.errors ?? {});
             if (failed.length) {
               const names = failed.map((f) => PROMPTS.find((p) => p.id === f)?.label.toLocaleLowerCase(locale()) ?? f);
@@ -169,8 +180,16 @@ export function usePostProcess(state: State, dispatch: Dispatch<Action>, setting
     [dispatch, run],
   );
 
-  /** "Genera la portada" on an existing meeting. */
-  const generateCover = useCallback((id: string) => run(id, ["cover"], ["cover"]), [run]);
+  /** "Genera la portada" on an existing meeting: in `lng`, or in the language its cover is already in. */
+  const generateCover = useCallback(
+    (id: string, lng?: UiLanguage) => {
+      const current = latest.current.open[id]?.cover;
+      const chosen = lng ?? (current ? coverLanguage(current) : undefined);
+      if (chosen) coverLangs.current.set(id, chosen);
+      return run(id, ["cover"], ["cover"]);
+    },
+    [run],
+  );
 
-  return { planRecording, planRetranscribe, rustStageStarted, rustDone, generateCover };
+  return { planRecording, planRetranscribe, punctuatesAfter, rustStageStarted, rustDone, generateCover };
 }

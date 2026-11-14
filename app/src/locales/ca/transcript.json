@@ -34,5 +34,14 @@
       "hint": "El model de llenguatge local llegeix la transcripció. Pots continuar llegint i editant."
     }
   },
-  "pause": "Pausa de {{from}} a {{to}} · {{duration}}"
+  "pause": "Pausa de {{from}} a {{to}} · {{duration}}",
+  "original": "Original",
+  "removeTranslation": "Treu la traducció",
+  "translatedBy": "Traduït amb {{model}}",
+  "translating": "Traduint la transcripció ({{language}})",
+  "translatingLines": "{{done}} de {{total}} frases",
+  "translationOfOlder": "traducció de l'original abans de corregir-lo",
+  "translationMissing_one": "{{count}} frase no s'ha pogut traduir: es mostra l'original.",
+  "translationMissing_other": "{{count}} frases no s'han pogut traduir: es mostra l'original.",
+  "translationFailed": "No s'ha pogut traduir: {{error}}"
 }

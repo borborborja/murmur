@@ -124,7 +124,7 @@
   "transcription": {
     "languages": {
       "ca": "Catalán",
-      "caHint": "Al terminar, Whisper vuelve a escuchar la reunión y reescribe el texto con puntuación y mayúsculas (unos 6 minutos por hora de reunión). Si se habla castellano, elige «Catalán + castellano»: Whisper lo pasaría al catalán.",
+      "caHint": "Al terminar, el Whisper catalán del BSC vuelve a escuchar la reunión y reescribe el texto (unos 11 minutos por hora de reunión), y el modelo de Softcatalà pone la puntuación y las mayúsculas. Si se habla castellano, elige «Catalán + castellano»: Whisper lo pasaría al catalán.",
       "es": "Castellano",
       "esHint": "Al terminar, Whisper vuelve a escuchar la reunión y reescribe el texto con puntuación y mayúsculas (unos 6 minutos por hora de reunión).",
       "caEs": "Catalán + castellano",
@@ -136,6 +136,7 @@
     "meetingLanguage": "Idioma de las reuniones",
     "parakeetModel": "Parakeet, de NVIDIA (inglés en directo)",
     "whisperModel": "Whisper large-v3-turbo, de OpenAI",
+    "whisperCaModel": "Whisper catalán, del BSC",
     "liveSpeakers": "Hablantes en directo",
     "roomSpeakers": "Hay más gente conmigo en la sala",
     "roomSpeakersHint": "En una llamada, todo lo que entra por el micrófono es «Tú». Actívalo si sois más de una persona delante del mismo ordenador.",

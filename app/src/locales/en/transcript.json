@@ -34,5 +34,14 @@
       "hint": "The local language model is reading the transcript. You can keep reading and editing."
     }
   },
-  "pause": "Break from {{from}} to {{to}} · {{duration}}"
+  "pause": "Break from {{from}} to {{to}} · {{duration}}",
+  "original": "Original",
+  "removeTranslation": "Remove the translation",
+  "translatedBy": "Translated with {{model}}",
+  "translating": "Translating the transcript ({{language}})",
+  "translatingLines": "{{done}} of {{total}} lines",
+  "translationOfOlder": "translation of the original before it was corrected",
+  "translationMissing_one": "{{count}} line couldn't be translated: the original is shown.",
+  "translationMissing_other": "{{count}} lines couldn't be translated: the original is shown.",
+  "translationFailed": "Couldn't translate: {{error}}"
 }

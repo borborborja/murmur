@@ -3,7 +3,7 @@ import { getVersion } from "@tauri-apps/api/app";
 import { join } from "@tauri-apps/api/path";
 import { ask, open as openDialog, save } from "@tauri-apps/plugin-dialog";
 import { revealItemInDir } from "@tauri-apps/plugin-opener";
-import { Camera, ChevronDown, FileAudio, Copy, FileDown, FileText, FolderOpen, Images, Languages, Link2, Maximize2, Mic, PanelLeft, PanelRight, Share, Trash2 } from "lucide-react";
+import { Camera, Copy, FileAudio, MoreHorizontal, FileDown, FileText, FolderOpen, Globe, Images, Languages, Link2, Maximize2, Mic, PanelLeft, PanelRight, Share, Trash2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
@@ -41,12 +41,15 @@ import { clock, duration, speakerIds, speakerName } from "@/lib/format";
 import { exportMeeting, saveMarkdown, toMarkdown, type ExportContent, type ExportFormat } from "@/lib/export";
 import { defaultTitle } from "@/lib/cover";
 import { locale, t as translate } from "@/lib/i18n";
-import { cloudModelName, coverEngine, loadCloudModels, useCloud } from "@/lib/cloud";
+import { cloudModelName, coverEngine, coverReady, loadCloudModels, useCloud } from "@/lib/cloud";
+import { translateMeeting, useTranslating } from "@/lib/translate";
 import { offerGlossary } from "@/lib/glossary";
 import { downloadModel, modelInstalled, useModels } from "@/lib/models";
 import { ensurePermissions } from "@/lib/permissions";
 import { usePostProcess } from "@/lib/postprocess";
 import { MarkdownSwitch, RoomMenu, StartOptions, type StartChoice } from "@/components/StartOptions";
+import { reveal } from "@/lib/reveal";
+import { finalPassModel } from "@/lib/finalpass";
 import { CONTINUE_MS } from "@/lib/parts";
 import { hasAudio, playAt, release, stopUnless } from "@/lib/player";
 import { stepTextZoom, useSettings } from "@/lib/settings";
@@ -313,7 +316,12 @@ export default function App() {
         // The module-level t: this listener outlives a language change.
         toast(translate("app:speakersVerified"));
       },
-      onFinalPassText: (e) => dispatch({ type: "retranscribed", id: e.meetingId, base: e.base, texts: e.texts }),
+      onFinalPassText: (e) => {
+        const change = () => dispatch({ type: "retranscribed", id: e.meetingId, base: e.base, texts: e.texts });
+        // Whisper's text comes in with the aurora, unless punctuation follows (then that one does).
+        if (post.punctuatesAfter(e.meetingId)) change();
+        else reveal("transcript", e.meetingId, change);
+      },
       onFinalPassDone: (e) => {
         if (e.error) toast.error(e.error);
         post.rustDone(e.meetingId);
@@ -396,6 +404,10 @@ export default function App() {
   const liveModel: ModelId = settings.language === "en" ? "english" : "transcription";
   const liveModelReady = !!models.status[liveModel]?.installed;
   const englishReady = !!models.status.english?.installed;
+  const translating = useTranslating();
+  /** The model the summaries use can translate too: Gemma downloaded, or Claude or ChatGPT connected. */
+  const translationReady = coverReady(settings);
+  const languageName = (l: "ca" | "es" | "en") => t(`settings:transcription.languages.${l}`);
   const startChoice: StartChoice = { language: settings.language, roomSpeakers: settings.roomSpeakers };
   useEffect(() => {
     if (backend.isTauri() && models.status.transcription?.installed && liveModelReady)
@@ -493,7 +505,8 @@ export default function App() {
     dispatch({ type: "new", meeting: m });
     setMarkdown((list) => ({ ...list, [m.id]: settings.saveMarkdown && !!settings.markdownDir }));
     // Whisper only for a single language (told "Catalan", it would turn Spanish into Catalan).
-    const finalText = language !== "ca-es" && modelInstalled("whisper");
+    const finalModel = finalPassModel(language);
+    const finalText = !!finalModel && modelInstalled(finalModel);
     post.planRecording(m.id, { verifySpeakers: settings.verifySpeakers, finalText, language });
     startedAt.current = Date.now();
     startOffset.current = 0;
@@ -559,7 +572,8 @@ export default function App() {
     setStoppedAt(null);
     // Its audio file is about to grow: the player loads it again afterwards.
     release(m.id);
-    const finalText = language !== "ca-es" && modelInstalled("whisper");
+    const finalModel = finalPassModel(language);
+    const finalText = !!finalModel && modelInstalled(finalModel);
     post.planRecording(m.id, { verifySpeakers: settings.verifySpeakers, finalText, language, from: m.duration });
     dispatch({ type: "resumed", id: m.id, part: { startedAt: Date.now(), at: m.duration } });
     setMarkdown((list) => ({ ...list, [m.id]: settings.saveMarkdown && !!settings.markdownDir }));
@@ -639,7 +653,8 @@ export default function App() {
     dispatch({ type: "new", meeting: m });
     setImporting({ id: m.id, done: 0, total: 0 });
     setMarkdown((list) => ({ ...list, [m.id]: settings.saveMarkdown && !!settings.markdownDir }));
-    const finalText = language !== "ca-es" && modelInstalled("whisper");
+    const finalModel = finalPassModel(language);
+    const finalText = !!finalModel && modelInstalled(finalModel);
     post.planRecording(m.id, { verifySpeakers: settings.verifySpeakers, finalText, language });
     try {
       const { audioPath: audio } = await backend.startRecording({
@@ -824,11 +839,12 @@ export default function App() {
    */
   const retranscribe = async (m: Meeting, language: Language) => {
     if (!m.audioPath) return;
-    if (!modelInstalled("whisper")) {
-      toast(t("retranscribeNeedsWhisper"), { action: { label: t("settings:model.download"), onClick: () => downloadModel("whisper") } });
+    const model = finalPassModel(language) ?? "whisper";
+    if (!modelInstalled(model)) {
+      toast(t("retranscribeNeedsWhisper"), { action: { label: t("settings:model.download"), onClick: () => downloadModel(model) } });
       return;
     }
-    const name = t(`settings:transcription.languages.${language}`);
+    const name = t(`settings:transcription.languages.${language === "ca-es" ? "caEs" : language}`);
     const speech = m.utterances.reduce((n, u) => n + Math.max(0, u.end - u.start), 0);
     const message = t("retranscribeMessage", { language: name, minutes: Math.max(1, Math.round((speech * 0.15) / 60)) });
     const confirmed = backend.isTauri()
@@ -890,7 +906,7 @@ export default function App() {
         run={run}
         blocked={coverBlocked}
         writer={engine ? cloudModelName(engine) : null}
-        onGenerate={() => post.generateCover(meeting.id)}
+        onGenerate={(lng) => post.generateCover(meeting.id, lng)}
         onJump={jumpTo}
         onShowTranscript={() => setView({ cover: false })}
         onTitle={(title) => dispatch({ type: "title", id: meeting.id, title })}
@@ -909,6 +925,9 @@ export default function App() {
     meeting && (
       <Transcript
         meeting={meeting}
+        translating={translating[meeting.id] ?? null}
+        languageName={languageName}
+        onRemoveTranslation={() => dispatch({ type: "translation", id: meeting.id, translation: null })}
         compact={compact}
         jump={state.jump?.meetingId === meeting.id ? state.jump : null}
         finalPass={state.finalPass[meeting.id] ?? null}
@@ -1058,61 +1077,10 @@ export default function App() {
               <PanelLeft className="size-4" />
             </ToolbarButton>
             {meeting && (
-              <DropdownMenu>
-                <DropdownMenuTrigger className="ml-1 flex items-center gap-1 truncate rounded-md px-1.5 py-0.5 text-[14px] font-semibold hover:bg-black/5 dark:hover:bg-white/10">
-                  {meeting.title}
-                  <ChevronDown className="size-3.5 text-muted-foreground" />
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="start" className="min-w-56">
-                  {meeting.status !== "recording" && (
-                    <>
-                      <DropdownMenuItem disabled={!!continueBlocked(meeting) || busy} onSelect={() => void resume(meeting)} className="items-start">
-                        <span className="mx-[3px] mt-[5px] size-2 shrink-0 rounded-full bg-mm-recording-dot" aria-hidden />
-                        <span className="flex flex-col">
-                          {t("continueMeeting")}
-                          {continueBlocked(meeting) && <span className="text-[12px] leading-snug text-muted-foreground">{continueBlocked(meeting)}</span>}
-                        </span>
-                      </DropdownMenuItem>
-                      <DropdownMenuSeparator />
-                    </>
-                  )}
-                  <DropdownMenuItem onSelect={() => copyMarkdown(meeting)}>
-                    <Copy className="size-3.5" /> {t("copyMarkdown")}
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    disabled={!meeting.audioPath}
-                    onSelect={() => meeting.audioPath && revealItemInDir(meeting.audioPath).catch((e) => toast.error(String(e)))}
-                  >
-                    <FolderOpen className="size-3.5" /> {meeting.audioPath ? t("showAudioInFinder") : t("audioNotSaved")}
-                  </DropdownMenuItem>
-                  {hasAudio(meeting) && (
-                    <DropdownMenuItem onSelect={() => exportAudio(meeting)}>
-                      <FileAudio className="size-3.5" /> {t("exportAudio", { ext: capabilities.audioExtension })}
-                    </DropdownMenuItem>
-                  )}
-                  {meeting.audioPath && meeting.utterances.length > 0 && (
-                    <DropdownMenuSub>
-                      <DropdownMenuSubTrigger disabled={meeting.status !== "done" || !!state.finalPass[meeting.id]}>
-                        <Languages className="size-3.5" /> {t("retranscribe")}
-                      </DropdownMenuSubTrigger>
-                      <DropdownMenuSubContent className="min-w-48">
-                        <DropdownMenuLabel className="text-[11px] font-medium text-muted-foreground">{t("retranscribeLabel")}</DropdownMenuLabel>
-                        {(["ca", "es", "en"] as const).map((l) => (
-                          <DropdownMenuItem key={l} disabled={meeting.language === l} onSelect={() => retranscribe(meeting, l)}>
-                            {t(`settings:transcription.languages.${l}`)}
-                            {meeting.language === l && <span className="ml-auto pl-4 text-[11px] opacity-60">{t("currentLanguage")}</span>}
-                          </DropdownMenuItem>
-                        ))}
-                      </DropdownMenuSubContent>
-                    </DropdownMenuSub>
-                  )}
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem variant="destructive" disabled={meeting.status === "recording"} onSelect={() => remove(meeting)}>
-                    <Trash2 className="size-3.5" /> {t("deleteMeeting")}
-                    <span className="ml-auto pl-4 text-[11px] opacity-60">{shortcut("⌘⌫")}</span>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+              // The real title is the big one in the cover or the transcript; here, a quiet reminder.
+              <span data-tauri-drag-region className="ml-1 min-w-0 truncate px-1.5 text-[14px] font-medium text-text-secondary">
+                {meeting.title}
+              </span>
             )}
             {coverAvailable && (
               <div role="radiogroup" aria-label={t("view")} className="ml-1 flex shrink-0 rounded-[7px] bg-mm-segmented-track p-0.5">
@@ -1204,7 +1172,6 @@ export default function App() {
                       <TooltipContent>{continueBlocked(meeting) ?? t("continueHint")}</TooltipContent>
                     </Tooltip>
                   )}
-                  <span className="text-[13px] text-text-secondary">{t("durationValue", { duration: duration(meeting.duration) })}</span>
                   {activeShares(meeting).length > 0 && (
                     <Tooltip>
                       <TooltipTrigger asChild>
@@ -1219,6 +1186,79 @@ export default function App() {
                       <TooltipContent>{t("share:sharedHint", { count: activeShares(meeting).length })}</TooltipContent>
                     </Tooltip>
                   )}
+                  <DropdownMenu>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <DropdownMenuTrigger
+                          aria-label={t("moreActions")}
+                          className="grid h-7 w-8 place-items-center rounded-[7px] border border-border hover:bg-mm-fill-subtle focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring data-[state=open]:bg-mm-fill-subtle"
+                        >
+                          <MoreHorizontal className="size-4" />
+                        </DropdownMenuTrigger>
+                      </TooltipTrigger>
+                      <TooltipContent>{t("moreActions")}</TooltipContent>
+                    </Tooltip>
+                    <DropdownMenuContent align="end" className="min-w-56">
+                      {meeting.status !== "recording" && (
+                        <>
+                          <DropdownMenuItem disabled={!!continueBlocked(meeting) || busy} onSelect={() => void resume(meeting)} className="items-start">
+                            <span className="mx-[3px] mt-[5px] size-2 shrink-0 rounded-full bg-mm-recording-dot" aria-hidden />
+                            <span className="flex flex-col">
+                              {t("continueMeeting")}
+                              {continueBlocked(meeting) && <span className="text-[12px] leading-snug text-muted-foreground">{continueBlocked(meeting)}</span>}
+                            </span>
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                        </>
+                      )}
+                      <DropdownMenuItem
+                        disabled={!meeting.audioPath}
+                        onSelect={() => meeting.audioPath && revealItemInDir(meeting.audioPath).catch((e) => toast.error(String(e)))}
+                      >
+                        <FolderOpen className="size-3.5" /> {meeting.audioPath ? t("showAudioInFinder") : t("audioNotSaved")}
+                      </DropdownMenuItem>
+                      {meeting.audioPath && meeting.utterances.length > 0 && (
+                        <DropdownMenuSub>
+                          <DropdownMenuSubTrigger disabled={meeting.status !== "done" || !!state.finalPass[meeting.id]}>
+                            <Languages className="size-3.5" /> {t("retranscribe")}
+                          </DropdownMenuSubTrigger>
+                          <DropdownMenuSubContent className="min-w-48">
+                            <DropdownMenuLabel className="text-[11px] font-medium text-muted-foreground">{t("retranscribeLabel")}</DropdownMenuLabel>
+                            {(["ca", "es", "en"] as const).map((l) => (
+                              <DropdownMenuItem key={l} disabled={meeting.language === l} onSelect={() => retranscribe(meeting, l)}>
+                                {t(`settings:transcription.languages.${l}`)}
+                                {meeting.language === l && <span className="ml-auto pl-4 text-[11px] opacity-60">{t("currentLanguage")}</span>}
+                              </DropdownMenuItem>
+                            ))}
+                          </DropdownMenuSubContent>
+                        </DropdownMenuSub>
+                      )}
+                      {meeting.utterances.length > 0 && (
+                        <DropdownMenuSub>
+                          <DropdownMenuSubTrigger disabled={meeting.status !== "done" || !!translating[meeting.id]}>
+                            <Globe className="size-3.5" /> {t("translate")}
+                          </DropdownMenuSubTrigger>
+                          <DropdownMenuSubContent className="min-w-56">
+                            <DropdownMenuLabel className="text-[11px] font-medium text-muted-foreground">{t("translateLabel")}</DropdownMenuLabel>
+                            {(["ca", "es", "en"] as const)
+                              .filter((l) => l !== meeting.language)
+                              .map((l) => (
+                                <DropdownMenuItem key={l} disabled={!translationReady} onSelect={() => void translateMeeting(meeting, l, settings, dispatch)}>
+                                  {languageName(l)}
+                                  {meeting.translation?.lang === l && <span className="ml-auto pl-4 text-[11px] opacity-60">{t("currentTranslation")}</span>}
+                                </DropdownMenuItem>
+                              ))}
+                            {!translationReady && <p className="max-w-60 px-2 pb-1.5 pt-1 text-[11px] leading-snug text-muted-foreground">{t("translateNeedsModel")}</p>}
+                          </DropdownMenuSubContent>
+                        </DropdownMenuSub>
+                      )}
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem variant="destructive" disabled={meeting.status === "recording"} onSelect={() => remove(meeting)}>
+                        <Trash2 className="size-3.5" /> {t("deleteMeeting")}
+                        <span className="ml-auto pl-4 text-[11px] opacity-60">{shortcut("⌘⌫")}</span>
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <button
@@ -1262,6 +1302,11 @@ export default function App() {
                       {!!meeting.screens?.length && (
                         <DropdownMenuItem onSelect={() => exportScreens(meeting)}>
                           <Images className="size-3.5" /> {t("exportScreens", { count: meeting.screens.length })}
+                        </DropdownMenuItem>
+                      )}
+                      {hasAudio(meeting) && (
+                        <DropdownMenuItem onSelect={() => exportAudio(meeting)}>
+                          <FileAudio className="size-3.5" /> {t("exportAudio", { ext: capabilities.audioExtension })}
                         </DropdownMenuItem>
                       )}
                       <DropdownMenuSeparator />

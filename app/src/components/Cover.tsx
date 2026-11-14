@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
-import { AlignLeft, Check, Plus, Printer, RefreshCw, Sparkles, X } from "lucide-react";
+import { AlignLeft, Check, ChevronDown, Languages, Plus, Printer, RefreshCw, Sparkles, X } from "lucide-react";
 
 import { LogoMark } from "@/components/Logo";
 
@@ -9,12 +9,21 @@ import { ScreenThumbs } from "@/components/Screens";
 import { Flag, isYou, speakerTone, toneOrder } from "@/components/SpeakerFlag";
 import { TitleInput } from "@/components/Transcript";
 import { Button } from "@/components/ui/button";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import * as backend from "@/lib/backend";
-import { coverOutdated, namedSpeakers, renameInCover, talkTime, toneLabel } from "@/lib/cover";
+import { coverLanguage, coverOutdated, namedSpeakers, renameInCover, talkTime, toneLabel } from "@/lib/cover";
 import { clock, duration, speakerIds } from "@/lib/format";
 import { meetingWhen } from "@/lib/parts";
-import { locale, t } from "@/lib/i18n";
+import { locale, t, UI_LANGUAGES, type UiLanguage } from "@/lib/i18n";
 import type { PostProcess } from "@/lib/store";
 import type { Cover as CoverData, LlmProgress, Meeting } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -26,7 +35,8 @@ type Props = {
   blocked: string | null;
   /** The cloud model that would write it now (Settings › Intel·ligència); null = the local one. */
   writer?: string | null;
-  onGenerate: () => void;
+  /** Write the cover again: in `lng`, or in the language it's in. */
+  onGenerate: (lng?: UiLanguage) => void;
   onJump: (t: number) => void;
   onShowTranscript: () => void;
   onTitle: (title: string) => void;
@@ -45,18 +55,17 @@ export function Cover(props: Props) {
   const { meeting, run } = props;
   const generating = !!run && run.steps.includes("cover");
   return (
-    <div className="h-full overflow-y-auto">
+    <div data-reveal-viewport className="h-full overflow-y-auto">
       <article className="mx-auto max-w-[760px] px-10 pb-20 pt-11">
         <p className="text-[13px] text-muted-foreground">{meta(meeting)}</p>
         <TitleInput title={meeting.title} onChange={props.onTitle} />
         {props.tags && <div className="print:hidden">{props.tags}</div>}
-        {generating ? (
-          <Processing {...props} run={run!} />
-        ) : meeting.cover ? (
-          <Ready {...props} />
-        ) : (
-          <Empty {...props} />
-        )}
+        {/* The aurora turns the placeholder into the cover here (lib/reveal.ts). */}
+        <div data-reveal-host className="relative">
+          <div data-reveal="cover" data-meeting={meeting.id}>
+            {generating ? <Processing {...props} run={run!} /> : meeting.cover ? <Ready {...props} /> : <Empty {...props} />}
+          </div>
+        </div>
       </article>
       {/* What "PDF o envia…" prints: the app is hidden on paper (index.css), this copy isn't. */}
       {!generating &&
@@ -107,6 +116,35 @@ function SectionTitle({ id, children }: { id: string; children: React.ReactNode 
 
 // --- Ready ---------------------------------------------------------------------------------
 
+/** The cover's language; choosing another writes it again in that one. */
+function CoverLanguageMenu({ current, disabled, title, onChoose }: { current: UiLanguage; disabled: boolean; title?: string; onChoose: (lng: UiLanguage) => void }) {
+  const { t } = useTranslation("cover");
+  const name = (lng: UiLanguage) => t(`settings:transcription.languages.${lng}`);
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger
+        disabled={disabled}
+        title={title}
+        aria-label={t("languageMenu", { language: name(current) })}
+        className="flex items-center gap-1 rounded-md px-1.5 py-0.5 text-mm-link hover:bg-mm-fill-subtle disabled:opacity-40 data-[state=open]:bg-mm-fill-subtle"
+      >
+        <Languages className="size-3" aria-hidden /> {name(current)}
+        <ChevronDown className="size-3 opacity-60" aria-hidden />
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="start" className="min-w-52">
+        <DropdownMenuLabel className="text-[11px] font-medium text-muted-foreground">{t("languageLabel")}</DropdownMenuLabel>
+        <DropdownMenuRadioGroup value={current} onValueChange={(v) => v !== current && onChoose(v as UiLanguage)}>
+          {UI_LANGUAGES.map((lng) => (
+            <DropdownMenuRadioItem key={lng} value={lng} className="text-[13px]">
+              {name(lng)}
+            </DropdownMenuRadioItem>
+          ))}
+        </DropdownMenuRadioGroup>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
 function Ready({ meeting, blocked, onGenerate, onJump, onShowTranscript, onTasks, onPrint }: Props) {
   const { t } = useTranslation("cover");
   // Covers written before a speaker was named still say "Parlant 1": show the name.
@@ -132,13 +170,14 @@ function Ready({ meeting, blocked, onGenerate, onJump, onShowTranscript, onTasks
         <span className="flex items-center gap-1 print:hidden">
           <button
             type="button"
-            onClick={onGenerate}
+            onClick={() => onGenerate()}
             disabled={!!blocked}
             title={blocked ?? undefined}
             className="flex items-center gap-1 rounded-md px-1.5 py-0.5 text-mm-link hover:bg-mm-fill-subtle disabled:opacity-40"
           >
             <RefreshCw className="size-3" aria-hidden /> {t("regenerate")}
           </button>
+          <CoverLanguageMenu current={coverLanguage(meeting.cover!)} disabled={!!blocked} title={blocked ?? undefined} onChoose={onGenerate} />
           <button type="button" onClick={onPrint} className="flex items-center gap-1 rounded-md px-1.5 py-0.5 text-mm-link hover:bg-mm-fill-subtle">
             <Printer className="size-3" aria-hidden /> {t("print")}
           </button>
@@ -147,7 +186,7 @@ function Ready({ meeting, blocked, onGenerate, onJump, onShowTranscript, onTasks
       {coverOutdated(meeting) && (
         <div role="status" className="mt-4 flex items-center gap-3 rounded-[10px] border border-border bg-mm-fill-subtle px-3.5 py-2.5 text-[13px] print:hidden">
           <span className="min-w-0 flex-1">{t("outdated")}</span>
-          <Button variant="outline" className="h-7 shrink-0 rounded-md px-3 text-[13px]" onClick={onGenerate} disabled={!!blocked} title={blocked ?? undefined}>
+          <Button variant="outline" className="h-7 shrink-0 rounded-md px-3 text-[13px]" onClick={() => onGenerate()} disabled={!!blocked} title={blocked ?? undefined}>
             <RefreshCw className="size-3.5" /> {t("regenerate")}
           </Button>
         </div>
@@ -542,19 +581,26 @@ function Processing({ meeting, run, onShowTranscript }: Props & { run: PostProce
           </li>
         ))}
       </ul>
-      <div className="mt-6 opacity-55" aria-hidden>
+      {/* The cover's place while it's written: a slow shine says it's on its way. */}
+      <div className="mt-6" aria-hidden>
         <div className="grid gap-3.5 md:grid-cols-[1fr_1.35fr]">
           {[0, 1].map((k) => (
             <div key={k} className="rounded-[10px] border border-border px-4 py-3.5">
-              <div className="my-2.5 h-3 w-2/5 rounded-full bg-muted" />
-              <div className="my-2.5 h-3 rounded-full bg-muted" />
+              <div className="mm-shine my-2.5 h-3 w-2/5 rounded-full bg-muted" />
+              <div className="mm-shine my-2.5 h-3 rounded-full bg-muted" />
             </div>
           ))}
         </div>
         <div className="mt-8">
-          <div className="my-2.5 h-3 w-1/5 rounded-full bg-muted" />
-          <div className="my-2.5 h-3 rounded-full bg-muted" />
-          <div className="my-2.5 h-3 w-4/5 rounded-full bg-muted" />
+          <div className="mm-shine my-2.5 h-3 w-1/5 rounded-full bg-muted" />
+          <div className="mm-shine my-2.5 h-3 rounded-full bg-muted" />
+          <div className="mm-shine my-2.5 h-3 w-4/5 rounded-full bg-muted" />
+          <div className="mm-shine my-2.5 h-3 w-11/12 rounded-full bg-muted" />
+        </div>
+        <div className="mt-8">
+          <div className="mm-shine my-2.5 h-3 w-1/5 rounded-full bg-muted" />
+          <div className="mm-shine my-2.5 h-3 w-3/5 rounded-full bg-muted" />
+          <div className="mm-shine my-2.5 h-3 w-1/2 rounded-full bg-muted" />
         </div>
       </div>
       <div className="mt-9 flex justify-center">
@@ -580,7 +626,7 @@ function Empty({ meeting, blocked, writer, onGenerate, onShowTranscript }: Props
       </p>
       {blocked && hasText && <p className="mx-auto mt-2 max-w-sm text-[12px] text-text-secondary">{blocked}</p>}
       <div className="mt-4 flex justify-center gap-2">
-        <Button className="h-7 rounded-md px-3 text-[13px]" onClick={onGenerate} disabled={!!blocked || !hasText}>
+        <Button className="h-7 rounded-md px-3 text-[13px]" onClick={() => onGenerate()} disabled={!!blocked || !hasText}>
           <Sparkles className="size-3.5" /> {t("generate")}
         </Button>
         <Button variant="outline" className="h-7 rounded-md px-3 text-[13px]" onClick={onShowTranscript}>

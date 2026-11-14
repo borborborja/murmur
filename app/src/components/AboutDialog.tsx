@@ -33,6 +33,13 @@ const models = (t: TFunction) => [
     license: "MIT",
     url: "https://huggingface.co/openai/whisper-large-v3-turbo",
   },
+  {
+    role: t("roles.finalCa"),
+    name: "whisper-3cat-balearic",
+    author: t("bscAuthor"),
+    license: "Apache 2.0",
+    url: "https://huggingface.co/BSC-LT/whisper-3cat-balearic",
+  },
   { role: t("roles.vad"), name: "Silero VAD", author: "Silero", license: "MIT", url: "https://github.com/snakers4/silero-vad" },
   {
     role: t("roles.speakers"),
@@ -59,7 +66,7 @@ const models = (t: TFunction) => [
     role: t("roles.punctuation"),
     name: t("fullstopName"),
     author: "Softcatalà",
-    license: t("noLicense"),
+    license: "MIT",
     url: "https://huggingface.co/softcatala/fullstop-catalan-punctuation-prediction",
   },
   {

@@ -388,12 +388,23 @@ pub fn transcribe_file(
             }
         }
         // Whisper only for one language: told "Catalan", it turns Spanish into Catalan.
-        if whisper && language != "ca-es" {
+        if language != "ca-es" && crate::retranscribe::model_for(models, &language).installed(models) {
             progress(Stage::Whisper, 0.0);
             let texts = crate::retranscribe::transcribe(models, &language, &[(tapped.path.as_path(), tapped.spans.as_slice())], glossary, |p| progress(Stage::Whisper, p))?;
             for t in texts.into_iter().flatten() {
                 if let Some(line) = lines.iter_mut().find(|l| (l.start - t.start).abs() < 0.01) {
                     line.text = t.text;
+                }
+            }
+            // The BSC's Catalan Whisper writes without punctuation: the punctuation model adds it,
+            // as the app does after it.
+            let punct = crate::models::PUNCTUATION.path(models);
+            if crate::retranscribe::model_for(models, &language).id == crate::models::WHISPER_CA.id && crate::models::PUNCTUATION.installed(models) {
+                let mut p = crate::punctuate::Punctuator::load(&punct)?;
+                let texts: Vec<String> = lines.iter().map(|l| l.text.clone()).collect();
+                let speakers: Vec<i32> = lines.iter().map(|l| l.speaker as i32).collect();
+                for (line, text) in lines.iter_mut().zip(p.punctuate(&texts, &speakers)?) {
+                    line.text = text;
                 }
             }
         }

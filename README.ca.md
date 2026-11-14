@@ -26,15 +26,16 @@ Va néixer per a reunions en **català**, on la majoria de serveis de transcripc
 - **Transcripció en directe** en català, en castellà, en català i castellà barrejats o en anglès. En començar tries l'idioma i si hi ha més gent a la sala, i més endavant pots tornar a transcriure una reunió en un altre idioma.
 - **El micròfon i la trucada, per separat.** Murmur grava el micròfon i l'àudio del sistema (Zoom, Meet, Teams…) en dos canals i n'elimina l'eco. Per això funciona també amb altaveus, no només amb auriculars. Mai no grava la pantalla: només en fa una captura quan tu la demanes. L'àudio del sistema funciona a macOS i a Windows; a Linux, de moment, Murmur grava només el micròfon.
 - **Parlants.** Les veus s'agrupen en directe. En acabar, una segona passada per tota la gravació comprova qui ha dit cada cosa. Pots canviar «Parlant 1» pel nom real o triar-lo entre els convidats de l'esdeveniment del calendari, i si una mateixa persona surt com a dos parlants, els ajuntes amb un clic.
-- **Passada final amb Whisper.** Quan la reunió és en una sola llengua, Whisper large-v3-turbo la torna a escoltar quan atures la gravació. Reescriu el text amb puntuació, majúscules i noms propis. No toca les frases que hagis corregit a mà.
-- **Puntuació de Softcatalà.** Quan la reunió barreja català i castellà, o no tens Whisper, el model de puntuació de Softcatalà hi posa punts, comes i majúscules en acabar. És opcional (126 MB) i es descarrega des de Configuració › Transcripció.
+- **Passada final amb Whisper.** Quan la reunió és en una sola llengua, Whisper la torna a escoltar quan atures la gravació i en reescriu el text. No toca les frases que hagis corregit a mà. En català, ho fa un Whisper del Barcelona Supercomputing Center, que en les nostres proves ha estat el millor amb el català central, el valencià i el balear. En castellà i anglès, Whisper large-v3-turbo, que també hi posa la puntuació i els noms propis. Mentre s'acaba, el lloc del resum brilla, i el text i el resum nous apareixen quan hi passa una llum de dalt a baix.
+- **Puntuació de Softcatalà.** En les reunions en català, i en les que barregen català i castellà, el model de puntuació de Softcatalà hi posa punts, comes i majúscules en acabar. És opcional (126 MB) i es descarrega des de Configuració › Transcripció.
 - **Continuar una reunió.** Si atures massa d'hora o feu una pausa, «Continua» torna a gravar dins la mateixa reunió. La pausa queda marcada a la transcripció, les veus de la primera part tornen amb el seu nom i el resum es fa amb tota la reunió.
 - **Glossari.** Afegeix-hi els noms, les marques i les sigles que la transcripció escriu malament (WordPress, Softcatalà, el nom d'un client) i Murmur els escriurà bé, en directe i en acabar. Quan corregeixes un nom a mà, et proposa afegir-lo. En una reunió del calendari hi compten també els noms dels convidats, i el resum els escriu igual.
 - **Barra flotant mentre graves.** Una píndola petita a la vora de la pantalla queda al davant de la trucada. Mostra el nivell de l'àudio, torna a obrir Murmur, atura la gravació i fa captures de la pantalla compartida. Cada captura queda lligada al moment de la conversa: surt al costat del que s'estava dient i dins la part corresponent del resum. Si cliques la píndola, Murmur es converteix en una finestra estreta de notes al costat de la trucada.
 - **Transcriure des d'un fitxer.** Fitxer › Transcriu des d'un fitxer… (⌘O, o Ctrl+O a Windows i Linux) converteix un mp3, m4a, wav, ogg o qualsevol altre àudio en una reunió, amb els parlants i la passada final. Murmur endevina sol en quin idioma és. També hi pots enviar un àudio des del menú Compartir d'altres apps, amb «Obre amb» (al Finder, a l'Explorador o al teu gestor de fitxers) o deixant-lo anar a la finestra o a la icona del Dock.
 - **Connector per a Claude**, opcional. Claude Desktop i Claude Code poden llegir i cercar les teves reunions i transcriure àudios amb Murmur, al teu ordinador. S'activa a Configuració › Claude.
 - **Notes** amb títols, llistes, caselles i sagnats amb Tab. Cada bloc recorda el minut en què es va escriure i surt al costat de la transcripció. Amb ⌘+ i ⌘− (Ctrl+ i Ctrl− a Windows i Linux) fas més gran o més petit el text de les notes.
-- **Resum de la reunió**, opcional. Té títol, resum, to, decisions i tasques, i l'escriu un model de llenguatge local (Gemma 4 E4B). Les tasques es poden marcar, editar i assignar. Si ho prefereixes, el pot escriure Claude o OpenAI amb la teva clau: només s'hi envia el text, mai l'àudio.
+- **Resum de la reunió**, opcional. Té títol, resum, to, decisions i tasques, i l'escriu un model de llenguatge local (Gemma 4 E4B). Les tasques es poden marcar, editar i assignar. Si ho prefereixes, el pot escriure Claude o OpenAI amb la teva clau: només s'hi envia el text, mai l'àudio. Pots triar en quina llengua l'escriu (català, castellà o anglès), i canviar-la després.
+- **Tradueix la transcripció** al català, al castellà o a l'anglès, amb el mateix model que escriu el resum. L'original no es toca: la traducció surt al costat i pots passar de l'una a l'altra.
 - **Etiquetes** per ordenar les reunions. Les pots filtrar a la barra lateral i cercar-les, i amb el clic dret les reanomenes, les ajuntes o les esborres.
 - **Calendari.** Murmur t'avisa dos minuts abans que comenci una reunió, i la gravació agafa el títol i els convidats de l'esdeveniment. Funciona amb qualsevol calendari afegit a macOS: iCloud, Google o Exchange. De moment, només a macOS.
 - **Compartir amb un enllaç.** Tries què hi surt (resum, notes, transcripció, captures, àudio), quan caduca l'enllaç i si porta contrasenya. Murmur ho xifra a l'ordinador i ho publica al teu compte de Cloudflare, que és gratuït i es configura des de l'app.
@@ -56,7 +57,7 @@ Va néixer per a reunions en **català**, on la majoria de serveis de transcripc
 - **Windows:** Windows 10 o 11 de 64 bits (x86-64), amb un processador amb AVX2 (Intel des del 2013, AMD des del 2015). WebView2 ja ve amb Windows, i si no hi és l'instal·lador l'afegeix.
 - **Linux:** una distribució de 64 bits (x86-64) amb WebKitGTK 4.1, com Ubuntu 22.04 o posterior, Debian 12 o Fedora 38 o posterior, amb un processador amb AVX2. Per desar les claus, un Secret Service (GNOME Keyring o KWallet).
 - 8 GB de memòria. Per al resum local se'n recomanen 16. A Windows i Linux tot va pel processador, i la passada final i el resum són més lents que en un Mac.
-- Uns 600 MB de disc per als models bàsics. Els opcionals n'ocupen més: anglès, 458 MB; Whisper, 574 MB; Gemma, 5,2 GB.
+- Uns 600 MB de disc per als models bàsics. Els opcionals n'ocupen més: anglès, 458 MB; Whisper català, 1,1 GB; Whisper per al castellà i l'anglès, 574 MB; Gemma, 5,2 GB.
 
 ## Instal·lació
 
@@ -92,7 +93,8 @@ Els paquets `.deb` i `.rpm` no s'actualitzen sols: instal·la la versió nova de
 |---|---|---|---|
 | Català i castellà, en directe | Conformer-Transducer ca-es | Projecte AINA (BSC), a partir d'NVIDIA | CC BY 4.0 |
 | Anglès, en directe | Parakeet TDT-CTC 110M | NVIDIA | CC BY 4.0 |
-| Passada final | Whisper large-v3-turbo (whisper.cpp) | OpenAI | MIT |
+| Passada final en català | whisper-3cat-balearic (whisper.cpp) | BSC, a partir de Whisper large-v3 | Apache 2.0 |
+| Passada final en castellà i anglès | Whisper large-v3-turbo (whisper.cpp) | OpenAI | MIT |
 | Puntuació en català | fullstop-catalan-punctuation-prediction | Softcatalà | MIT |
 | Detecció de veu | Silero VAD | Silero | MIT |
 | Parlants, en directe | TitaNet small | NVIDIA NeMo | Apache 2.0 |

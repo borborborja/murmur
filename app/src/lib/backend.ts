@@ -8,6 +8,7 @@ import type {
   CloudModel,
   CloudProvider,
   Cover,
+  Translation,
   EngineEvent,
   FinalPassDone,
   FinalPassSpeakers,
@@ -87,7 +88,7 @@ export const onContinueRequest = (fn: (meetingId: string) => void) => listen<str
 
 /** One batch of edits to a meeting (db.rs `Changes`). */
 export type Changes = {
-  meta?: Partial<Pick<Meeting, "title" | "duration" | "status" | "speakerNames" | "sources" | "language" | "tags">> & { audioPath?: string | null; cover?: Cover | null; guests?: string[]; screens?: Screen[]; shares?: ShareLink[]; parts?: MeetingPart[] };
+  meta?: Partial<Pick<Meeting, "title" | "duration" | "status" | "speakerNames" | "sources" | "language" | "tags">> & { audioPath?: string | null; cover?: Cover | null; guests?: string[]; screens?: Screen[]; shares?: ShareLink[]; parts?: MeetingPart[]; translation?: Translation | null };
   utterances?: Utterance[];
   notes?: { doc: JSONContent; blocks: { t: number; text: string }[] };
 };
@@ -240,8 +241,13 @@ export const shareUploadFile = (id: string, name: string, ttl: number | null, by
  * "Torna a transcriure en…": Whisper writes each utterance again from the saved audio (lib.rs
  * retranscribe_meeting); the result comes as a final pass ("final-pass", "final-pass-text"…).
  */
-export const retranscribeMeeting = (meetingId: string, audioPath: string, language: Language, channels: { base: number; spans: [number, number][] }[], guests: string[]) =>
-  invoke<void>("retranscribe_meeting", { meetingId, audioPath, language, channels, guests });
+export const retranscribeMeeting = (
+  meetingId: string,
+  audioPath: string,
+  language: Language,
+  channels: { base: number; spans: [number, number][] }[],
+  guests: string[],
+) => invoke<void>("retranscribe_meeting", { meetingId, audioPath, language, channels, guests });
 /** Cloudflare's token form, filled in with the permissions Murmur needs. */
 export const shareTokenUrl = () => invoke<string>("share_token_url");
 export type CfAccount = { id: string; name: string };

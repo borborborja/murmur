@@ -506,7 +506,7 @@ export default function App() {
     setMarkdown((list) => ({ ...list, [m.id]: settings.saveMarkdown && !!settings.markdownDir }));
     // Whisper only for a single language (told "Catalan", it would turn Spanish into Catalan).
     const finalModel = finalPassModel(language);
-    const finalText = !!finalModel && modelInstalled(finalModel);
+    const finalText = settings.finalPass && !!finalModel && modelInstalled(finalModel);
     post.planRecording(m.id, { verifySpeakers: settings.verifySpeakers, finalText, language });
     startedAt.current = Date.now();
     startOffset.current = 0;
@@ -573,7 +573,7 @@ export default function App() {
     // Its audio file is about to grow: the player loads it again afterwards.
     release(m.id);
     const finalModel = finalPassModel(language);
-    const finalText = !!finalModel && modelInstalled(finalModel);
+    const finalText = settings.finalPass && !!finalModel && modelInstalled(finalModel);
     post.planRecording(m.id, { verifySpeakers: settings.verifySpeakers, finalText, language, from: m.duration });
     dispatch({ type: "resumed", id: m.id, part: { startedAt: Date.now(), at: m.duration } });
     setMarkdown((list) => ({ ...list, [m.id]: settings.saveMarkdown && !!settings.markdownDir }));
@@ -654,7 +654,7 @@ export default function App() {
     setImporting({ id: m.id, done: 0, total: 0 });
     setMarkdown((list) => ({ ...list, [m.id]: settings.saveMarkdown && !!settings.markdownDir }));
     const finalModel = finalPassModel(language);
-    const finalText = !!finalModel && modelInstalled(finalModel);
+    const finalText = settings.finalPass && !!finalModel && modelInstalled(finalModel);
     post.planRecording(m.id, { verifySpeakers: settings.verifySpeakers, finalText, language });
     try {
       const { audioPath: audio } = await backend.startRecording({
@@ -1001,7 +1001,7 @@ export default function App() {
   useEffect(() => {
     if (offeredCatalanWhisper.current || !state.loaded || !models.loaded || onboarding.open || whatsNew) return;
     const status = models.status["whisper-ca"];
-    if (settings.language !== "ca" || !status || status.installed || !status.downloadable) return;
+    if (settings.language !== "ca" || !settings.finalPass || !status || status.installed || !status.downloadable) return;
     offeredCatalanWhisper.current = true;
     const key = "murmur.whisperCaOffered.v1";
     try {
@@ -1015,7 +1015,7 @@ export default function App() {
       duration: 20_000,
       action: { label: t("settings:model.download"), onClick: () => void downloadModel("whisper-ca") },
     });
-  }, [state.loaded, models.loaded, models.status, onboarding.open, whatsNew, settings.language, t]);
+  }, [state.loaded, models.loaded, models.status, onboarding.open, whatsNew, settings.language, settings.finalPass, t]);
 
   // Recording stopped: back to the full window, where the cover and processing show.
   useEffect(() => {

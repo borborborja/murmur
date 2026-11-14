@@ -39,6 +39,8 @@ let state: ModelsState = {
         transcription: fakeStatus("transcription", 585_366_000),
         punctuation: fakeStatus("punctuation", 128_469_163, false),
         llm: fakeStatus("llm", 5_154_941_280),
+        whisper: { ...fakeStatus("whisper", 574_041_195), installed: true, downloaded: 574_041_195 },
+        "whisper-ca": fakeStatus("whisper-ca", 1_081_140_203),
       }
     : {},
   downloading: {},

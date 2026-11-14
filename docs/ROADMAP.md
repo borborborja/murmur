@@ -37,6 +37,9 @@ En aturar la gravació, reprocessar l'àudio desat:
 - [x] **Tradueix la transcripció** al català, al castellà o a l'anglès amb el model dels resums (Gemma, Claude o ChatGPT), sense tocar l'original: un segmentat Original / traducció a la transcripció (`lib/translate.ts`, columna `translation`).
 - [ ] La traducció a les exportacions (Word, Markdown, PDF) i als enllaços compartits.
 - [x] **Idioma del resum** a la portada: un menú al costat de «Torna a generar» el torna a escriure en català, castellà o anglès.
+- [x] **Torna a escoltar amb Whisper** es pot apagar (Configuració › Transcripció › En acabar la gravació), i els dos Whisper hi són sempre a la vista, cadascun amb per a què serveix.
+- [x] **Glossari:** quantes vegades s'ha corregit cada paraula, al costat de cadascuna.
+- [ ] Glossari: «com se sent» (les formes en què la transcripció escriu malament una paraula, per corregir-les encara que siguin lluny) i suggeriments a partir dels noms corregits a mà i dels convidats.
 - [x] **Barra superior endreçada:** la marca a 30 pt amb «murmur», el títol en gris i sense menú, les accions de la reunió al botó «···» i les exportacions totes a Exporta.
 - [ ] Triar l'idioma per reunió (ara és un sol valor a Configuració), o endevinar-lo del calendari.
 - [x] **Prova de LLM local** (reunió real de 20 min = 6.426 tokens ≈ 19K tokens/hora; M4 base, llama.cpp + Metal). Resultats a `results/llm/`:

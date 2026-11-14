@@ -59,7 +59,8 @@ CREATE TABLE IF NOT EXISTS meeting_tags (
 -- Glossary: words the transcription should write as given here (WordPress, noms propis…), in
 -- the order they were added.
 CREATE TABLE IF NOT EXISTS glossary (
-    term TEXT PRIMARY KEY COLLATE NOCASE
+    term TEXT PRIMARY KEY COLLATE NOCASE,
+    hits INTEGER NOT NULL DEFAULT 0
 );
 
 -- One row per searchable piece: a title, an utterance or a note block.
@@ -346,11 +347,33 @@ impl Db {
     }
 
     /// Replaces the glossary. Blank words go; the same word twice (ignoring capitals) stays once.
+    /// Words that stay keep their count of corrections.
     pub fn set_glossary(&mut self, terms: &[String]) -> Result<()> {
+        let hits: std::collections::HashMap<String, u32> = self.glossary_hits()?.into_iter().map(|(t, n)| (t.to_lowercase(), n)).collect();
         let tx = self.conn.transaction()?;
         tx.execute("DELETE FROM glossary", [])?;
         for term in terms.iter().map(|t| t.trim()).filter(|t| !t.is_empty()) {
-            tx.execute("INSERT OR IGNORE INTO glossary (term) VALUES (?1)", [term])?;
+            let n = hits.get(&term.to_lowercase()).copied().unwrap_or(0);
+            tx.execute("INSERT OR IGNORE INTO glossary (term, hits) VALUES (?1, ?2)", params![term, n])?;
+        }
+        tx.commit()?;
+        Ok(())
+    }
+
+    /// How many times the transcription has corrected each word of the glossary.
+    pub fn glossary_hits(&self) -> Result<Vec<(String, u32)>> {
+        let Ok(mut stmt) = self.conn.prepare("SELECT term, hits FROM glossary ORDER BY rowid") else {
+            return Ok(vec![]);
+        };
+        let rows = stmt.query_map([], |r| Ok((r.get(0)?, r.get(1)?)))?;
+        Ok(rows.collect::<rusqlite::Result<_>>()?)
+    }
+
+    /// Adds corrections counted by glossary.rs (words no longer in the glossary are ignored).
+    pub fn add_glossary_hits(&mut self, hits: &std::collections::HashMap<String, u32>) -> Result<()> {
+        let tx = self.conn.transaction()?;
+        for (term, n) in hits {
+            tx.execute("UPDATE glossary SET hits = hits + ?2 WHERE term = ?1", params![term, n])?;
         }
         tx.commit()?;
         Ok(())
@@ -670,6 +693,9 @@ fn migrate(conn: &Connection) -> Result<()> {
     if !has("meetings", "parts")? {
         conn.execute("ALTER TABLE meetings ADD COLUMN parts TEXT", [])?;
     }
+    if !has("glossary", "hits")? {
+        conn.execute("ALTER TABLE glossary ADD COLUMN hits INTEGER NOT NULL DEFAULT 0", [])?;
+    }
     if !has("meetings", "translation")? {
         conn.execute("ALTER TABLE meetings ADD COLUMN translation TEXT", [])?;
     }
@@ -912,6 +938,15 @@ mod tests {
                 .as_bool()
                 .unwrap()
         );
+    }
+
+    #[test]
+    fn glossary_counts_corrections_and_keeps_them() {
+        let mut db = Db::in_memory().unwrap();
+        db.set_glossary(&["WordPress".into(), "Shopify".into()]).unwrap();
+        db.add_glossary_hits(&[("WordPress".to_string(), 3), ("Gone".to_string(), 1)].into_iter().collect()).unwrap();
+        db.set_glossary(&["WordPress".into(), "WooCommerce".into()]).unwrap();
+        assert_eq!(db.glossary_hits().unwrap(), [("WordPress".to_string(), 3), ("WooCommerce".to_string(), 0)]);
     }
 
     #[test]

@@ -29,6 +29,8 @@ export type Settings = {
   roomSpeakers: boolean;
   /** Final pass: re-check speakers over the whole meeting after stopping (experimental). */
   verifySpeakers: boolean;
+  /** Final pass: Whisper listens again to meetings in one language (lib/finalpass.ts). */
+  finalPass: boolean;
   /** ⌘+ / ⌘−: size of the notes text, one of TEXT_ZOOMS. */
   textZoom: number;
   /** What takes the main area; the other one goes in the side panel. */
@@ -98,6 +100,7 @@ export const DEFAULT_SETTINGS: Settings = {
   // Tuned for TitaNet on a hand-labelled meeting (see engine.rs embedding_model).
   threshold: 0.7,
   verifySpeakers: true,
+  finalPass: true,
   roomSpeakers: false,
   // Notes in the middle, transcript on the right (v3).
   primaryPanel: "notes",

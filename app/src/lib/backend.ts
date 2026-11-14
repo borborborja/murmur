@@ -103,6 +103,8 @@ export const renameTag = (from: string, to: string) => invoke<void>("rename_tag"
 /** Removes a tag from every meeting. */
 export const deleteTag = (name: string) => invoke<void>("delete_tag", { name });
 /** Settings › Transcripció › Glossari: words the transcription spells as given (glossary.rs). */
+/** How many times each glossary word has been corrected (glossary.rs). */
+export const glossaryHits = () => invoke<Record<string, number>>("glossary_hits");
 export const getGlossary = () => invoke<string[]>("get_glossary");
 export const setGlossary = (terms: string[]) => invoke<void>("set_glossary", { terms });
 export const deleteMeeting = (id: string, audioPath: string | null) =>

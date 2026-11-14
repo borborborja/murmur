@@ -709,7 +709,7 @@ function TranscriptionTab({ settings, onChange }: { settings: Settings; onChange
   const setLanguage = (value: Language) => {
     onChange({ language: value });
     // Catalan: the BSC's Whisper, which writes without punctuation, so the punctuation model too.
-    const final = preferredFinalModel(value);
+    const final = settings.finalPass ? preferredFinalModel(value) : null;
     const needed: ModelId[] = [...(value === "en" ? (["english"] as const) : []), ...(final ? [final] : []), ...(value === "ca" ? (["punctuation"] as const) : [])];
     for (const id of needed) enableWithModel(models, id, true, () => {});
   };
@@ -738,13 +738,6 @@ function TranscriptionTab({ settings, onChange }: { settings: Settings; onChange
         </div>
         {settings.language === "en" && (
           <ModelRow id="english" name={t("transcription.parakeetModel")} enabled onDisable={() => onChange({ language: "ca-es" })} />
-        )}
-        {settings.language === "ca" && <ModelRow id="whisper-ca" name={t("transcription.whisperCaModel")} enabled onDisable={() => {}} />}
-        {/* The turbo does Spanish and English, and guesses the language of opened files: with
-            Catalan it shows only if it's there, saying what it's for, so it can be deleted. */}
-        {(settings.language === "es" || settings.language === "en") && <ModelRow id="whisper" name={t("transcription.whisperModel")} enabled onDisable={() => {}} />}
-        {(settings.language === "ca" || settings.language === "ca-es") && models.status.whisper?.installed && (
-          <ModelRow id="whisper" name={t("transcription.whisperTurboOther")} enabled onDisable={() => {}} />
         )}
       </Group>
       <GlossaryGroup />
@@ -798,6 +791,19 @@ function TranscriptionTab({ settings, onChange }: { settings: Settings; onChange
         >
           <Switch checked={settings.verifySpeakers} onCheckedChange={(verifySpeakers) => onChange({ verifySpeakers })} />
         </Row>
+        {/* Both Whispers always in view, each saying what it's for: not tied to today's language. */}
+        <Row label={t("transcription.finalPass")} hint={t("transcription.finalPassHint")}>
+          <Switch
+            checked={settings.finalPass}
+            onCheckedChange={(on) => {
+              onChange({ finalPass: on });
+              const final = on ? preferredFinalModel(settings.language) : null;
+              if (final) enableWithModel(models, final, true, () => {});
+            }}
+          />
+        </Row>
+        <ModelRow id="whisper-ca" name={t("transcription.whisperCaModel")} purpose={t("transcription.whisperCaPurpose")} enabled={settings.finalPass} onDisable={() => {}} />
+        <ModelRow id="whisper" name={t("transcription.whisperModel")} purpose={t("transcription.whisperPurpose")} enabled={settings.finalPass} onDisable={() => {}} />
         <Row label={t("transcription.punctuate")} hint={t("transcription.punctuateHint")}>
           <Switch checked={settings.punctuate} onCheckedChange={(on) => enableWithModel(models, "punctuation", on, () => onChange({ punctuate: on }))} />
         </Row>
@@ -846,10 +852,13 @@ function TranscriptionTab({ settings, onChange }: { settings: Settings; onChange
 function GlossaryGroup() {
   const { t } = useTranslation("settings");
   const [terms, setTerms] = useState<string[] | null>(null);
+  const [hits, setHits] = useState<Record<string, number>>({});
   const [draft, setDraft] = useState("");
   useEffect(() => {
-    if (backend.isTauri()) backend.getGlossary().then(setTerms).catch(() => setTerms([]));
-    else setTerms([]);
+    if (backend.isTauri()) {
+      backend.getGlossary().then(setTerms).catch(() => setTerms([]));
+      backend.glossaryHits().then(setHits).catch(() => {});
+    } else setTerms([]);
   }, []);
   const save = (next: string[]) => {
     setTerms(next);
@@ -893,8 +902,14 @@ function GlossaryGroup() {
         {terms && terms.length > 0 ? (
           <ul className="mt-2.5 flex flex-wrap gap-1.5" aria-label={t("transcription.glossary")}>
             {terms.map((term) => (
-              <li key={term} className="inline-flex h-[22px] items-center gap-1 rounded-[5px] bg-mm-fill-subtle pl-[7px] pr-[3px] text-[12px] font-medium">
+              <li
+                key={term}
+                title={hits[term] ? t("transcription.glossaryHits", { count: hits[term] }) : undefined}
+                className="inline-flex h-[22px] items-center gap-1 rounded-[5px] bg-mm-fill-subtle pl-[7px] pr-[3px] text-[12px] font-medium"
+              >
                 {term}
+                {/* How many times it was corrected: the words that earn their place. */}
+                {!!hits[term] && <span className="text-[11px] font-normal tabular-nums text-mm-text-tertiary">{hits[term]}</span>}
                 <button
                   type="button"
                   onClick={() => save(terms.filter((x) => x !== term))}
@@ -1494,7 +1509,7 @@ function enableWithModel(models: ReturnType<typeof useModels>, id: ModelId, on: 
 }
 
 /** A model's state under its feature: size, download progress, download/stop/delete. */
-function ModelRow({ id, name, enabled, onDisable }: { id: ModelId; name: string; enabled: boolean; onDisable: () => void }) {
+function ModelRow({ id, name, purpose, enabled, onDisable }: { id: ModelId; name: string; purpose?: string; enabled: boolean; onDisable: () => void }) {
   const { t } = useTranslation("settings");
   const { status: all, downloading: active } = useModels();
   const status = all[id];
@@ -1552,7 +1567,10 @@ function ModelRow({ id, name, enabled, onDisable }: { id: ModelId; name: string;
     <div className="flex items-center gap-4 bg-black/[0.015] py-2 pl-6 pr-3 dark:bg-white/[0.02]">
       <div className="min-w-0 flex-1">
         <div className="text-[12px]">{name}</div>
-        <div className="mt-0.5 text-[11px] tabular-nums text-muted-foreground">{text}</div>
+        <div className="mt-0.5 text-[11px] tabular-nums text-muted-foreground">
+          {purpose && `${purpose} · `}
+          {text}
+        </div>
         {downloading && (
           <div className="mt-1.5 h-1 overflow-hidden rounded-full bg-mm-meter-off" role="progressbar" aria-label={t("model.progress", { name })} aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.floor((downloading.done / (downloading.total || 1)) * 100)}>
             <div className="h-full rounded-full bg-primary transition-[width] duration-300" style={{ width: `${(downloading.done / (downloading.total || 1)) * 100}%` }} />

@@ -8,6 +8,19 @@
 //! Whisper's initial prompt was tried first and left out: it fixed some names but dropped words
 //! and changed others (docs/ARQUITECTURA.md).
 
+/// How many times each word has been corrected since the last `take_hits` (Settings shows the
+/// count beside each word; db.rs keeps the total).
+static HITS: std::sync::Mutex<Option<std::collections::HashMap<String, u32>>> = std::sync::Mutex::new(None);
+
+/// The corrections counted so far, by word; the count starts again.
+pub fn take_hits() -> std::collections::HashMap<String, u32> {
+    HITS.lock().unwrap().take().unwrap_or_default()
+}
+
+fn hit(term: &str) {
+    *HITS.lock().unwrap().get_or_insert_with(Default::default).entry(term.to_string()).or_default() += 1;
+}
+
 /// Most words a term can be heard as ("woo commerce", "guillem puig", "soft cata là").
 const MAX_SPLIT: usize = 3;
 
@@ -86,6 +99,7 @@ pub fn correct(text: &str, glossary: &[String]) -> String {
             let word = &words[i];
             let letter = word.core.chars().next().unwrap();
             out.push(format!("{letter}'{}{}", term.text, word.after));
+            hit(term.text);
             changed = true;
             i += 1;
             continue;
@@ -94,6 +108,10 @@ pub fn correct(text: &str, glossary: &[String]) -> String {
             Some((n, _, term)) if !(n == 1 && words[i].core == term.text) => {
                 let (first, last) = (&words[i], &words[i + n - 1]);
                 out.push(format!("{}{}{}", first.before, term.text, last.after));
+                // Only a real change counts: words already written this way aren't a correction.
+                if group_text(&words[i..i + n]) != term.text {
+                    hit(term.text);
+                }
                 changed = true;
                 i += n;
             }
@@ -104,6 +122,10 @@ pub fn correct(text: &str, glossary: &[String]) -> String {
         }
     }
     if changed { out.join(" ") } else { text.to_string() }
+}
+
+fn group_text(words: &[Word]) -> String {
+    words.iter().map(|w| w.core).collect::<Vec<_>>().join(" ")
 }
 
 /// A word split around what the glossary compares: `before` (opening marks, "d'", "l'"…),

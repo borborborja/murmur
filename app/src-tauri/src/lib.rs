@@ -357,6 +357,7 @@ async fn start_recording(
                 std::thread::spawn(move || final_pass(app, final_pass_meeting, tapped, plan));
             }
             true => {
+                save_glossary_hits(&app);
                 let _ = app.emit(
                     "final-pass-done",
                     FinalPassDone { meeting_id: final_pass_meeting, error: None },
@@ -758,6 +759,7 @@ fn final_pass(app: AppHandle, meeting_id: String, tapped: Vec<pipeline::Tapped>,
     for t in &tapped {
         let _ = std::fs::remove_file(&t.path);
     }
+    save_glossary_hits(&app);
     let _ = app.emit(
         "final-pass-done",
         FinalPassDone {
@@ -1318,7 +1320,23 @@ async fn get_glossary(app: AppHandle) -> Result<Vec<String>, String> {
 
 #[tauri::command]
 async fn set_glossary(app: AppHandle, terms: Vec<String>) -> Result<(), String> {
+    save_glossary_hits(&app);
     with_db(&app, |db| db.set_glossary(&terms))
+}
+
+/// How many times each glossary word has been corrected, counting the corrections not saved yet.
+#[tauri::command]
+async fn glossary_hits(app: AppHandle) -> Result<std::collections::HashMap<String, u32>, String> {
+    save_glossary_hits(&app);
+    with_db(&app, |db| db.glossary_hits()).map(|v| v.into_iter().collect())
+}
+
+/// The corrections glossary.rs has counted since last time, added to the database.
+fn save_glossary_hits(app: &AppHandle) {
+    let hits = glossary::take_hits();
+    if !hits.is_empty() {
+        let _ = with_db(app, |db| db.add_glossary_hits(&hits));
+    }
 }
 
 #[tauri::command]
@@ -1621,6 +1639,7 @@ pub fn run() {
             delete_tag,
             get_glossary,
             set_glossary,
+            glossary_hits,
             delete_meeting,
             list_microphones,
             start_mic_monitor,

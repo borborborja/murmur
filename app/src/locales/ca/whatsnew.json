@@ -6,6 +6,26 @@
   "dontShowHint": "Es pot tornar a activar a Configuració › General.",
   "ok": "Entesos",
   "releases": {
+    "0.12.0": [
+      {
+        "title": "Un Whisper per al català",
+        "text": "Les reunions en català les torna a escoltar un Whisper del Barcelona Supercomputing Center, el millor de les nostres proves amb el català central, el valencià i el balear. Si fas reunions en català, descarrega'l (1,1 GB).",
+        "link": "transcription",
+        "linkLabel": "Obre la configuració"
+      },
+      {
+        "title": "Tradueix la transcripció",
+        "text": "Al menú «···», «Tradueix la transcripció a» la passa al català, al castellà o a l'anglès amb el model dels resums. L'original no es toca: hi pots tornar quan vulguis."
+      },
+      {
+        "title": "Tria l'idioma del resum",
+        "text": "Al costat de «Torna a generar», tria en quina llengua vols el resum i Murmur el torna a escriure."
+      },
+      {
+        "title": "Les accions, al botó «···»",
+        "text": "Continua la reunió, Torna a transcriure i Elimina són ara al botó «···» de la barra, i Copia en Markdown i l'àudio, a Exporta. En acabar una reunió, el text nou apareix amb una llum que hi passa per sobre."
+      }
+    ],
     "0.11.4": [
       {
         "title": "Ajunta dos parlants",

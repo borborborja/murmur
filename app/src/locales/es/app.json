@@ -100,7 +100,7 @@
   "speakerMergeRest_one": "Y la otra de {{name}}",
   "speakerMergeRest_other": "Y las otras {{count}} de {{name}}",
   "speakersMerged": "Todas las frases de {{from}} son ahora de {{to}}",
-  "translate": "Traduce la transcripción a",
+  "translate": "Traducir la transcripción a",
   "translateLabel": "El modelo de los resúmenes la traduce, sin tocar el original:",
   "currentTranslation": "La que hay",
   "translateNeedsModel": "Hace falta un modelo de lenguaje: Gemma descargado, o Claude o ChatGPT conectados en Configuración › Inteligencia.",

@@ -36,7 +36,7 @@
   },
   "pause": "Pausa de {{from}} a {{to}} · {{duration}}",
   "original": "Original",
-  "removeTranslation": "Quita la traducción",
+  "removeTranslation": "Quitar la traducción",
   "translatedBy": "Traducido con {{model}}",
   "translating": "Traduciendo la transcripción ({{language}})",
   "translatingLines": "{{done}} de {{total}} frases",

@@ -6,6 +6,26 @@
   "dontShowHint": "You can turn it back on in Settings › General.",
   "ok": "Got It",
   "releases": {
+    "0.12.0": [
+      {
+        "title": "A Whisper for Catalan",
+        "text": "Meetings in Catalan are now listened to again by a Whisper from the Barcelona Supercomputing Center, the best in our tests for Central, Valencian and Balearic Catalan. If you have meetings in Catalan, download it (1.1 GB).",
+        "link": "transcription",
+        "linkLabel": "Open Settings"
+      },
+      {
+        "title": "Translate the transcript",
+        "text": "In the “···” menu, “Translate the transcript into” turns it into Catalan, Spanish or English with the summaries' model. The original stays as it is: you can switch back any time."
+      },
+      {
+        "title": "Choose the summary's language",
+        "text": "Next to “Generate Again”, pick the language you want the summary in and Murmur writes it again."
+      },
+      {
+        "title": "Actions, in the “···” button",
+        "text": "Continue Meeting, Transcribe again and Delete Meeting are now in the toolbar's “···” button, and Copy as Markdown and the audio, in Export. When a meeting finishes, the new text comes in as a light passes over it."
+      }
+    ],
     "0.11.4": [
       {
         "title": "Merge two speakers",

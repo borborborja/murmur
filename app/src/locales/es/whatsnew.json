@@ -6,6 +6,26 @@
   "dontShowHint": "Se puede volver a activar en Ajustes › General.",
   "ok": "Entendido",
   "releases": {
+    "0.12.0": [
+      {
+        "title": "Un Whisper para el catalán",
+        "text": "Las reuniones en catalán las vuelve a escuchar un Whisper del Barcelona Supercomputing Center, el mejor de nuestras pruebas con el catalán central, el valenciano y el balear. Si haces reuniones en catalán, descárgalo (1,1 GB).",
+        "link": "transcription",
+        "linkLabel": "Abre la configuración"
+      },
+      {
+        "title": "Traduce la transcripción",
+        "text": "En el menú «···», «Traducir la transcripción a» la pasa al catalán, al castellano o al inglés con el modelo de los resúmenes. El original no se toca: puedes volver a él cuando quieras."
+      },
+      {
+        "title": "Elige el idioma del resumen",
+        "text": "Junto a «Volver a generar», elige en qué lengua quieres el resumen y Murmur lo vuelve a escribir."
+      },
+      {
+        "title": "Las acciones, en el botón «···»",
+        "text": "Continuar la reunión, Volver a transcribir y Eliminar están ahora en el botón «···» de la barra, y Copiar en Markdown y el audio, en Exportar. Al terminar una reunión, el texto nuevo aparece con una luz que pasa por encima."
+      }
+    ],
     "0.11.4": [
       {
         "title": "Junta dos hablantes",

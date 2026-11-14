@@ -31,5 +31,10 @@
         "displayLanguageSelector": false
       }
     }
+  },
+  "plugins": {
+    "updater": {
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDE0ODRGQjkzMjY5QjZDRjEKUldUeGJKc21rL3VFRkNOYmtmc3pidWhTb2JyZjNVbVFnOUZrVHp3MlVyeENXcU9HNWx1WW9ZUmsK"
+    }
   }
 }

@@ -63,7 +63,11 @@ cd app/src-tauri && cargo run --release --example lang_probe -- ../../data/reuni
 
 ## Abans de publicar una versió
 
-Tot el procés és a `docs/PUBLICAR.md`. El pas que és fàcil d'oblidar:
+Tot el procés és a `docs/PUBLICAR.md`. Els passos que és fàcil d'oblidar:
+
+- **Pregunta sempre, abans de cada publicació, si aquesta versió també surt per a Windows i Linux.** Ho decideix la variable `PC_RELEASE` del repositori del codi (`gh variable list --repo quicodomingo/murmur`):
+  - Si la resposta és sí i la variable no és `true`, posa-la amb `gh variable set PC_RELEASE --body true --repo quicodomingo/murmur` abans de `publish.sh`. Després, recorda a l'usuari que ha d'aprovar dues vegades a Actions › Publica (abans de compilar i abans de publicar).
+  - Si és no i la variable és `true`, treu-la amb `gh variable delete PC_RELEASE --repo quicodomingo/murmur`. Només es publica el Mac.
 
 - **Si la versió porta canvis visibles, s'escriuen les novetats** que l'app mostra després d'actualitzar:
   - La versió i la data van a `RELEASES` (`app/src/lib/whatsnew.ts`).

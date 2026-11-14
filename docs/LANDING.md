@@ -35,6 +35,7 @@ Una idea central: **transcriu les reunions al teu Mac, en català, sense enviar 
 | Subtítol | En català, castellà i anglès, en directe i amb qui diu què. Res surt de l'ordinador. | En catalán, castellano e inglés, en directo y con quién dice qué. Nada sale del ordenador. | In Catalan, Spanish and English, live, with who said what. Nothing leaves your computer. |
 | Botó | Descarrega per a Mac | Descargar para Mac | Download for Mac |
 | Sota el botó | Gratuïta · Apple Silicon · macOS 14.2 o posterior | Gratis · Apple Silicon · macOS 14.2 o posterior | Free · Apple Silicon · macOS 14.2 or later |
+| Enllaç sota el botó | També per a Windows i Linux | También para Windows y Linux | Also for Windows and Linux |
 
 Captura: `01-reunio` (o `02-reunio-fosc` si la pàgina és fosca).
 
@@ -84,7 +85,7 @@ Nota que ha de sortir a prop: **per gravar una reunió cal el consentiment de to
 | Funciona amb Zoom, Meet o Teams? | Amb qualsevol: Murmur grava l'àudio del sistema, no s'hi connecta. Ningú de la trucada veu cap bot. |
 | Cal connexió a internet? | Només el primer cop, per descarregar els models (uns 600 MB), i per buscar actualitzacions. |
 | Quanta memòria cal? | En té prou amb 8 GB. Per al resum local se'n recomanen 16; si no, el resum el pot fer Claude o OpenAI amb la teva clau. |
-| Funciona a Windows o a Macs amb Intel? | Encara no. |
+| Funciona a Windows, a Linux o a Macs amb Intel? | A Windows 10 o 11 i a Linux de 64 bits, sí, des de la 0.12, gràcies a @xaviviro (cal un processador amb AVX2: Intel des del 2013, AMD des del 2015). Als Macs amb Intel, no. |
 | On es desen les reunions? | En una base de dades al teu Mac. L'àudio només es desa si ho actives. També pots desar cada reunió en Markdown a la carpeta que triïs. |
 
 ### 7. Peu

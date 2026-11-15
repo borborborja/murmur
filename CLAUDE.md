@@ -12,6 +12,7 @@ Guia per a qui treballa en aquest repositori, persones o agents de codi. Murmur 
 | [`docs/TRADUCCIONS.md`](docs/TRADUCCIONS.md) | Com s'escriuen i es tradueixen els textos de la interfície |
 | [`docs/PUBLICAR.md`](docs/PUBLICAR.md) | Com es publica una versió de l'app o d'un model |
 | [`docs/LANDING.md`](docs/LANDING.md) | Els textos i les captures per a la pàgina de descàrrega |
+| [`docs/NOVETATS-0.14.md`](docs/NOVETATS-0.14.md) | El post del blog de la 0.14 i què cal canviar de la web |
 | [`docs/MOBIL.md`](docs/MOBIL.md) | L'exploració d'una versió per a mòbil |
 
 | Carpeta | Què hi ha |

@@ -13,6 +13,8 @@ struct RecordingAttributes: ActivityAttributes {
         /// The last thing said, and by whom ("Parlant 2", or the name given).
         var lastLine: String
         var speaker: String?
+        /// Atura was tapped once: the button says "Toca per aturar" until a second tap (or 4 s).
+        var confirmingStop = false
 
         var seconds: Double { pausedAt ?? Date().timeIntervalSince(startedAt) }
     }

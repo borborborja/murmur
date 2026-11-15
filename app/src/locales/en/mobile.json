@@ -38,7 +38,8 @@
     "speaker": "Speaker {{n}}",
     "you": "You",
     "back": "Back to the list",
-    "resume": "Resume"
+    "resume": "Resume",
+    "stopConfirm": "Tap to stop"
   },
   "notes": {
     "placeholder": "Write a note…",
@@ -60,7 +61,11 @@
     "partialsHint": "Uses more battery",
     "partialsOff": "Never",
     "partialsEvery": "Every {{seconds}} s",
-    "privacy": "Meetings stay on your phone and on the computer you connect. They never go through any server."
+    "privacy": "Meetings stay on your phone and on the computer you connect. They never go through any server.",
+    "audio": "Audio",
+    "microphone": "Microphone",
+    "micAuto": "Automatic",
+    "micHint": "Automatic uses a wired or USB microphone if there is one, otherwise the iPhone's. Bluetooth headphones only if you pick them: they only hear whoever is wearing them, not the room."
   },
   "mic": {
     "denied": "Murmur needs the microphone to record. Turn it on in Settings › Murmur."

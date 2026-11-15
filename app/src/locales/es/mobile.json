@@ -38,7 +38,8 @@
     "speaker": "Hablante {{n}}",
     "you": "Tú",
     "back": "Vuelve a la lista",
-    "resume": "Continuar"
+    "resume": "Continuar",
+    "stopConfirm": "Toca para detener"
   },
   "notes": {
     "placeholder": "Escribe una nota…",
@@ -60,7 +61,11 @@
     "partialsHint": "Gasta más batería",
     "partialsOff": "Nunca",
     "partialsEvery": "Cada {{seconds}} s",
-    "privacy": "Las reuniones se quedan en el teléfono y en el ordenador que conectes. Nunca pasan por ningún servidor."
+    "privacy": "Las reuniones se quedan en el teléfono y en el ordenador que conectes. Nunca pasan por ningún servidor.",
+    "audio": "Audio",
+    "microphone": "Micrófono",
+    "micAuto": "Automático",
+    "micHint": "Automático usa el micrófono conectado por cable o USB y, si no hay, el del iPhone. Los auriculares Bluetooth solo si los eliges: solo oyen a quien los lleva, no la sala."
   },
   "mic": {
     "denied": "Murmur necesita el micrófono para grabar. Actívalo en Ajustes › Murmur."

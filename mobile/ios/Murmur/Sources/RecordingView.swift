@@ -13,6 +13,8 @@ struct RecordingView: View {
     @State private var tab: MeetingTab = .transcript
     @State private var note = ""
     @State private var stopping = false
+    /// Atura was tapped once: it turns red, "Toca per aturar", for 4 s (as the desktop's indicator).
+    @State private var confirmStop = false
 
     var body: some View {
         let live = store.live
@@ -135,14 +137,25 @@ struct RecordingView: View {
                     .overlay(Capsule().strokeBorder(palette.separator))
             }
             Button {
-                stopping = true
-                Task { done(await store.stop()) }
+                if confirmStop {
+                    stopping = true
+                    Task { done(await store.stop()) }
+                } else {
+                    withAnimation(.easeOut(duration: 0.2)) { confirmStop = true }
+                    UINotificationFeedbackGenerator().notificationOccurred(.warning)
+                    Task {
+                        try? await Task.sleep(for: .seconds(4))
+                        withAnimation(.easeOut(duration: 0.2)) { confirmStop = false }
+                    }
+                }
             } label: {
-                Label(L("rec.stop"), systemImage: "stop.fill")
+                Label(confirmStop ? L("rec.stopConfirm") : L("rec.stop"), systemImage: "stop.fill")
                     .font(.system(size: 17, weight: .semibold))
+                    .lineLimit(1).minimumScaleFactor(0.8)
                     .frame(maxWidth: .infinity, minHeight: 56)
-                    .background(palette.newMeeting, in: Capsule())
-                    .foregroundStyle(palette.onNewMeeting)
+                    // The dark red with white of the swipe to delete (5.6:1), in both modes.
+                    .background(confirmStop ? MurmurPalette.acidLight.recordingLabel : palette.newMeeting, in: Capsule())
+                    .foregroundStyle(confirmStop ? MurmurPalette.acidLight.background : palette.onNewMeeting)
             }
             .disabled(stopping)
         }
@@ -174,7 +187,14 @@ struct RecordingCard: View {
                     }
                 }
                 Spacer()
-                Text(languageName(store.language)).font(.system(size: 13)).foregroundStyle(palette.textSecondary)
+                VStack(alignment: .trailing, spacing: 3) {
+                    Text(languageName(store.language))
+                    // Which microphone hears it: a headset plugged in mid-meeting shows up here.
+                    if let input = store.inputName {
+                        Label(input, systemImage: "mic").labelStyle(.titleAndIcon).lineLimit(1)
+                    }
+                }
+                .font(.system(size: 13)).foregroundStyle(palette.textSecondary)
             }
             .padding(.horizontal, 18).padding(.vertical, 14)
             .background(palette.background, in: UnevenRoundedRectangle(topLeadingRadius: 26, topTrailingRadius: 26, style: .continuous))

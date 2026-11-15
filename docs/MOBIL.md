@@ -145,6 +145,9 @@ Per provar-la al simulador sense parlar: `xcrun simctl launch <simulador> com.qu
 
 - **La pantalla bloquejada i la Dynamic Island** (`Widgets/`, una extensió de WidgetKit, i `Shared/RecordingActivity.swift`): una Live Activity amb el títol, el temps (el compta el sistema, i s'atura en pausa), l'última frase i qui l'ha dit, i Marca, Pausa i Atura. Els botons són `LiveActivityIntent`: s'executen dins el procés de l'app i arriben a la gravació per `RecordingControls`. S'actualitza amb cada frase acabada, no amb el text provisional. Una targeta fosca, com la píndola de gravació de l'ordinador, en mode clar i fosc. `Shared/` té el que comparteixen l'app i l'extensió: els colors (`Sources/Theme.swift`), el logotip, els textos i les ordres.
 - **Signatura:** l'equip (`DEVELOPMENT_TEAM`) és a `project.yml`, perquè regenerar el projecte no el perdi.
+- **El micròfon:** «Automàtic» per defecte, el que tria iOS (un de cable o USB si n'hi ha; si no, el de l'iPhone). A Configuració › Àudio se'n pot triar un, també uns auriculars Bluetooth, que no entren mai sols: només senten qui els porta, no la sala (`Microphone.swift`, `.allowBluetooth` només si són els triats). Si el micròfon canvia a mitja gravació, el motor d'àudio es torna a engegar amb el nou (`AVAudioEngineConfigurationChange`) i la gravació continua; la targeta diu quin micròfon sent.
+- **Aturar demana confirmació,** com l'indicador de l'ordinador: el primer toc posa el botó en vermell, «Toca per aturar», durant 4 s. També a la pantalla bloquejada.
+- **Orientació:** a l'iPhone només en vertical; a l'iPad, totes.
 
 Encara no hi ha: posar nom als parlants, les fotos, l'editor de notes amb format, l'emparellament, l'iPad, el Duo ni Android.
 

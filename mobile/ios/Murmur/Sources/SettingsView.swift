@@ -1,3 +1,4 @@
+import AVFoundation
 import SwiftUI
 
 /// The iOS grouped list, with the desktop's sections that make sense on the phone.
@@ -6,12 +7,39 @@ struct SettingsView: View {
     @AppStorage("language") private var language = "ca-es"
     @AppStorage("partialEvery") private var partialEvery = 1.5
     @AppStorage("moreInRoom") private var moreInRoom = true
+    @AppStorage("micInput") private var micInput = ""
+    @AppStorage("micInputBluetooth") private var micInputBluetooth = false
+    @EnvironmentObject private var store: Store
+    /// The microphones there are now (uid, name, Bluetooth or not).
+    @State private var inputs: [(uid: String, name: String, bluetooth: Bool)] = []
 
     var body: some View {
         List {
             Section(L("settings.computer")) {
                 Label(L("settings.computerSoon"), systemImage: "laptopcomputer")
                     .font(.system(size: 15)).foregroundStyle(palette.textSecondary)
+            }
+            .listRowBackground(palette.fillSubtle)
+
+            Section {
+                Picker(L("settings.microphone"), selection: $micInput) {
+                    Text(L("settings.micAuto")).tag("")
+                    ForEach(inputs, id: \.uid) { input in
+                        Text(input.name).tag(input.uid)
+                    }
+                    // The chosen one, even if it isn't connected now.
+                    if !micInput.isEmpty && !inputs.contains(where: { $0.uid == micInput }) {
+                        Text(micInput).tag(micInput)
+                    }
+                }
+                .disabled(store.live != nil)
+                .onChange(of: micInput) { _, uid in
+                    micInputBluetooth = inputs.first { $0.uid == uid }?.bluetooth ?? false
+                }
+            } header: {
+                Text(L("settings.audio"))
+            } footer: {
+                Text(L("settings.micHint")).font(.system(size: 13))
             }
             .listRowBackground(palette.fillSubtle)
 
@@ -52,5 +80,11 @@ struct SettingsView: View {
                 .background(palette.background)
         }
         .contentMargins(.bottom, 110, for: .scrollContent)
+        .onAppear {
+            // Asking iOS for the microphones touches the audio session: not while recording.
+            guard store.live == nil, Microphone.simulated == nil else { return }
+            let bluetooth: Set<AVAudioSession.Port> = [.bluetoothHFP, .bluetoothLE, .bluetoothA2DP]
+            inputs = Microphone.available().map { ($0.uid, $0.portName, bluetooth.contains($0.portType)) }
+        }
     }
 }

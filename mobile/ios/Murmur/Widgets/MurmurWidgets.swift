@@ -33,7 +33,7 @@ struct RecordingLiveActivity: Widget {
                 DynamicIslandExpandedRegion(.bottom) {
                     VStack(alignment: .leading, spacing: 10) {
                         LastLine(state: context.state).lineLimit(2)
-                        RecordingButtons(paused: context.state.pausedAt != nil)
+                        RecordingButtons(paused: context.state.pausedAt != nil, confirming: context.state.confirmingStop)
                     }
                 }
             } compactLeading: {
@@ -75,6 +75,8 @@ struct LastLine: View {
 
 struct RecordingButtons: View {
     var paused: Bool
+    /// Atura was tapped once: the second tap stops.
+    var confirming: Bool
     var body: some View {
         let dark = MurmurPalette.acidDark
         HStack(spacing: 8) {
@@ -87,9 +89,11 @@ struct RecordingButtons: View {
             }
             .tint(dark.textPrimary.opacity(0.14))
             Button(intent: StopRecordingIntent()) {
-                Label(L("rec.stop"), systemImage: "stop.fill").frame(maxWidth: .infinity, minHeight: 40)
+                Label(confirming ? L("rec.stopConfirm") : L("rec.stop"), systemImage: "stop.fill")
+                    .frame(maxWidth: .infinity, minHeight: 40)
+                    .lineLimit(1).minimumScaleFactor(0.7)
             }
-            .tint(dark.recordingDot)
+            .tint(confirming ? dark.recordingDot : dark.recordingDot.opacity(0.75))
         }
         .buttonStyle(.borderedProminent)
         .buttonBorderShape(.capsule)
@@ -124,7 +128,7 @@ struct LockScreenRecording: View {
                 }
             }
             LastLine(state: context.state).lineLimit(2)
-            RecordingButtons(paused: context.state.pausedAt != nil)
+            RecordingButtons(paused: context.state.pausedAt != nil, confirming: context.state.confirmingStop)
         }
         .padding(16)
     }

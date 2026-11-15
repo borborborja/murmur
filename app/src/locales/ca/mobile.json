@@ -38,7 +38,8 @@
     "speaker": "Parlant {{n}}",
     "you": "Tu",
     "back": "Torna a la llista",
-    "resume": "Continua"
+    "resume": "Continua",
+    "stopConfirm": "Toca per aturar"
   },
   "notes": {
     "placeholder": "Escriu una nota…",
@@ -60,7 +61,11 @@
     "partialsHint": "Gasta més bateria",
     "partialsOff": "Mai",
     "partialsEvery": "Cada {{seconds}} s",
-    "privacy": "Les reunions es queden al telèfon i a l'ordinador que hi connectis. Mai passen per cap servidor."
+    "privacy": "Les reunions es queden al telèfon i a l'ordinador que hi connectis. Mai passen per cap servidor.",
+    "audio": "Àudio",
+    "microphone": "Micròfon",
+    "micAuto": "Automàtic",
+    "micHint": "Automàtic fa servir el micròfon connectat per cable o USB i, si no n'hi ha, el de l'iPhone. Els auriculars Bluetooth només si els tries: només senten qui els porta, no la sala."
   },
   "mic": {
     "denied": "Murmur necessita el micròfon per gravar. Activa'l a Configuració › Murmur."

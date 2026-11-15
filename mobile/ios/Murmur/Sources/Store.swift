@@ -99,6 +99,11 @@ final class Store: ObservableObject {
     @Published var error: String?
     /// The ＋ was just pressed: the acid light fills up while the microphone opens.
     @Published var surging = false
+    /// The microphone in use, as iOS names it, shown on the recording card.
+    @Published var inputName: String?
+    /// The lock screen's Atura was tapped once: a second tap within 4 s stops.
+    private var stopArmed = false
+    private var routeObserver: NSObjectProtocol?
 
     let engine: Murmur?
     private let queue = DispatchQueue(label: "murmur.engine", qos: .userInitiated)
@@ -125,8 +130,26 @@ final class Store: ObservableObject {
             switch command {
             case .mark: self.mark()
             case .togglePause: self.togglePause()
-            case .stop: Task { _ = await self.stop() }
+            case .stop: self.armOrStop()
             }
+        }
+    }
+
+    /// The lock screen's Atura asks twice, as the desktop's indicator: the first tap turns it into
+    /// "Toca per aturar" for 4 s.
+    private func armOrStop() {
+        if stopArmed {
+            stopArmed = false
+            Task { _ = await stop() }
+            return
+        }
+        stopArmed = true
+        updateActivity()
+        Task {
+            try? await Task.sleep(for: .seconds(4))
+            guard stopArmed else { return }
+            stopArmed = false
+            updateActivity()
         }
     }
 
@@ -141,7 +164,8 @@ final class Store: ObservableObject {
             startedAt: Date().addingTimeInterval(-seconds),
             pausedAt: live?.paused == true ? seconds : nil,
             lastLine: String((last?.text ?? "").suffix(140)),
-            speaker: last.map { L("rec.speaker", "\($0.speaker + 1)") })
+            speaker: last.map { L("rec.speaker", "\($0.speaker + 1)") },
+            confirmingStop: stopArmed)
     }
 
     private func startActivity(title: String) {
@@ -197,6 +221,10 @@ final class Store: ObservableObject {
                 }
             }
             UIApplication.shared.isIdleTimerDisabled = true
+            inputName = Microphone.currentName
+            routeObserver = NotificationCenter.default.addObserver(forName: AVAudioSession.routeChangeNotification, object: nil, queue: .main) { [weak self] _ in
+                Task { @MainActor in self?.inputName = Microphone.currentName }
+            }
             startActivity(title: title)
             return true
         } catch {
@@ -230,6 +258,9 @@ final class Store: ObservableObject {
         guard let engine, let current = live else { return nil }
         microphone.stop()
         UIApplication.shared.isIdleTimerDisabled = false
+        if let observer = routeObserver { NotificationCenter.default.removeObserver(observer) }
+        routeObserver = nil
+        stopArmed = false
         endActivity()
         let extra = Self.extra(notes: current.notes)
         do {

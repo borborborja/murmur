@@ -1,6 +1,6 @@
 [package]
 name = "murmur-core"
-version = "0.13.0"
+version = "0.14.0"
 description = "Murmur's engine: live transcription, speakers, voice, glossary, recording and the meetings database"
 authors = ["Quico Domingo"]
 edition = "2024"

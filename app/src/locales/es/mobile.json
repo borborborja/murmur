@@ -1,0 +1,69 @@
+{
+  "home": {
+    "emptyTitle": "Graba la primera reunión",
+    "emptyText": "Murmur transcribe mientras habláis y separa quién dice qué. Todo se queda en el teléfono.",
+    "consent": "Para grabar hace falta el consentimiento de todos los participantes.",
+    "today": "Hoy",
+    "yesterday": "Ayer",
+    "thisWeek": "Esta semana",
+    "earlier": "Antes",
+    "revised": "revisada en el ordenador",
+    "search": "Buscar"
+  },
+  "dock": {
+    "meetings": "Reuniones",
+    "new": "Nueva reunión",
+    "settings": "Ajustes",
+    "recording": "Grabando {{time}}"
+  },
+  "language": {
+    "ca": "Catalán",
+    "es": "Castellano",
+    "caEs": "Catalán + castellano",
+    "en": "Inglés"
+  },
+  "rec": {
+    "defaultTitle": "Reunión de las {{time}}",
+    "recording": "Grabando",
+    "transcript": "Transcripción",
+    "notes": "Notas",
+    "photo": "Foto",
+    "mark": "Marca",
+    "pause": "Pausa",
+    "stop": "Detener",
+    "important": "Importante",
+    "markNote": "Momento importante",
+    "listening": "Escuchando… empieza a hablar.",
+    "speaker": "Hablante {{n}}",
+    "you": "Tú",
+    "back": "Vuelve a la lista"
+  },
+  "notes": {
+    "placeholder": "Escribe una nota…",
+    "add": "Añadir"
+  },
+  "meeting": {
+    "pending": "Cuando el teléfono encuentre el ordenador, añadirá el título, el resumen y la pasada de Whisper. Ahora es la transcripción rápida.",
+    "delete": "Eliminar la reunión",
+    "deleteConfirm": "Se borrarán la reunión y el audio de este teléfono.",
+    "empty": "No se ha oído nada."
+  },
+  "settings": {
+    "title": "Ajustes",
+    "computer": "Ordenador",
+    "computerSoon": "Conectar con el ordenador llegará pronto: las reuniones pasarán a él para rehacerlas con Whisper y hacer el resumen.",
+    "transcription": "Transcripción",
+    "language": "Idioma",
+    "partials": "Texto mientras hablas",
+    "partialsHint": "Gasta más batería",
+    "partialsOff": "Nunca",
+    "partialsEvery": "Cada {{seconds}} s",
+    "privacy": "Las reuniones se quedan en el teléfono y en el ordenador que conectes. Nunca pasan por ningún servidor."
+  },
+  "mic": {
+    "denied": "Murmur necesita el micrófono para grabar. Actívalo en Ajustes › Murmur."
+  },
+  "infoPlist": {
+    "NSMicrophoneUsageDescription": "Murmur escucha el micrófono para transcribir la reunión. Todo se queda en el teléfono."
+  }
+}

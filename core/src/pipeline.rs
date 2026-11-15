@@ -122,6 +122,13 @@ impl<'m> Pipeline<'m> {
         }
     }
 
+    /// How often the provisional text is redone, in seconds of audio (the phone: 1.5 s).
+    pub fn set_partial_every(&mut self, seconds: f32) {
+        for session in [self.mic.as_mut(), self.system.as_mut()].into_iter().flatten() {
+            session.set_partial_every(seconds);
+        }
+    }
+
     /// Words finished sentences should spell as given (Settings › Transcripció › Glossari).
     pub fn set_glossary(&mut self, terms: Vec<String>) {
         self.glossary = terms;

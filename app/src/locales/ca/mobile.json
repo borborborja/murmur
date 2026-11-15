@@ -1,0 +1,69 @@
+{
+  "home": {
+    "emptyTitle": "Grava la primera reunió",
+    "emptyText": "Murmur transcriu mentre parleu i separa qui diu què. Tot es queda al telèfon.",
+    "consent": "Per gravar cal el consentiment de tothom qui hi participa.",
+    "today": "Avui",
+    "yesterday": "Ahir",
+    "thisWeek": "Aquesta setmana",
+    "earlier": "Abans",
+    "revised": "revisada a l'ordinador",
+    "search": "Cerca"
+  },
+  "dock": {
+    "meetings": "Reunions",
+    "new": "Nova reunió",
+    "settings": "Configuració",
+    "recording": "Gravant {{time}}"
+  },
+  "language": {
+    "ca": "Català",
+    "es": "Castellà",
+    "caEs": "Català + castellà",
+    "en": "Anglès"
+  },
+  "rec": {
+    "defaultTitle": "Reunió de les {{time}}",
+    "recording": "Gravant",
+    "transcript": "Transcripció",
+    "notes": "Notes",
+    "photo": "Foto",
+    "mark": "Marca",
+    "pause": "Pausa",
+    "stop": "Atura",
+    "important": "Important",
+    "markNote": "Moment important",
+    "listening": "Escoltant… comença a parlar.",
+    "speaker": "Parlant {{n}}",
+    "you": "Tu",
+    "back": "Torna a la llista"
+  },
+  "notes": {
+    "placeholder": "Escriu una nota…",
+    "add": "Afegeix"
+  },
+  "meeting": {
+    "pending": "Quan el telèfon trobi l'ordinador, hi afegirà el títol, el resum i la passada de Whisper. Ara és la transcripció ràpida.",
+    "delete": "Elimina la reunió",
+    "deleteConfirm": "S'esborrarà la reunió i l'àudio d'aquest telèfon.",
+    "empty": "No s'ha sentit res."
+  },
+  "settings": {
+    "title": "Configuració",
+    "computer": "Ordinador",
+    "computerSoon": "Connectar amb l'ordinador arribarà aviat: les reunions hi passaran per refer-les amb Whisper i fer-ne el resum.",
+    "transcription": "Transcripció",
+    "language": "Idioma",
+    "partials": "Text mentre parles",
+    "partialsHint": "Gasta més bateria",
+    "partialsOff": "Mai",
+    "partialsEvery": "Cada {{seconds}} s",
+    "privacy": "Les reunions es queden al telèfon i a l'ordinador que hi connectis. Mai passen per cap servidor."
+  },
+  "mic": {
+    "denied": "Murmur necessita el micròfon per gravar. Activa'l a Configuració › Murmur."
+  },
+  "infoPlist": {
+    "NSMicrophoneUsageDescription": "Murmur escolta el micròfon per transcriure la reunió. Tot es queda al telèfon."
+  }
+}

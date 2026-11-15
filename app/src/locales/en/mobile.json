@@ -1,0 +1,69 @@
+{
+  "home": {
+    "emptyTitle": "Record your first meeting",
+    "emptyText": "Murmur transcribes as you talk and tells who says what. Everything stays on your phone.",
+    "consent": "Recording requires the consent of everyone taking part.",
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "thisWeek": "This week",
+    "earlier": "Earlier",
+    "revised": "revised on the computer",
+    "search": "Search"
+  },
+  "dock": {
+    "meetings": "Meetings",
+    "new": "New meeting",
+    "settings": "Settings",
+    "recording": "Recording {{time}}"
+  },
+  "language": {
+    "ca": "Catalan",
+    "es": "Spanish",
+    "caEs": "Catalan + Spanish",
+    "en": "English"
+  },
+  "rec": {
+    "defaultTitle": "{{time}} meeting",
+    "recording": "Recording",
+    "transcript": "Transcript",
+    "notes": "Notes",
+    "photo": "Photo",
+    "mark": "Mark",
+    "pause": "Pause",
+    "stop": "Stop",
+    "important": "Important",
+    "markNote": "Important moment",
+    "listening": "Listening… start talking.",
+    "speaker": "Speaker {{n}}",
+    "you": "You",
+    "back": "Back to the list"
+  },
+  "notes": {
+    "placeholder": "Write a note…",
+    "add": "Add"
+  },
+  "meeting": {
+    "pending": "When the phone finds your computer, it will add the title, the summary and the Whisper pass. For now this is the quick transcript.",
+    "delete": "Delete meeting",
+    "deleteConfirm": "The meeting and its audio will be deleted from this phone.",
+    "empty": "Nothing was heard."
+  },
+  "settings": {
+    "title": "Settings",
+    "computer": "Computer",
+    "computerSoon": "Connecting to your computer is coming soon: meetings will go there to be redone with Whisper and summarised.",
+    "transcription": "Transcription",
+    "language": "Language",
+    "partials": "Text as you speak",
+    "partialsHint": "Uses more battery",
+    "partialsOff": "Never",
+    "partialsEvery": "Every {{seconds}} s",
+    "privacy": "Meetings stay on your phone and on the computer you connect. They never go through any server."
+  },
+  "mic": {
+    "denied": "Murmur needs the microphone to record. Turn it on in Settings › Murmur."
+  },
+  "infoPlist": {
+    "NSMicrophoneUsageDescription": "Murmur listens to the microphone to transcribe the meeting. Everything stays on your phone."
+  }
+}

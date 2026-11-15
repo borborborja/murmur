@@ -189,7 +189,12 @@ Entre reunions (bloc 5):
   - [x] El motor separat de l'app de l'ordinador (`core/`, `murmur-core`), per compartir-lo amb el mòbil.
   - [x] L'emparellament, la part de l'ordinador: Configuració › Mòbil, codi QR, Bonjour i protocol xifrat ([`docs/EMPARELLAR.md`](EMPARELLAR.md)).
   - [x] El motor compilat per a iOS i una app de proves (`mobile/ios/MurmurProbe`), provada al simulador.
-  - [ ] La prova d'una tarda a l'iPhone: velocitat amb i sense text provisional, qualitat comparada amb l'ordinador, i bateria i temperatura en mitja hora.
+  - [x] La prova d'una tarda a l'iPhone: velocitat amb i sense text provisional, i qualitat comparada amb l'ordinador.
+  - [ ] La bateria i la temperatura en mitja hora de gravació (MurmurProbe, «Grava en directe»).
+  - [x] L'esquelet de l'app (`mobile/ios/Murmur`): el motor amb UniFFI (`mobile/ffi`), la llista, gravar amb el text en directe, marcar un moment, notes amb el minut, la reunió acabada al mòbil i la configuració. Provat al simulador.
+  - [ ] A l'iPhone de debò; la Live Activity i la Dynamic Island; fotos amb el minut; l'editor de notes amb format.
+  - [ ] Emparellar i sincronitzar amb l'ordinador (la part del mòbil de `core/src/sync.rs`).
+  - [ ] iPad, iPhone Duo i Android.
   - [x] Provar l'emparellament de punta a punta amb `fake_phone` i l'app: emparellar, enviar una reunió de 3 minuts, passada final (Whisper i dos parlants trobats) i recollir-ne el resultat.
   - [ ] La prova d'una tarda a l'iPhone (cal Xcode): velocitat, qualitat i bateria del Conformer.
   - [ ] Primera app en SwiftUI: gravar i text en directe, per TestFlight.

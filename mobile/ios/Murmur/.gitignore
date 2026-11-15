@@ -1,0 +1,4 @@
+Resources/models/
+*.xcodeproj/
+build/
+Frameworks/

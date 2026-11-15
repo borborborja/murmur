@@ -123,3 +123,24 @@ El text provisional (tornar a transcriure els últims segons cada 0,6 s mentre a
 - **L'int8 contra el model sencer** (`cargo run --release --example int8_compare -- ../../data/reunio-3min.wav`, sense text provisional): el 5% de les paraules canvien (27 de 553), sobretot marques i paraules difícils, en totes dues direccions («bookomers» / «bugomers», «lync» / «link»), i els parlants són idèntics. Emparellat, l'ordinador ho refà igualment amb Whisper.
 
 **Pendent:** la bateria i la temperatura en mitja hora en directe.
+
+## L'app (`mobile/ios/Murmur`)
+
+En SwiftUI, amb el motor de `core/` a través de `mobile/ffi` (`murmur-mobile`, UniFFI 0.32). El crate té el seu propi espai de treball: al mòbil sherpa-onnx va com a biblioteca compartida (un xcframework a iOS), i aquesta opció no pot arribar a l'app de l'ordinador, que l'enllaça estàticament.
+
+- **El pont** (`mobile/ffi/src/lib.rs`): un objecte `Murmur` amb la llista de reunions (`meetings`, `meetingJson`, `deleteMeeting`) i la gravació (`start`, `push` amb les mostres de 16 kHz del micròfon, `stop`). Carrega el Conformer en int8 amb 2 fils i fa servir la mateixa base de dades i el mateix format de reunió que l'ordinador: una reunió del mòbil passarà a l'ordinador tal com és. L'àudio es desa en Opus a `recordings/`. `stop` hi afegeix el que porta l'app: les notes (`notesDoc`, com les de l'ordinador, amb el segon de cada paràgraf) i els moments marcats (`marks`).
+- **El text provisional**, cada 1,5 s per defecte (Configuració › Text mentre parles: mai, 1, 1,5 o 3 s; `Pipeline::set_partial_every`).
+- **Colors:** `docs/design/tokens/Theme.swift`, copiat a `Sources/`. **Textos:** `app/src/locales/*/mobile.json` (docs/TRADUCCIONS.md).
+
+```bash
+cd mobile/ios/Murmur
+./fetch-models.sh        # els models, de models/ (no es pugen)
+./build-rust.sh          # el motor per a l'iPhone i el simulador, i el xcframework a Frameworks/
+./bindings.sh            # el codi Swift d'UniFFI (Generated/) i els textos; després de canviar lib.rs o mobile.json
+xcodegen && open Murmur.xcodeproj
+```
+
+Per provar-la al simulador sense parlar: `xcrun simctl launch <simulador> com.quicodomingo.murmur.ios -simulate ../data/reunio-3min.wav -autostart -autostop 60` llegeix el WAV com si fos el micròfon, comença a gravar en obrir-se i s'atura sola (marcant el moment) al cap de 60 s.
+
+Encara no hi ha: la Live Activity, les fotos, l'editor de notes amb format, l'emparellament, l'iPad, el Duo ni Android.
+

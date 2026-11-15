@@ -1,0 +1,29 @@
+{
+  "sourceLanguage": "ca",
+  "strings": {
+    "NSMicrophoneUsageDescription": {
+      "extractionState": "manual",
+      "localizations": {
+        "ca": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Murmur escolta el micròfon per transcriure la reunió. Tot es queda al telèfon."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Murmur escucha el micrófono para transcribir la reunión. Todo se queda en el teléfono."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Murmur listens to the microphone to transcribe the meeting. Everything stays on your phone."
+          }
+        }
+      }
+    }
+  },
+  "version": "1.0"
+}

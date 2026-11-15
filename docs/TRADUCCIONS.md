@@ -12,6 +12,7 @@ L'idioma de la interfície i el de les reunions són dues coses separades. La in
 | Menús natius, safata, avisos i errors del motor | `core/src/i18n.rs` |
 | Textos dels permisos de macOS | `app/src-tauri/locales/<idioma>.lproj/InfoPlist.strings` |
 | Instruccions per escriure la portada | `app/src/locales/<idioma>/cover.json` (`prompts`) |
+| App de l'iPhone | `app/src/locales/<idioma>/mobile.json`. `node tools/mobile-strings.mjs` en fa `mobile/ios/Murmur/Resources/Localizable.xcstrings` (`{{x}}` → `%@`) i, de `infoPlist.*`, `InfoPlist.xcstrings` (el permís del micròfon). A Swift: `L("rec.stop")`, `L("rec.defaultTitle", hora)` |
 
 El **català és la font**. Totes les claus hi han de ser. Si una clau falta en un altre idioma, surt en català.
 

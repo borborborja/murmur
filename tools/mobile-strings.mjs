@@ -1,0 +1,37 @@
+// The phone apps' texts come from the same place as the computer's: app/src/locales/<lang>/mobile.json
+// (Catalan is the source; check-locales keeps the three in step). This writes the iOS String
+// Catalog from them, with {{placeholders}} turned into %@ in the order they appear.
+//   node tools/mobile-strings.mjs
+import { readFileSync, writeFileSync } from "node:fs";
+
+const LANGS = ["ca", "es", "en"];
+const root = new URL("../", import.meta.url).pathname;
+const out = `${root}mobile/ios/Murmur/Resources/Localizable.xcstrings`;
+
+const flatten = (obj, prefix = "", acc = {}) => {
+  for (const [k, v] of Object.entries(obj)) {
+    const key = prefix ? `${prefix}.${k}` : k;
+    if (v && typeof v === "object") flatten(v, key, acc);
+    else acc[key] = String(v);
+  }
+  return acc;
+};
+const toIOS = (s) => s.replace(/\{\{\s*[\w.]+\s*\}\}/g, "%@");
+
+const byLang = Object.fromEntries(LANGS.map((l) => [l, flatten(JSON.parse(readFileSync(`${root}app/src/locales/${l}/mobile.json`, "utf8")))]));
+const strings = {};
+const plist = {};
+for (const key of Object.keys(byLang.ca).sort()) {
+  // infoPlist.<Key>: the system's own texts (the microphone permission), in InfoPlist.xcstrings.
+  if (key.startsWith("infoPlist.")) {
+    plist[key.slice(10)] = { extractionState: "manual", localizations: Object.fromEntries(LANGS.map((l) => [l, { stringUnit: { state: "translated", value: byLang[l][key] } }])) };
+    continue;
+  }
+  strings[key] = {
+    extractionState: "manual",
+    localizations: Object.fromEntries(LANGS.map((l) => [l, { stringUnit: { state: "translated", value: toIOS(byLang[l][key] ?? byLang.ca[key]) } }])),
+  };
+}
+writeFileSync(out, JSON.stringify({ sourceLanguage: "ca", strings, version: "1.0" }, null, 2) + "\n");
+writeFileSync(out.replace("Localizable", "InfoPlist"), JSON.stringify({ sourceLanguage: "ca", strings: plist, version: "1.0" }, null, 2) + "\n");
+console.log(`${Object.keys(strings).length} strings → ${out.replace(root, "")}`);

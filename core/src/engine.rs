@@ -17,7 +17,7 @@ use sherpa_onnx::{
 pub const SAMPLE_RATE: usize = 16_000;
 const VAD_WINDOW: usize = 512;
 /// How often the in-progress utterance is re-decoded, in seconds of audio.
-const PARTIAL_EVERY_S: f32 = 0.6;
+pub const PARTIAL_EVERY_S: f32 = 0.6;
 /// Shorter utterances can't create or update speakers (their embeddings are too noisy).
 const MIN_EMBED_S: f32 = 1.0;
 
@@ -286,6 +286,8 @@ pub struct LiveSession<'m> {
     partial_shown: bool,
     /// Provisional text while someone speaks; off while the recording is behind (a busy Mac).
     partials: bool,
+    /// How often it's re-decoded, in seconds of audio (PARTIAL_EVERY_S; a phone saves battery with more).
+    partial_every: f32,
     next_id: u32,
 }
 
@@ -308,6 +310,11 @@ impl<'m> LiveSession<'m> {
     /// Turns the provisional text on or off (it costs about ten times the final text).
     pub fn set_partials(&mut self, on: bool) {
         self.partials = on;
+    }
+
+    /// How often the provisional text is redone, in seconds of audio.
+    pub fn set_partial_every(&mut self, seconds: f32) {
+        self.partial_every = seconds.max(0.2);
     }
 
     pub fn new(
@@ -351,6 +358,7 @@ impl<'m> LiveSession<'m> {
             last_partial: 0,
             partial_shown: false,
             partials: true,
+            partial_every: PARTIAL_EVERY_S,
             next_id: 0,
         })
     }
@@ -446,7 +454,7 @@ impl<'m> LiveSession<'m> {
             return None;
         }
         // Throttle on audio time, not wall time, so it behaves the same live and in simulations.
-        if self.samples_seen - self.last_partial < (PARTIAL_EVERY_S * SAMPLE_RATE as f32) as usize {
+        if self.samples_seen - self.last_partial < (self.partial_every * SAMPLE_RATE as f32) as usize {
             return None;
         }
         self.last_partial = self.samples_seen;

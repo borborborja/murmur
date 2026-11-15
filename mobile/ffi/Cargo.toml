@@ -1,0 +1,31 @@
+[package]
+name = "murmur-mobile"
+version = "0.1.0"
+description = "Murmur's engine for the phone apps (iOS, later Android), through UniFFI"
+edition = "2024"
+license = "MIT"
+publish = false
+
+# Its own workspace: on phones sherpa-onnx comes as a shared library (an xcframework on iOS), and
+# that feature must not reach the computer's build, which links it statically.
+[workspace]
+
+[lib]
+name = "murmur_mobile"
+crate-type = ["staticlib", "cdylib", "lib"]
+
+[[bin]]
+name = "uniffi-bindgen"
+path = "src/bin/uniffi-bindgen.rs"
+
+[dependencies]
+murmur-core = { path = "../../core" }
+sherpa-onnx = { version = "1.13.8", default-features = false, features = ["shared"] }
+uniffi = { version = "0.32", features = ["cli"] }
+serde_json = "1"
+anyhow = "1"
+thiserror = "2"
+
+[profile.release]
+opt-level = 3
+lto = "thin"

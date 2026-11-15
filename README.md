@@ -56,9 +56,9 @@ It started as a tool for meetings in **Catalan**, where most transcription servi
 ## Requirements
 
 - **macOS:** a Mac with Apple Silicon (M1 or later) and macOS 14.2 or later.
-- **Windows:** Windows 10 or 11, 64-bit (x86-64), with a processor with AVX2 (Intel since 2013, AMD since 2015). WebView2 comes with Windows; the installer adds it if it's missing.
+- **Windows:** Windows 10 or 11, 64-bit, on an x86-64 PC with a processor with AVX2 (Intel since 2013, AMD since 2015) or on an ARM PC (Snapdragon) with Windows 11. WebView2 comes with Windows; the installer adds it if it's missing.
 - **Linux:** a 64-bit (x86-64) distribution with WebKitGTK 4.1, such as Ubuntu 22.04 or later, Debian 12, Fedora 38 or later, with a processor with AVX2. For the keys to be saved, a Secret Service (GNOME Keyring or KWallet).
-- 8 GB of memory. 16 GB is recommended for the local summary. On Windows and Linux everything runs on the processor, so the final pass and the summary are slower than on a Mac.
+- 8 GB of memory. 16 GB is recommended for the local summary. On Windows x64 and Linux, the final pass and the summary use the graphics card if there is one (Vulkan: NVIDIA, AMD or Intel, with up-to-date drivers), and the processor otherwise. On ARM PCs, for now, always the processor.
 - About 600 MB of disk for the base models. Optional models take more: English 458 MB, Catalan Whisper 1.1 GB, Whisper for Spanish and English 574 MB, Gemma 5.2 GB.
 
 ## Install
@@ -72,7 +72,7 @@ Everything is in [Releases](https://github.com/quicodomingo/murmur-releases/rele
 - **Calendar**, optional.
 - **Screen recording**, only if you want to take screenshots of a shared screen.
 
-**Windows.** Download `Murmur_<version>_x64-setup.exe` and run it. It installs for your user only, with no administrator rights. The installer isn't signed with a Windows certificate yet, so SmartScreen may warn you the first time: click *More info › Run anyway*. If Windows doesn't let Murmur use the microphone, turn it on in Settings › Privacy & security › Microphone.
+**Windows.** Download `Murmur_<version>_x64-setup.exe` (or `Murmur_<version>_arm64-setup.exe` on an ARM PC, such as a Snapdragon) and run it. It installs for your user only, with no administrator rights. The installer isn't signed with a Windows certificate yet, so SmartScreen may warn you the first time: click *More info › Run anyway*. If Windows doesn't let Murmur use the microphone, turn it on in Settings › Privacy & security › Microphone.
 
 **Linux.** Choose the package for your distribution:
 
@@ -103,7 +103,7 @@ The `.deb` and `.rpm` packages don't update themselves: install the new version 
 | Speakers, final pass | pyannote segmentation 3.0 + ERes2Net | pyannote, 3D-Speaker | MIT, Apache 2.0 |
 | Summary | Gemma 4 E4B | Google | Apache 2.0 |
 
-Speech recognition and speakers run on [sherpa-onnx](https://github.com/k2-fsa/sherpa-onnx). Whisper runs on [whisper.cpp](https://github.com/ggml-org/whisper.cpp) and Gemma on [llama.cpp](https://github.com/ggml-org/llama.cpp), both with Metal on the Mac and on the processor (AVX2) on Windows and Linux.
+Speech recognition and speakers run on [sherpa-onnx](https://github.com/k2-fsa/sherpa-onnx). Whisper runs on [whisper.cpp](https://github.com/ggml-org/whisper.cpp) and Gemma on [llama.cpp](https://github.com/ggml-org/llama.cpp), both with Metal on the Mac, Vulkan on Windows x64 and Linux (or the processor, with AVX2, without a graphics card), and the processor on ARM PCs.
 
 ## Build from source
 

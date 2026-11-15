@@ -106,6 +106,25 @@ fn dtw_preset(model: &str) -> Result<DtwModelPreset> {
     Ok(if text_layers >= 32 { DtwModelPreset::LargeV3 } else { DtwModelPreset::LargeV3Turbo })
 }
 
+/// Whisper on the GPU (Metal, or Vulkan if built with it), and on the CPU if that fails: a GPU
+/// without room for the model, or a driver that won't take it. `MURMUR_NO_GPU` skips the GPU.
+/// Without a usable GPU at all (no Vulkan driver), whisper.cpp already runs on the CPU.
+fn load(model: &str, configure: impl Fn(&mut WhisperContextParameters)) -> Result<WhisperContext> {
+    let with = |gpu: bool| {
+        let mut params = WhisperContextParameters::default();
+        params.use_gpu(gpu);
+        configure(&mut params);
+        WhisperContext::new_with_params(model, params)
+    };
+    if std::env::var_os("MURMUR_NO_GPU").is_none() {
+        match with(true) {
+            Ok(ctx) => return Ok(ctx),
+            Err(e) => eprintln!("Whisper a la GPU: {e}; es fa amb el processador"),
+        }
+    }
+    with(false).context("no s'ha pogut carregar Whisper")
+}
+
 fn run() -> Result<()> {
     let args: Vec<String> = std::env::args().collect();
     let [_, model, language] = args.as_slice() else {
@@ -119,14 +138,15 @@ fn run() -> Result<()> {
     }
     let job: Job = serde_json::from_str(&input).context("feina no vàlida")?;
 
-    let mut params = WhisperContextParameters::default();
     // DTW timestamps put the words in the right utterance; flash attention (20% faster) can't
     // give them and spills words into the next one.
-    params.use_gpu(true).flash_attn(false).dtw_parameters(DtwParameters {
-        mode: DtwMode::ModelPreset { model_preset: dtw_preset(model)? },
-        ..Default::default()
-    });
-    let ctx = WhisperContext::new_with_params(model, params).context("no s'ha pogut carregar Whisper")?;
+    let preset = dtw_preset(model)?;
+    let ctx = load(model, |params| {
+        params.flash_attn(false).dtw_parameters(DtwParameters {
+            mode: DtwMode::ModelPreset { model_preset: preset.clone() },
+            ..Default::default()
+        });
+    })?;
     let mut state = ctx.create_state()?;
     let eot = ctx.token_eot();
 
@@ -188,9 +208,7 @@ fn run() -> Result<()> {
 
 /// Whisper's language probabilities for each window of `job.pcm`.
 fn detect(model: &str, job: &DetectJob) -> Result<()> {
-    let mut params = WhisperContextParameters::default();
-    params.use_gpu(true);
-    let ctx = WhisperContext::new_with_params(model, params).context("no s'ha pogut carregar Whisper")?;
+    let ctx = load(model, |_| {})?;
     let mut state = ctx.create_state()?;
     let samples = read_pcm(&job.pcm)?;
     let id = |code: &str| whisper_rs::get_lang_id(code).map(|i| i as usize);

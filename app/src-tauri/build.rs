@@ -51,4 +51,43 @@ fn bundled_libs() {
     if found == 0 {
         println!("cargo:warning=No s'han trobat les biblioteques de sherpa-onnx per a {}", dest.display());
     }
+    if std::env::var_os("CARGO_FEATURE_VULKAN").is_some() {
+        vulkan_loader(&os, &dest);
+    }
+}
+
+/// With `vulkan`, llama.cpp (here) and whisper.cpp (murmur-whisper) link against the Vulkan
+/// loader, and without it neither would even start. GPU drivers install it, but not every PC
+/// has one (a virtual machine, a PC without drivers), so it goes in the installer too. With no
+/// Vulkan driver behind it, ggml finds no device and everything runs on the CPU.
+///
+/// `MURMUR_VULKAN_LOADER` says which file to take; otherwise, the Vulkan SDK's or the system's.
+fn vulkan_loader(os: &str, dest: &std::path::Path) {
+    use std::path::PathBuf;
+    println!("cargo:rerun-if-env-changed=MURMUR_VULKAN_LOADER");
+    println!("cargo:rerun-if-env-changed=VULKAN_SDK");
+    let name = if os == "windows" { "vulkan-1.dll" } else { "libvulkan.so.1" };
+    let mut candidates: Vec<PathBuf> = vec![];
+    if let Some(path) = std::env::var_os("MURMUR_VULKAN_LOADER") {
+        candidates.push(path.into());
+    }
+    if let Some(sdk) = std::env::var_os("VULKAN_SDK").map(PathBuf::from) {
+        candidates.extend([sdk.join("Bin").join(name), sdk.join("lib").join(name)]);
+    }
+    if os == "windows" {
+        let windir = std::env::var_os("SystemRoot").map(PathBuf::from).unwrap_or_else(|| "C:\\Windows".into());
+        candidates.push(windir.join("System32").join(name));
+    } else {
+        let arch = std::env::var("CARGO_CFG_TARGET_ARCH").unwrap_or_default();
+        candidates.extend([
+            PathBuf::from(format!("/usr/lib/{arch}-linux-gnu/{name}")),
+            PathBuf::from(format!("/usr/lib64/{name}")),
+            PathBuf::from(format!("/usr/lib/{name}")),
+        ]);
+    }
+    let Some(loader) = candidates.iter().find(|p| p.is_file()) else {
+        panic!("Falta el carregador de Vulkan ({name}): instal·la el Vulkan SDK o posa MURMUR_VULKAN_LOADER");
+    };
+    // Following links: libvulkan.so.1 is usually a link to the versioned file.
+    std::fs::copy(loader, dest.join(name)).unwrap();
 }

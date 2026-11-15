@@ -7,7 +7,8 @@
 // What each platform downloads (Tauri's updater looks up "<os>-<arch>-<installer>" first, then
 // "<os>-<arch>"):
 //   *.app.tar.gz      darwin-aarch64          (release.sh)
-//   *-setup.exe       windows-x86_64[-nsis]
+//   *_x64-setup.exe   windows-x86_64[-nsis]
+//   *_arm64-setup.exe windows-aarch64[-nsis]
 //   *.AppImage        linux-x86_64[-appimage]
 //   *.deb, *.rpm      linux-x86_64-deb, linux-x86_64-rpm
 import { existsSync, readdirSync, readFileSync } from "node:fs";
@@ -21,7 +22,8 @@ if (!dir || !version || !base) {
 
 const KINDS = [
   { test: /\.app\.tar\.gz$/, keys: ["darwin-aarch64", "darwin-aarch64-app"] },
-  { test: /-setup\.exe$/, keys: ["windows-x86_64", "windows-x86_64-nsis"] },
+  { test: /_arm64-setup\.exe$/, keys: ["windows-aarch64", "windows-aarch64-nsis"] },
+  { test: /_x64-setup\.exe$/, keys: ["windows-x86_64", "windows-x86_64-nsis"] },
   { test: /\.AppImage$/, keys: ["linux-x86_64", "linux-x86_64-appimage"] },
   { test: /\.deb$/, keys: ["linux-x86_64-deb"] },
   { test: /\.rpm$/, keys: ["linux-x86_64-rpm"] },

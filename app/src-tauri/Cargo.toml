@@ -19,6 +19,11 @@ resolver = "3"
 name = "transcriptor_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
+[features]
+# Gemma on the GPU with Vulkan (Windows x64 and Linux; the release builds turn it on, see
+# docs/ARQUITECTURA.md › GPU). Needs the Vulkan SDK to build; build.rs ships its loader.
+vulkan = ["llama-cpp-2/vulkan"]
+
 [build-dependencies]
 tauri-build = { version = "2", features = [] }
 

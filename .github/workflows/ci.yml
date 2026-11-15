@@ -1,5 +1,6 @@
-# Proves de cada canvi a macOS, Windows i Linux: tipus i traduccions de la interfície, tests del
-# motor i les proves e2e de l'app compilada (Windows i Linux: tauri-driver no funciona a macOS).
+# Proves de cada canvi a macOS, Windows (x64 i ARM) i Linux: tipus i traduccions de la interfície,
+# tests del motor i les proves e2e de l'app compilada (Windows i Linux: tauri-driver no funciona a
+# macOS).
 name: CI
 
 on:
@@ -44,7 +45,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-latest, windows-2022, ubuntu-22.04]
+        os: [macos-latest, windows-2022, windows-11-arm, ubuntu-22.04]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
@@ -69,7 +70,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-latest, windows-2022, ubuntu-22.04]
+        os: [macos-latest, windows-2022, windows-11-arm, ubuntu-22.04]
     runs-on: ${{ matrix.os }}
     env:
       MURMUR_E2E_MODELS: ${{ github.workspace }}/e2e-models
@@ -125,7 +126,8 @@ jobs:
         run: |
           $version = (Get-ItemProperty "HKLM:\SOFTWARE\WOW6432Node\Microsoft\EdgeUpdate\Clients\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}").pv
           Write-Host "WebView2 $version"
-          Invoke-WebRequest "https://msedgedriver.microsoft.com/$version/edgedriver_win64.zip" -OutFile edgedriver.zip
+          $arch = if ($env:RUNNER_ARCH -eq "ARM64") { "arm64" } else { "win64" }
+          Invoke-WebRequest "https://msedgedriver.microsoft.com/$version/edgedriver_$arch.zip" -OutFile edgedriver.zip
           Expand-Archive edgedriver.zip -DestinationPath "$env:RUNNER_TEMP\edgedriver"
           "$env:RUNNER_TEMP\edgedriver" | Out-File -FilePath $env:GITHUB_PATH -Append
       - name: Proves de la interfície
@@ -148,16 +150,23 @@ jobs:
           path: app/e2e/captures
           if-no-files-found: ignore
 
-  # Els instal·ladors de veritat (compilació de release, com a la publicació), instal·lats i
-  # provats: les biblioteques de sherpa-onnx han d'anar dins del paquet. Signats amb una clau
-  # d'un sol ús; no es publica res.
+  # Els instal·ladors de veritat (compilació de release, com a la publicació, amb Vulkan on toca),
+  # instal·lats i provats: les biblioteques de sherpa-onnx i el carregador de Vulkan han d'anar
+  # dins del paquet. Els executors no tenen GPU: es prova que, sense, tot va pel processador.
+  # Signats amb una clau d'un sol ús; no es publica res.
   paquets:
     name: Paquets (${{ matrix.os }})
     needs: interficie
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-2022, ubuntu-22.04]
+        include:
+          - os: windows-2022
+            vulkan: true
+          - os: windows-11-arm
+            vulkan: false
+          - os: ubuntu-22.04
+            vulkan: true
     runs-on: ${{ matrix.os }}
     env:
       MURMUR_E2E_MODELS: ${{ github.workspace }}/e2e-models
@@ -172,9 +181,14 @@ jobs:
           npx tauri signer generate --ci -w "$RUNNER_TEMP/prova.key" -p prova >/dev/null
           { echo "TAURI_SIGNING_PRIVATE_KEY<<FI"; cat "$RUNNER_TEMP/prova.key"; echo; echo "FI"; } >> "$GITHUB_ENV"
           echo "TAURI_SIGNING_PRIVATE_KEY_PASSWORD=prova" >> "$GITHUB_ENV"
+      - uses: ./.github/actions/vulkan
+        if: matrix.vulkan
       - name: Fa els instal·ladors
         working-directory: app
-        run: npm run tauri build
+        shell: bash
+        env:
+          FEATURES: ${{ matrix.vulkan && '--features vulkan' || '' }}
+        run: npm run tauri build -- $FEATURES
       - name: Model de transcripció (memòria cau)
         id: models
         uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
@@ -199,7 +213,8 @@ jobs:
           ls $b/deb/*.deb.sig $b/appimage/*.AppImage.sig
           sudo apt-get install -y ./$b/deb/*.deb
           app=$(dpkg -L murmur | grep -m1 '^/usr/bin/')
-          echo "Instal·lada: $app"; ldd "$app" | grep -i "onnx\|not found" || true
+          echo "Instal·lada: $app"; ldd "$app" | grep -i "onnx\|vulkan\|not found" || true
+          test -f /usr/lib/Murmur/libvulkan.so.1 || { echo "Falta libvulkan.so.1 a /usr/lib/Murmur"; exit 1; }
           cd app/e2e && MURMUR_E2E_APP="$app" MURMUR_E2E_REQUIRE_MODELS=1 npm run motor
       - name: Prova l'AppImage
         if: runner.os == 'Linux'
@@ -221,6 +236,7 @@ jobs:
           Get-ChildItem $dir | Format-Table Name, Length
           $app = Get-ChildItem $dir -Filter *.exe | Where-Object { $_.Name -notmatch "uninstall|whisper" } | Select-Object -First 1
           if (-not (Test-Path (Join-Path $dir "sherpa-onnx-c-api.dll"))) { throw "Falta sherpa-onnx-c-api.dll a la instal·lació" }
+          if ("${{ matrix.vulkan }}" -eq "true" -and -not (Test-Path (Join-Path $dir "vulkan-1.dll"))) { throw "Falta vulkan-1.dll a la instal·lació" }
           Write-Host "Instal·lada: $($app.FullName)"
           $env:MURMUR_E2E_APP = $app.FullName
           cd app/e2e

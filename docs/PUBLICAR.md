@@ -4,7 +4,7 @@ Les apps instal·lades busquen actualitzacions en obrir-se (si l'usuari no ho ha
 
 - **L'app**: una *release* a [quicodomingo/murmur-releases](https://github.com/quicodomingo/murmur-releases/releases) amb els instal·ladors i els paquets d'actualització de cada sistema, i el `latest.json` que diu a cada app instal·lada què ha de baixar:
   - macOS: el `.dmg` i `Murmur.app.tar.gz` (amb la seva signatura), fets al Mac amb `release.sh`, o a GitHub Actions si hi ha els secrets d'Apple.
-  - Windows: `Murmur_<versió>_x64-setup.exe` (instal·lador i paquet d'actualització alhora) i la seva signatura.
+  - Windows: `Murmur_<versió>_x64-setup.exe` i `Murmur_<versió>_arm64-setup.exe` (instal·ladors i paquets d'actualització alhora) i les seves signatures.
   - Linux: `.deb`, `.rpm` i `.AppImage` (aquesta s'actualitza sola), amb les signatures.
 - **El repositori del codi** [quicodomingo/murmur](https://github.com/quicodomingo/murmur), públic i amb llicència MIT: `publish.sh` hi puja el codi i l'etiqueta `v<versió>`, i la *release* hi té els mateixos instal·ladors.
 - **Windows i Linux es compilen sols**: l'etiqueta engega [`.github/workflows/release.yml`](../.github/workflows/release.yml), que els compila, els signa amb la clau de les actualitzacions i els afegeix a totes dues *releases* i al `latest.json`, sense treure-hi el Mac.
@@ -102,7 +102,7 @@ La clau pública del Mac és a `app/src-tauri/tauri.conf.json` › `plugins.upda
    ```bash
    curl -sL https://github.com/quicodomingo/murmur-releases/releases/latest/download/latest.json
    ```
-   Ha de mostrar la versió nova i les plataformes `darwin-aarch64`, `windows-x86_64` i `linux-x86_64`. En una app amb la versió anterior, «Comprova ara» l'ha d'oferir, instal·lar-la i reiniciar-se, i en tornar a obrir-se ha de mostrar les novetats.
+   Ha de mostrar la versió nova i les plataformes `darwin-aarch64`, `windows-x86_64`, `windows-aarch64` i `linux-x86_64`. En una app amb la versió anterior, «Comprova ara» l'ha d'oferir, instal·lar-la i reiniciar-se, i en tornar a obrir-se ha de mostrar les novetats.
 
 ### Abans de publicar: les proves
 

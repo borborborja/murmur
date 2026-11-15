@@ -12,6 +12,18 @@ runs:
         sudo apt-get update
         sudo apt-get install -y libwebkit2gtk-4.1-dev libayatana-appindicator3-dev librsvg2-dev \
           patchelf libasound2-dev libdbus-1-dev libssl-dev libgomp1 cmake clang
+    # Windows ARM: ggml només pot triar una CPU ARM concreta amb clang (amb MSVC demana
+    # GGML_NATIVE, que agafaria l'SVE de l'executor, que cap Snapdragon té). ARMv8.2 amb dotprod i
+    # fp16, que tenen tots els PC amb Windows ARM (Snapdragon 8cx i X). scripts/build-whisper.mjs
+    # fa el mateix per a whisper.cpp.
+    - name: Windows ARM (clang per a llama.cpp i whisper.cpp)
+      if: runner.os == 'Windows' && runner.arch == 'ARM64'
+      shell: pwsh
+      run: |
+        if (-not (Test-Path "C:\Program Files\LLVM\bin\clang-cl.exe")) { choco install llvm -y --no-progress }
+        "LIBCLANG_PATH=C:\Program Files\LLVM\bin" | Out-File -FilePath $env:GITHUB_ENV -Append
+        "CMAKE_GENERATOR_TOOLSET=ClangCL" | Out-File -FilePath $env:GITHUB_ENV -Append
+        "GGML_CPU_ARM_ARCH=armv8.2-a+dotprod+fp16" | Out-File -FilePath $env:GITHUB_ENV -Append
     - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
       with:
         node-version: 22

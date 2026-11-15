@@ -7,9 +7,9 @@ Tot el que cal per fer la pàgina de descàrrega de Murmur: el missatge, els tex
 | | |
 |---|---|
 | Nom | Murmur (sempre amb majúscula al text; el logotip és «murmur» en minúscula) |
-| Plataforma | Mac amb Apple Silicon (M1 o posterior) i macOS 14.2 o posterior; Windows 10 i 11 i Linux de 64 bits, amb un processador amb AVX2 (Intel des del 2013, AMD des del 2015). Ben aviat, iPhone, iPad i Android |
+| Plataforma | Mac amb Apple Silicon (M1 o posterior) i macOS 14.2 o posterior; Windows 10 i 11 i Linux de 64 bits, amb un processador amb AVX2 (Intel des del 2013, AMD des del 2015), i Windows 11 en PC amb ARM (Snapdragon). Ben aviat, iPhone, iPad i Android |
 | Preu | Gratuïta. Codi obert amb llicència MIT |
-| Descàrrega | https://github.com/quicodomingo/murmur-releases/releases/latest (els fitxers porten la versió al nom, així que l'enllaç estable és el de la pàgina, no el del fitxer): el `.dmg` del Mac, `Murmur_<versió>_x64-setup.exe` per a Windows, i el `.deb` i el `.rpm` per a Linux |
+| Descàrrega | https://github.com/quicodomingo/murmur-releases/releases/latest (els fitxers porten la versió al nom, així que l'enllaç estable és el de la pàgina, no el del fitxer): el `.dmg` del Mac, `Murmur_<versió>_x64-setup.exe` per a Windows (`_arm64-setup.exe` per als PC amb ARM), i el `.deb` i el `.rpm` per a Linux |
 | Codi | https://github.com/quicodomingo/murmur |
 | Signatura | Al Mac, signada i notaritzada per Apple. A Windows, l'instal·lador encara no està signat (SmartScreen avisa el primer cop). S'actualitza sola a tot arreu |
 | Idiomes de les reunions | Català (central, valencià i balear), castellà, català i castellà barrejats, anglès |

@@ -184,7 +184,10 @@ Entre reunions (bloc 5):
 - [ ] Windows i Linux: «Reunió detectada» (qui fa servir el micròfon).
 - [ ] Windows i Linux: calendari (Google o Outlook directes, amb OAuth).
 - [ ] Windows: signar l'instal·lador perquè SmartScreen no avisi.
-- [ ] Windows i Linux: acceleració per GPU (Vulkan) per a Whisper i Gemma.
+- [ ] Windows i Linux: acceleració per GPU (Vulkan) per a Whisper i Gemma, amb el processador si no hi ha gràfica o no hi cap.
+- [ ] Mesurar Vulkan en PC de veritat (NVIDIA, AMD, Intel integrada) amb el banc de proves: factor de temps real de Whisper i velocitat del resum, comparats amb el processador.
+- [ ] Windows ARM (Snapdragon): compilació nativa, instal·lador `_arm64-setup.exe` i actualitzacions.
+- [ ] Windows ARM: provar-la en un Snapdragon de veritat i mesurar; si cal, Gemma a la GPU Adreno amb OpenCL.
 - [ ] Murmur per a mòbil (iOS i Android): funciona sol amb la transcripció ràpida, i emparellat amb l'ordinador hi fa la passada final. Pla i mockups a [`docs/MOBIL.md`](MOBIL.md).
   - [x] El motor separat de l'app de l'ordinador (`core/`, `murmur-core`), per compartir-lo amb el mòbil.
   - [x] L'emparellament, la part de l'ordinador: Configuració › Mòbil, codi QR, Bonjour i protocol xifrat ([`docs/EMPARELLAR.md`](EMPARELLAR.md)).

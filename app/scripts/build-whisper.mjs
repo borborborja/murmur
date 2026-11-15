@@ -18,8 +18,19 @@ if (!target.includes("apple") && target.startsWith("x86_64")) {
   Object.assign(env, { GGML_NATIVE: "OFF", GGML_AVX: "ON", GGML_AVX2: "ON", GGML_FMA: "ON", GGML_F16C: "ON" });
 }
 
+// Windows on ARM: ggml can only target a given ARM CPU with clang (MSVC needs GGML_NATIVE, which on
+// the CI runner would pick its SVE that no Snapdragon has). ARMv8.2 with dotprod and fp16, which
+// every Windows ARM PC has (Snapdragon 8cx and X), the same as the CI sets for llama.cpp.
+if (target === "aarch64-pc-windows-msvc") {
+  Object.assign(env, { GGML_NATIVE: "OFF", GGML_CPU_ARM_ARCH: "armv8.2-a+dotprod+fp16" });
+  env.CMAKE_GENERATOR_TOOLSET ??= "ClangCL";
+}
+
 const args = ["build", "--release"];
 if (target !== host) args.push("--target", target);
+// Whisper on the GPU with Vulkan (Windows x64 and Linux releases): MURMUR_VULKAN=1, with the
+// Vulkan SDK installed. The app itself is built with `--features vulkan` at the same time.
+if (process.env.MURMUR_VULKAN === "1") args.push("--features", "vulkan");
 execFileSync("cargo", args, { cwd: join(app, "whisper"), stdio: "inherit", env });
 
 const built = join(app, "whisper", "target", target !== host ? target : "", "release", `murmur-whisper${exe}`);

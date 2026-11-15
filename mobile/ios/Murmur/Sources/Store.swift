@@ -302,6 +302,11 @@ final class Store: ObservableObject {
         reload()
     }
 
+    func rename(_ id: String, to title: String) {
+        try? engine?.renameMeeting(id: id, title: title)
+        reload()
+    }
+
     func meeting(_ id: String) -> MeetingDetail? {
         guard let json = try? engine?.meetingJson(id: id), let data = json.data(using: .utf8) else { return nil }
         return MeetingDetail(json: data)

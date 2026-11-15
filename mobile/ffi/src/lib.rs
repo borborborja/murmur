@@ -151,6 +151,18 @@ impl Murmur {
         lock(&self.db).delete(&id).map_err(Into::into)
     }
 
+    /// A new title for a meeting (empty: left as it was).
+    pub fn rename_meeting(&self, id: String, title: String) -> Result<()> {
+        let title = title.trim();
+        if title.is_empty() {
+            return Ok(());
+        }
+        let mut db = lock(&self.db);
+        let Some(mut meeting) = db.get(&id)? else { return Ok(()) };
+        meeting["title"] = json!(title);
+        db.put(&meeting).map_err(Into::into)
+    }
+
     /// Starts recording a meeting: `title` as the phone shows it until the computer names it,
     /// `language` ("ca", "es", "ca-es", "en"), whether there are more people in the room (or
     /// it's only the user: one speaker), and how often the provisional text is redone (0: never).

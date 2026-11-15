@@ -49,7 +49,11 @@
     "pending": "Cuando el teléfono encuentre el ordenador, añadirá el título, el resumen y la pasada de Whisper. Ahora es la transcripción rápida.",
     "delete": "Eliminar la reunión",
     "deleteConfirm": "Se borrarán la reunión y el audio de este teléfono.",
-    "empty": "No se ha oído nada."
+    "empty": "No se ha oído nada.",
+    "rename": "Cambiar el nombre",
+    "renameTitle": "Nombre de la reunión",
+    "save": "Guardar",
+    "cancel": "Cancelar"
   },
   "settings": {
     "title": "Ajustes",

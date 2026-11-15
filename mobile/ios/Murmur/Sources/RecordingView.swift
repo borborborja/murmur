@@ -183,15 +183,18 @@ struct RecordingCard: View {
                     }
                     // The microphone's clock, not the engine's: it never stalls behind the transcription.
                     TimelineView(.periodic(from: .now, by: 0.1)) { _ in
+                        // Never split: it keeps its width, the other column gives way.
                         Text(longClock(store.meter.seconds)).font(.mono(40, weight: .medium)).tracking(-0.8)
+                            .lineLimit(1).fixedSize()
                     }
                 }
-                Spacer()
+                .layoutPriority(1)
+                Spacer(minLength: 8)
                 VStack(alignment: .trailing, spacing: 3) {
-                    Text(languageName(store.language))
+                    Text(languageName(store.language)).lineLimit(1)
                     // Which microphone hears it: a headset plugged in mid-meeting shows up here.
                     if let input = store.inputName {
-                        Label(input, systemImage: "mic").labelStyle(.titleAndIcon).lineLimit(1)
+                        Label(input, systemImage: "mic").labelStyle(.titleAndIcon).lineLimit(1).truncationMode(.middle)
                     }
                 }
                 .font(.system(size: 13)).foregroundStyle(palette.textSecondary)

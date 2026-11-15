@@ -125,6 +125,28 @@ struct Segmented<T: Hashable>: View {
     }
 }
 
+/// "Canvia el nom": an alert with the meeting's title in a field.
+struct RenameAlert: ViewModifier {
+    @Binding var isPresented: Bool
+    @Binding var title: String
+    var save: (String) -> Void
+
+    func body(content: Content) -> some View {
+        content.alert(L("meeting.renameTitle"), isPresented: $isPresented) {
+            TextField(L("meeting.renameTitle"), text: $title)
+                .submitLabel(.done)
+            Button(L("meeting.cancel"), role: .cancel) {}
+            Button(L("meeting.save")) { save(title) }
+        }
+    }
+}
+
+extension View {
+    func renameAlert(isPresented: Binding<Bool>, title: Binding<String>, save: @escaping (String) -> Void) -> some View {
+        modifier(RenameAlert(isPresented: isPresented, title: title, save: save))
+    }
+}
+
 extension Font {
     /// Monospaced, tabular figures: times never jump.
     static func mono(_ size: CGFloat, weight: Font.Weight = .regular) -> Font {

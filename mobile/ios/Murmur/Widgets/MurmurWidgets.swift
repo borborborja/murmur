@@ -94,14 +94,15 @@ struct VoiceBars: View {
 
 struct LastLine: View {
     var state: RecordingAttributes.ContentState
+    var size: CGFloat = 14
     var body: some View {
         let dark = MurmurPalette.acidDark
         if state.lastLine.isEmpty {
-            Text(L("rec.listening")).font(.system(size: 14)).foregroundStyle(dark.textSecondary)
+            Text(L("rec.listening")).font(.system(size: size)).foregroundStyle(dark.textSecondary)
         } else {
             (Text(state.speaker.map { "\($0) · " } ?? "").fontWeight(.semibold).foregroundColor(dark.textPrimary)
                 + Text("…" + state.lastLine).foregroundColor(dark.textSecondary))
-                .font(.system(size: 14))
+                .font(.system(size: size))
         }
     }
 }
@@ -110,20 +111,22 @@ struct RecordingButtons: View {
     var paused: Bool
     /// Atura was tapped once: the second tap stops.
     var confirming: Bool
+    var height: CGFloat = 36
+    var fontSize: CGFloat = 14
     var body: some View {
         let dark = MurmurPalette.acidDark
         HStack(spacing: 8) {
             Button(intent: MarkMomentIntent()) {
-                Label(L("rec.mark"), systemImage: "flag").frame(maxWidth: .infinity, minHeight: 34)
+                Label(L("rec.mark"), systemImage: "flag").frame(maxWidth: .infinity, minHeight: height)
             }
             .tint(dark.textPrimary.opacity(0.14))
             Button(intent: TogglePauseIntent()) {
-                Label(paused ? L("rec.resume") : L("rec.pause"), systemImage: paused ? "record.circle" : "pause.fill").frame(maxWidth: .infinity, minHeight: 34)
+                Label(paused ? L("rec.resume") : L("rec.pause"), systemImage: paused ? "record.circle" : "pause.fill").frame(maxWidth: .infinity, minHeight: height)
             }
             .tint(dark.textPrimary.opacity(0.14))
             Button(intent: StopRecordingIntent()) {
                 Label(confirming ? L("rec.stopConfirm") : L("rec.stop"), systemImage: "stop.fill")
-                    .frame(maxWidth: .infinity, minHeight: 34)
+                    .frame(maxWidth: .infinity, minHeight: height)
                     .lineLimit(1).minimumScaleFactor(0.7)
             }
             // The dark red with white (5.6:1), as in the app.
@@ -131,7 +134,7 @@ struct RecordingButtons: View {
         }
         .buttonStyle(.borderedProminent)
         .buttonBorderShape(.capsule)
-        .font(.system(size: 14, weight: .semibold))
+        .font(.system(size: fontSize, weight: .semibold))
         .labelStyle(.titleAndIcon)
         .foregroundStyle(dark.onRecordingPill)
     }
@@ -141,26 +144,32 @@ struct LockScreenRecording: View {
     @Environment(\.murmur) private var palette
     var context: ActivityViewContext<RecordingAttributes>
 
+    // Three rows that fill the ~160 pt iOS allows (16 + 44 + 10 + 20 + 10 + 42 + 16 = 158):
+    // the mark, the title and the time; the last line; the buttons.
     var body: some View {
-        VStack(alignment: .leading, spacing: 9) {
-            HStack(alignment: .center, spacing: 10) {
-                EchoMark(state: context.state, size: 30)
-                    .frame(width: 34, height: 34)
-                    .background(palette.logoBackground, in: RoundedRectangle(cornerRadius: 9, style: .continuous))
-                VStack(alignment: .leading, spacing: 0) {
-                    Text(context.attributes.title).font(.system(size: 14, weight: .semibold)).foregroundStyle(palette.textPrimary).lineLimit(1)
-                    Text("\(context.state.pausedAt == nil ? L("rec.recording") : L("rec.pause")) · \(context.attributes.language)")
-                        .font(.system(size: 12)).foregroundStyle(palette.textSecondary).lineLimit(1)
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(alignment: .center, spacing: 12) {
+                EchoMark(state: context.state, size: 36)
+                    .frame(width: 44, height: 44)
+                    .background(palette.logoBackground, in: RoundedRectangle(cornerRadius: 11, style: .continuous))
+                    .overlay(RoundedRectangle(cornerRadius: 11, style: .continuous).strokeBorder(palette.textPrimary.opacity(0.15)))
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(context.attributes.title).font(.system(size: 15, weight: .semibold)).foregroundStyle(palette.textPrimary).lineLimit(1)
+                    HStack(spacing: 6) {
+                        VoiceBars(state: context.state).scaleEffect(0.6, anchor: .leading).frame(width: 26, height: 17, alignment: .leading)
+                        Text("\(context.state.pausedAt == nil ? L("rec.recording") : L("rec.pause")) · \(context.attributes.language)")
+                            .font(.system(size: 13)).foregroundStyle(palette.textSecondary).lineLimit(1)
+                    }
                 }
+                .layoutPriority(0)
                 Spacer(minLength: 6)
-                VoiceBars(state: context.state)
-                RecordingTimer(state: context.state).font(.mono(26, weight: .medium)).foregroundStyle(palette.textPrimary)
-                    .frame(minWidth: 70, alignment: .trailing)
+                RecordingTimer(state: context.state).font(.mono(34, weight: .medium)).foregroundStyle(palette.textPrimary)
+                    .lineLimit(1).fixedSize().layoutPriority(1)
             }
-            LastLine(state: context.state).lineLimit(1)
-            RecordingButtons(paused: context.state.pausedAt != nil, confirming: context.state.confirmingStop)
+            LastLine(state: context.state, size: 15).lineLimit(1)
+            RecordingButtons(paused: context.state.pausedAt != nil, confirming: context.state.confirmingStop, height: 42, fontSize: 15)
         }
-        .padding(.horizontal, 14).padding(.vertical, 12)
+        .padding(16)
     }
 }
 

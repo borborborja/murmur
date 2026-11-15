@@ -49,7 +49,11 @@
     "pending": "Quan el telèfon trobi l'ordinador, hi afegirà el títol, el resum i la passada de Whisper. Ara és la transcripció ràpida.",
     "delete": "Elimina la reunió",
     "deleteConfirm": "S'esborrarà la reunió i l'àudio d'aquest telèfon.",
-    "empty": "No s'ha sentit res."
+    "empty": "No s'ha sentit res.",
+    "rename": "Canvia el nom",
+    "renameTitle": "Nom de la reunió",
+    "save": "Desa",
+    "cancel": "Cancel·la"
   },
   "settings": {
     "title": "Configuració",

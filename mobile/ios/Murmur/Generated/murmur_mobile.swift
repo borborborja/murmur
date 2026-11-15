@@ -613,6 +613,11 @@ public protocol MurmurProtocol: AnyObject, Sendable {
     func push(samples: [Float]) throws  -> LiveUpdate
     
     /**
+     * A new title for a meeting (empty: left as it was).
+     */
+    func renameMeeting(id: String, title: String) throws 
+    
+    /**
      * Starts recording a meeting: `title` as the phone shows it until the computer names it,
      * `language` ("ca", "es", "ca-es", "en"), whether there are more people in the room (or
      * it's only the user: one speaker), and how often the provisional text is redone (0: never).
@@ -761,6 +766,19 @@ open func push(samples: [Float])throws  -> LiveUpdate  {
         FfiConverterSequenceFloat.lower(samples),uniffiCallStatus
     )
 })
+}
+    
+    /**
+     * A new title for a meeting (empty: left as it was).
+     */
+open func renameMeeting(id: String, title: String)throws   {try rustCallWithError(FfiConverterTypeMurmurError_lift) {
+        uniffiCallStatus in
+    uniffi_murmur_mobile_fn_method_murmur_rename_meeting(
+            self.uniffiCloneHandle(),
+        FfiConverterString.lower(id),
+        FfiConverterString.lower(title),uniffiCallStatus
+    )
+}
 }
     
     /**
@@ -1307,6 +1325,9 @@ private let initializationResult: InitializationResult = {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_murmur_mobile_checksum_method_murmur_push() != 881) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_murmur_mobile_checksum_method_murmur_rename_meeting() != 2007) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_murmur_mobile_checksum_method_murmur_start() != 65183) {

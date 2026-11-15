@@ -155,6 +155,14 @@ struct HomeView: View {
                                         // (the system red gives about 3.5:1). Without it, the app's tint (white in dark) wins.
                                         .tint(MurmurPalette.acidLight.recordingLabel)
                                 }
+                                // Holding a meeting: rename it or delete it.
+                                .contextMenu {
+                                    Button(L("meeting.rename"), systemImage: "pencil") {
+                                        newTitle = meeting.title
+                                        toRename = meeting
+                                    }
+                                    Button(L("home.delete"), systemImage: "trash", role: .destructive) { toDelete = meeting }
+                                }
                         }
                     }
                     Color.clear.frame(height: 110).listRowBackground(Color.clear).listRowSeparator(.hidden)
@@ -167,9 +175,14 @@ struct HomeView: View {
         .confirmationDialog(L("meeting.deleteConfirm"), isPresented: Binding(get: { toDelete != nil }, set: { if !$0 { toDelete = nil } }), titleVisibility: .visible, presenting: toDelete) { meeting in
             Button(L("meeting.delete"), role: .destructive) { store.delete(meeting.id) }
         }
+        .renameAlert(isPresented: Binding(get: { toRename != nil }, set: { if !$0 { toRename = nil } }), title: $newTitle) { title in
+            if let meeting = toRename { store.rename(meeting.id, to: title) }
+        }
     }
 
     @State private var toDelete: MeetingRow?
+    @State private var toRename: MeetingRow?
+    @State private var newTitle = ""
 
     private func row(_ card: some View, open: @escaping () -> Void) -> some View {
         Button(action: open) { card }

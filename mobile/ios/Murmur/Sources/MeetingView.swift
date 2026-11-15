@@ -9,6 +9,8 @@ struct MeetingView: View {
     var id: String
     @State private var tab: MeetingTab = .transcript
     @State private var confirmDelete = false
+    @State private var renaming = false
+    @State private var newTitle = ""
 
     var body: some View {
         let m = store.meeting(id)
@@ -17,6 +19,7 @@ struct MeetingView: View {
                 CircleButton(systemImage: "chevron.left", label: L("rec.back")) { dismiss() }
                 Spacer()
                 Menu {
+                    Button(L("meeting.rename"), systemImage: "pencil") { startRename(m?.title) }
                     Button(L("meeting.delete"), systemImage: "trash", role: .destructive) { confirmDelete = true }
                 } label: {
                     Image(systemName: "ellipsis").font(.system(size: 17, weight: .medium)).frame(width: 44, height: 44)
@@ -33,7 +36,14 @@ struct MeetingView: View {
                             Text("\(m.createdAt.formatted(date: .abbreviated, time: .shortened)) · \(max(1, Int(m.duration / 60))) min")
                         }
                         .font(.system(size: 13)).foregroundStyle(palette.textSecondary)
-                        Text(m.title).font(.system(size: 28, weight: .bold)).tracking(-0.5).padding(.top, 6)
+                        // Tapping the title renames it.
+                        Button { startRename(m.title) } label: {
+                            Text(m.title).font(.system(size: 28, weight: .bold)).tracking(-0.5)
+                                .multilineTextAlignment(.leading).frame(maxWidth: .infinity, alignment: .leading)
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityHint(L("meeting.rename"))
+                        .padding(.top, 6)
 
                         if !m.revised {
                             HStack(alignment: .top, spacing: 10) {
@@ -75,5 +85,11 @@ struct MeetingView: View {
                 dismiss()
             }
         }
+        .renameAlert(isPresented: $renaming, title: $newTitle) { store.rename(id, to: $0) }
+    }
+
+    private func startRename(_ title: String?) {
+        newTitle = title ?? ""
+        renaming = true
     }
 }

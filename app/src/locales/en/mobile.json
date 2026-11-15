@@ -49,7 +49,11 @@
     "pending": "When the phone finds your computer, it will add the title, the summary and the Whisper pass. For now this is the quick transcript.",
     "delete": "Delete meeting",
     "deleteConfirm": "The meeting and its audio will be deleted from this phone.",
-    "empty": "Nothing was heard."
+    "empty": "Nothing was heard.",
+    "rename": "Rename",
+    "renameTitle": "Meeting name",
+    "save": "Save",
+    "cancel": "Cancel"
   },
   "settings": {
     "title": "Settings",

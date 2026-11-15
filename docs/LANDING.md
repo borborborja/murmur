@@ -39,6 +39,41 @@ Una idea central: **transcriu les reunions al teu ordinador, en català, sense e
 
 Captura: `01-reunio` (o `02-reunio-fosc` si la pàgina és fosca).
 
+#### Quin instal·lador de Windows
+
+A Windows hi ha dos instal·ladors: `_x64-setup.exe` (Intel i AMD, gairebé tots els PC) i `_arm64-setup.exe` (PC amb ARM, com els Snapdragon dels Surface i els Copilot+ PC). La targeta gràfica no cal triar-la: l'app la detecta sola en obrir-se. El botó «Descarrega per a Windows» ha de donar el que toca sense preguntar res:
+
+- **Edge i Chrome** diuen si el PC és ARM amb `navigator.userAgentData.getHighEntropyValues(["architecture"])`, que torna `"arm"` o `"x86"`. Firefox i la resta no ho diuen: llavors, l'x64.
+- **Si no se sap, l'x64.** En un PC amb ARM també funciona, emulat i més a poc a poc. L'ARM, en canvi, no s'instal·la en un PC x64.
+- **Els fitxers porten la versió al nom**, així que l'enllaç directe surt de l'API de GitHub (sense clau, fins a 60 consultes per hora i visitant). Si falla, es porta a la pàgina de la release.
+- Les actualitzacions mantenen l'arquitectura: cadascú rep sempre l'instal·lador que ja té.
+
+```js
+const RELEASES = "https://github.com/quicodomingo/murmur-releases/releases/latest";
+
+async function windowsDownload() {
+  let arm = false;
+  try {
+    const { architecture } = await navigator.userAgentData.getHighEntropyValues(["architecture"]);
+    arm = architecture === "arm";
+  } catch {} // Firefox, Safari: no ho diuen, x64
+  try {
+    const res = await fetch("https://api.github.com/repos/quicodomingo/murmur-releases/releases/latest");
+    const { assets } = await res.json();
+    const file = assets.find((a) => a.name.endsWith(arm ? "_arm64-setup.exe" : "_x64-setup.exe"));
+    if (file) return file.browser_download_url;
+  } catch {}
+  return RELEASES;
+}
+```
+
+A «Altres sistemes» hi han de sortir tots dos, per a qui vulgui triar:
+
+| | Català | Castellà | Anglès |
+|---|---|---|---|
+| x64 | Windows (Intel i AMD) | Windows (Intel y AMD) | Windows (Intel and AMD) |
+| ARM | Windows amb ARM (Snapdragon) | Windows con ARM (Snapdragon) | Windows on ARM (Snapdragon) |
+
 ### 2. Per al català
 
 | Català | Castellà | Anglès |

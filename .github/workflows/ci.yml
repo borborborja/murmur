@@ -189,6 +189,17 @@ jobs:
         env:
           FEATURES: ${{ matrix.vulkan && '--features vulkan' || '' }}
         run: npm run tauri build -- $FEATURES
+      # Per provar-los en PC de veritat sense publicar res (Actions › la feina › Artifacts). No
+      # s'actualitzen sols: la clau és d'un sol ús.
+      - name: Desa els instal·ladors
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: installadors-${{ matrix.os }}
+          path: |
+            app/src-tauri/target/release/bundle/nsis/*-setup.exe
+            app/src-tauri/target/release/bundle/appimage/*.AppImage
+            app/src-tauri/target/release/bundle/deb/*.deb
+          retention-days: 30
       - name: Model de transcripció (memòria cau)
         id: models
         uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4

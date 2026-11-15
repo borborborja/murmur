@@ -14,27 +14,17 @@ runs:
           patchelf libasound2-dev libdbus-1-dev libssl-dev libgomp1 cmake clang
     # Windows ARM: ggml només pot triar una CPU ARM concreta compilant amb clang (amb MSVC demana
     # GGML_NATIVE, que agafaria l'SVE de l'executor, que cap Snapdragon té). ARMv8.2 amb dotprod i
-    # fp16, que tenen tots els PC amb Windows ARM (Snapdragon 8cx i X). Amb Ninja i clang-cl, i
-    # l'entorn ARM64 de Visual Studio: amb el generador de Visual Studio, el crate cmake hi força
-    # les eines x64 (-Thost=x64), que aquest executor no té. scripts/build-whisper.mjs fa el
-    # mateix per a whisper.cpp.
-    - name: Windows ARM (clang i Ninja per a llama.cpp i whisper.cpp)
+    # fp16, que tenen tots els PC amb Windows ARM (Snapdragon 8cx i X). Amb clang-cl i Ninja
+    # (.github/scripts/msvc-ninja.ps1). scripts/build-whisper.mjs fa el mateix per a whisper.cpp.
+    - name: Windows ARM (clang-cl i Ninja per a llama.cpp i whisper.cpp)
       if: runner.os == 'Windows' && runner.arch == 'ARM64'
       shell: pwsh
       run: |
         if (-not (Test-Path "C:\Program Files\LLVM\bin\clang-cl.exe")) { choco install llvm -y --no-progress }
-        if (-not (Get-Command ninja -ErrorAction SilentlyContinue)) { choco install ninja -y --no-progress }
-        $vs = & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -property installationPath
-        $before = @{}; Get-ChildItem env: | ForEach-Object { $before[$_.Name] = $_.Value }
-        cmd /c "`"$vs\VC\Auxiliary\Build\vcvarsall.bat`" arm64 >nul && set" | ForEach-Object {
-          if ($_ -match '^([^=]+)=(.*)$' -and $before[$matches[1]] -ne $matches[2]) {
-            "$($matches[1])=$($matches[2])" | Out-File -FilePath $env:GITHUB_ENV -Append
-          }
-        }
+        & "$env:GITHUB_WORKSPACE\.github\scripts\msvc-ninja.ps1" arm64
         "C:\Program Files\LLVM\bin" | Out-File -FilePath $env:GITHUB_PATH -Append
         @(
           "LIBCLANG_PATH=C:\Program Files\LLVM\bin",
-          "CMAKE_GENERATOR=Ninja",
           "CMAKE_C_COMPILER=clang-cl",
           "CMAKE_CXX_COMPILER=clang-cl",
           "GGML_CPU_ARM_ARCH=armv8.2-a+dotprod+fp16"

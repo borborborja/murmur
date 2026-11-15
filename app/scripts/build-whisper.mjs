@@ -20,20 +20,13 @@ if (!target.includes("apple") && target.startsWith("x86_64")) {
 
 // Windows on ARM: ggml can only target a given ARM CPU with clang (MSVC needs GGML_NATIVE, which on
 // the CI runner would pick its SVE that no Snapdragon has). ARMv8.2 with dotprod and fp16, which
-// every Windows ARM PC has (Snapdragon 8cx and X). With Ninja and clang-cl, as the CI sets for
-// llama.cpp (.github/actions/preparar), in a Visual Studio ARM64 environment.
+// every Windows ARM PC has (Snapdragon 8cx and X). With clang-cl and Ninja, in a Visual Studio
+// ARM64 environment, as the CI sets for llama.cpp (.github/scripts/msvc-ninja.ps1).
 if (target === "aarch64-pc-windows-msvc") {
   Object.assign(env, { GGML_NATIVE: "OFF", GGML_CPU_ARM_ARCH: "armv8.2-a+dotprod+fp16" });
   env.CMAKE_GENERATOR ??= "Ninja";
   env.CMAKE_C_COMPILER ??= "clang-cl";
   env.CMAKE_CXX_COMPILER ??= "clang-cl";
-}
-// Vulkan on Windows: the shader generator's paths go past MAX_PATH, and MSBuild's file tracker
-// fails on them (FTK1011). llama-cpp-sys does the same: no tracking, and /FS for the shared .pdb.
-if (process.env.MURMUR_VULKAN === "1" && target.includes("windows")) {
-  env.TrackFileAccess = "false";
-  env.CFLAGS = `${env.CFLAGS ?? ""} /FS`.trim();
-  env.CXXFLAGS = `${env.CXXFLAGS ?? ""} /FS`.trim();
 }
 
 const args = ["build", "--release"];

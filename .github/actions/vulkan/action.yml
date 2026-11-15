@@ -31,6 +31,8 @@ runs:
         "MURMUR_VULKAN_LOADER=$($loader.FullName)" | Out-File -FilePath $env:GITHUB_ENV -Append
         "MURMUR_VULKAN=1" | Out-File -FilePath $env:GITHUB_ENV -Append
         "$sdk\Bin" | Out-File -FilePath $env:GITHUB_PATH -Append
+        # Ninja en comptes de MSBuild: amb MSBuild, el generador dels shaders no es compila.
+        & "$env:GITHUB_WORKSPACE\.github\scripts\msvc-ninja.ps1" x64
     # A Linux, el carregador i la biblioteca per enllaçar són els d'Ubuntu (libvulkan-dev); del
     # SDK només calen glslc i les capçaleres, que les d'Ubuntu 22.04 són massa antigues per a ggml.
     - name: Vulkan SDK (Linux)

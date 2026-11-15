@@ -270,24 +270,16 @@
   .notif2 { margin: 8px 12px 0; border-radius: 28px; background: var(--mm-background); padding: 14px 18px; font-size: 14px; color: var(--mm-text-secondary); opacity: .9; }
 
   /* iPhone Duo: inner screen open (626 x 890) and half-folded in landscape (890 x 626) */
-  .phone.duo { width: 626px; height: 890px; border-radius: 40px; }
-  .phone.duo-fold { width: 890px; height: 626px; border-radius: 40px; }
+  .phone.duo { width: 669px; height: 951px; border-radius: 44px; }
+  .phone.duo-book { width: 951px; height: 669px; border-radius: 44px; }
   .pane { position: absolute; top: 0; bottom: 0; overflow: hidden; }
-  .narrow .who { display: none; }
-  .narrow .timer { font-size: 34px; }
-  .narrow .recstate { padding: 12px 16px 14px; }
-  .narrow .ruler span:nth-child(odd) { visibility: hidden; }
-  .narrow .controls { gap: 6px; left: 12px; right: 12px; }
-  .narrow .controls .btn { height: 48px; font-size: 15px; }
-  .narrow .controls .btn.round { width: 48px; }
-  .narrow .controls .btn.ghost { flex: none; width: 48px; font-size: 0; gap: 0; }
-  .narrow .card .snippet, .narrow .card .meta { font-size: 13px; }
-  .hinge { position: absolute; top: 0; bottom: 0; left: 293px; width: 40px; z-index: 50; background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--mm-text-primary) 5%, transparent) 45%, color-mix(in srgb, var(--mm-text-primary) 9%, transparent) 50%, color-mix(in srgb, var(--mm-text-primary) 5%, transparent) 55%, transparent); }
-  .hinge.h { left: 0; right: 0; top: 293px; bottom: auto; height: 40px; width: auto; background: linear-gradient(180deg, transparent, color-mix(in srgb, var(--mm-text-primary) 6%, transparent) 50%, transparent); }
-  .duo-fold .status { padding-left: 40px; padding-right: 40px; }
-  .duo-fold .island { top: 11px; }
-  .fold-top { position: absolute; left: 0; right: 0; top: 44px; height: 249px; display: flex; gap: 22px; padding: 0 28px; }
-  .fold-bottom { position: absolute; left: 0; right: 0; top: 333px; bottom: 0; display: flex; gap: 14px; align-items: center; padding: 0 28px 24px; }
+  .hinge { position: absolute; top: 0; bottom: 0; left: 455px; width: 40px; z-index: 50; background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--mm-text-primary) 5%, transparent) 45%, color-mix(in srgb, var(--mm-text-primary) 9%, transparent) 50%, color-mix(in srgb, var(--mm-text-primary) 5%, transparent) 55%, transparent); }
+  .hinge.h { left: 0; right: 0; top: 455px; bottom: auto; height: 40px; width: auto; background: linear-gradient(180deg, transparent, color-mix(in srgb, var(--mm-text-primary) 6%, transparent) 50%, transparent); }
+  .duo-book .status { padding-left: 40px; padding-right: 40px; }
+  .duo .wave i.future:nth-child(n+60), .duo-book .wave i.future:nth-child(n+60) { display: block; }
+  .fold-top { position: absolute; left: 0; right: 0; top: 54px; height: 401px; padding: 6px 28px 0; display: flex; flex-direction: column; }
+  .fold-bottom { position: absolute; left: 0; right: 0; top: 495px; bottom: 0; }
+  .duo .keyboard .k { width: 54px; height: 50px; } .duo .keyboard .kr { gap: 8px; } .duo .keyboard .k.w { width: 300px; } .duo .keyboard .k.m { width: 120px; }
   .btn.accent { flex: 1; background: var(--mm-accent); color: var(--mm-on-accent); }
 </style>
 </head>
@@ -396,18 +388,25 @@
   </div>
 </div>
 
-<!-- iPhone Duo -->
+<!-- iPhone Duo: inner screen 2007 x 2853 px (about 669 x 951 pt), outer 1398 x 2034 px (about 466 x 678 pt), from the simulator's device profile -->
 <div class="row">
   <div class="screen">
-    <h2>12 · iPhone Duo obert: la llista i la reunió alhora</h2>
-    <p class="note">Amplada regular: dues columnes, una per banda del plec, i res a la zona del plec (40 pt). A l'esquerra les reunions, a la dreta la que es grava.</p>
+    <h2>12 · iPhone Duo obert, en vertical</h2>
+    <p class="note">Pantalla interior, uns 669 × 951 pt. El plec és horitzontal, a mitja alçada. Pla, la zona del plec no és activa i el contingut hi pot passar, però no hi posem res que es toqui: la targeta de gravació a dalt, la transcripció a sota.</p>
+    <div class="pair" id="s-duov"></div>
+  </div>
+</div>
+<div class="row">
+  <div class="screen">
+    <h2>13 · iPhone Duo en horitzontal: la llista i la reunió alhora</h2>
+    <p class="note">Girat, el plec és vertical i queden dues pàgines, com un llibre: a l'esquerra les reunions, a la dreta la que es grava. Cap columna no creua la zona del plec (40 pt).</p>
     <div class="pair" id="s-duo"></div>
   </div>
 </div>
 <div class="row">
   <div class="screen">
-    <h2>13 · iPhone Duo mig plegat, damunt la taula</h2>
-    <p class="note">Com un portàtil petit: a dalt el que es llegeix (el temps i el que s'acaba de dir, en gran), a baix el que es toca (marca, foto, pausa, atura i una nota ràpida).</p>
+    <h2>14 · iPhone Duo mig plegat, damunt la taula</h2>
+    <p class="note">Com un portàtil petit. A dalt, el que es llegeix: el temps i la frase en gran. A baix, el que es toca: els controls i, quan escrius una nota, el teclat, que ocupa just la meitat de baix. A l'esquerra, sense escriure; a la dreta, escrivint.</p>
     <div class="pair" id="s-duofold"></div>
   </div>
 </div>
@@ -696,34 +695,42 @@ const extra = {
     </div>`],
 };
 
-const duo = () => `
-  <div class="pane narrow" style="left:0;width:293px">${screens.list()}</div>
-  <div class="hinge"></div>
-  <div class="pane narrow" style="left:333px;width:293px">${screens.rec()}</div>`;
+const duov = () => `${screens.rec().replace('<div class="lines">', '<div class="lines" style="padding-top:60px">')}<div class="hinge h"></div>`;
 
-const duofold = () => {
-  const heights = [8,14,22,30,18,10,6,4,12,26,38,44,30,18,24,36,48,40,28,16,10,8,14,20,34,46,52,38,24,14,8,6,10,22,30,26,18,12,20,32,44,36,22,12,8,16,28,40,34,20,14,26,38,30,18,10];
-  return `
+const duo = () => `
+  <div class="pane" style="left:0;width:455px">${screens.list()}</div>
+  <div class="hinge"></div>
+  <div class="pane" style="left:495px;width:456px">${screens.rec()}</div>`;
+
+const duofold = (typing) => `
   <div class="fold-top">
-    <div style="width:300px;flex:none;display:flex;flex-direction:column;justify-content:center;gap:8px">
-      <div class="label mono"><span class="dot"></span>Gravant · 3 veus</div>
-      <div class="timer mono" style="font-size:56px">00:12:34</div>
-      <div class="wave" style="height:64px;padding:0">${heights.map((h) => `<i style="height:${Math.round(h * 0.9)}px"></i>`).join("")}</div>
+    <div style="display:flex;justify-content:space-between;align-items:flex-end">
+      <div><div class="label mono"><span class="dot"></span>Gravant · 3 veus</div><div class="timer mono" style="font-size:48px">00:12:34</div></div>
+      <span class="levels" style="height:30px;gap:4px">${[12,22,16,28,10,20].map((x) => `<i style="height:${x}px;width:5px"></i>`).join("")}</span>
     </div>
-    <div style="flex:1;display:flex;flex-direction:column;justify-content:center">
-      <div class="head" style="display:flex;gap:8px;align-items:center"><span class="chip s2">Laia</span><span class="ts mono">12:21</span></div>
-      <p style="font-size:24px;line-height:1.35;margin:8px 0 0;letter-spacing:-0.01em">La puc fer jo, però necessito que em passeu <span class="pending">els preus definitius abans de</span><span class="caret"></span></p>
-    </div>
+    <div style="margin-top:22px"><div class="head" style="display:flex;gap:8px;align-items:center"><span class="chip you">Tu</span><span class="ts mono">12:02</span></div>
+      <p style="font-size:19px;line-height:1.4;margin:6px 0 0;color:var(--mm-text-secondary)">Sí, els reviso jo. I la pàgina de preus, qui la porta?</p></div>
+    <div style="margin-top:16px"><div class="head" style="display:flex;gap:8px;align-items:center"><span class="chip s2">Laia</span><span class="ts mono">12:21</span></div>
+      <p style="font-size:26px;line-height:1.3;margin:6px 0 0;letter-spacing:-0.01em">La puc fer jo, però necessito que em passeu <span class="pending">els preus definitius abans de</span><span class="caret"></span></p></div>
   </div>
   <div class="hinge h"></div>
-  <div class="fold-bottom">
-    <div class="btn round" style="width:72px;height:72px;border-radius:36px">${icon.camera}</div>
-    <div class="btn round" style="width:72px;height:72px;border-radius:36px">${icon.flag}</div>
-    <div style="flex:1;height:72px;border-radius:22px;background:var(--mm-fill-subtle);display:flex;align-items:center;padding:0 20px;font-size:17px;color:var(--mm-text-tertiary)">Escriu una nota…</div>
-    <div class="btn ghost" style="flex:none;width:140px;height:72px;border-radius:36px">${icon.pause} Pausa</div>
-    <div class="btn primary" style="flex:none;width:150px;height:72px;border-radius:36px"><span class="stopsq"></span> Atura</div>
+  <div class="fold-bottom">${typing ? `
+    <div style="display:flex;gap:10px;align-items:center;padding:12px 20px 0;font-size:17px"><span class="ts mono">12:52</span><span>Preus definitius abans de dimecres<span class="caret"></span></span></div>
+    <div class="kbbar" style="bottom:300px"><span>H1</span><span>H2</span><span>${icon.list}</span><span><span class="check" style="margin:0;width:18px;height:18px"></span></span><span>${icon.camera}</span><span>${icon.flag}</span><span class="sep"></span><span class="mini"><span class="dot"></span><span class="mono">12:52</span></span></div>
+    <div class="keyboard" style="height:300px">
+      <div class="kr">${"qwertyuiop".split("").map((c) => `<span class="k">${c}</span>`).join("")}</div>
+      <div class="kr">${"asdfghjklç".split("").map((c) => `<span class="k">${c}</span>`).join("")}</div>
+      <div class="kr">${"zxcvbnm".split("").map((c) => `<span class="k">${c}</span>`).join("")}</div>
+      <div class="kr"><span class="k m">123</span><span class="k w">espai</span><span class="k m">retorn</span></div>
+    </div>` : `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:22px 28px 0">
+      <div class="btn ghost" style="height:76px;border-radius:24px">${icon.camera} Foto</div>
+      <div class="btn ghost" style="height:76px;border-radius:24px">${icon.flag} Marca</div>
+      <div style="grid-column:1 / 3;height:64px;border-radius:20px;background:var(--mm-fill-subtle);display:flex;align-items:center;padding:0 20px;font-size:17px;color:var(--mm-text-tertiary)">Escriu una nota…</div>
+      <div class="btn ghost" style="height:76px;border-radius:38px">${icon.pause} Pausa</div>
+      <div class="btn primary" style="height:76px;border-radius:38px"><span class="stopsq"></span> Atura</div>
+    </div>`}
   </div>`;
-};
 
 const chrome = document.getElementById("t-chrome").innerHTML;
 for (const [key, renders] of Object.entries(extra)) {
@@ -732,10 +739,10 @@ for (const [key, renders] of Object.entries(extra)) {
   const modes = renders.length === 1 ? ["light", "dark"] : ["light", "dark"];
   list.forEach((render, i) => pair.insertAdjacentHTML("beforeend", `<div class="phone android" data-theme="acid" data-mode="${modes[i]}">${androidChrome}${render()}</div>`));
 }
-for (const [key, render, cls] of [["duo", duo, "duo"], ["duofold", duofold, "duo-fold"]]) {
+for (const [key, renders, cls, column] of [["duov", [duov, duov], "duo", false], ["duo", [duo, duo], "duo-book", true], ["duofold", [() => duofold(false), () => duofold(true)], "duo", false]]) {
   const pair = document.getElementById(`s-${key}`);
-  pair.style.flexDirection = "column";
-  for (const mode of ["light", "dark"]) pair.insertAdjacentHTML("beforeend", `<div class="phone ${cls}" data-theme="acid" data-mode="${mode}">${chrome}${render()}</div>`);
+  if (column) pair.style.flexDirection = "column";
+  ["light", "dark"].forEach((mode, i) => pair.insertAdjacentHTML("beforeend", `<div class="phone ${cls}" data-theme="acid" data-mode="${mode}">${chrome}${renders[i]()}</div>`));
 }
 for (const [key, render] of Object.entries(screens)) {
   const pair = document.getElementById(`s-${key}`);

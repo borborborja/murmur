@@ -146,14 +146,15 @@ struct LockScreenRecording: View {
     @Environment(\.murmur) private var palette
     var context: ActivityViewContext<RecordingAttributes>
 
-    // The mockup's order (screen 7) inside the ~160 pt iOS allows (12 + 28 + 4 + 42 + 4 + 20 + 8 +
-    // 34 + 12 = 164, the rows' own leading trims it): a small header (the mark, the title, the
-    // state), the time big with the voice beside it, the last line, the buttons.
+    // The mockup's order (screen 7) inside the ~160 pt iOS allows. When the content asks for more,
+    // iOS squeezes the card and the margins go first, so it adds up to less than that with its
+    // margins: 14 + 26 + 6 + 34 + 4 + 17 + 8 + 32 + 14 = 155. A small header (the mark, the
+    // title, the state), the time big with the voice beside it, the last line, the buttons.
     var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
+        VStack(alignment: .leading, spacing: 0) {
             HStack(spacing: 9) {
-                EchoMark(state: context.state, size: 24)
-                    .frame(width: 28, height: 28)
+                EchoMark(state: context.state, size: 22)
+                    .frame(width: 26, height: 26)
                     .background(palette.logoBackground, in: RoundedRectangle(cornerRadius: 7, style: .continuous))
                     .overlay(RoundedRectangle(cornerRadius: 7, style: .continuous).strokeBorder(palette.textPrimary.opacity(0.15)))
                 VStack(alignment: .leading, spacing: 0) {
@@ -165,16 +166,19 @@ struct LockScreenRecording: View {
             HStack(alignment: .center) {
                 // A system timer measures itself as wide as the longest time it could show: it gets
                 // a fixed width (up to "9:59:59") instead of fixedSize, which broke the whole card.
-                RecordingTimer(state: context.state).font(.tabular(38, weight: .regular)).foregroundStyle(palette.textPrimary)
-                    .lineLimit(1).frame(width: 190, height: 42, alignment: .leading)
+                RecordingTimer(state: context.state).font(.tabular(32, weight: .regular)).foregroundStyle(palette.textPrimary)
+                    .lineLimit(1).frame(width: 170, height: 34, alignment: .leading)
                 Spacer(minLength: 0)
                 VoiceBars(state: context.state)
             }
+            .padding(.top, 6)
             LastLine(state: context.state, size: 14).lineLimit(1)
-                .padding(.bottom, 4)
-            RecordingButtons(paused: context.state.pausedAt != nil, confirming: context.state.confirmingStop, height: 34, fontSize: 14)
+                .frame(height: 17)
+                .padding(.top, 4)
+            RecordingButtons(paused: context.state.pausedAt != nil, confirming: context.state.confirmingStop, height: 32, fontSize: 14)
+                .padding(.top, 8)
         }
-        .padding(.horizontal, 16).padding(.vertical, 12)
+        .padding(.horizontal, 16).padding(.vertical, 14)
     }
 }
 

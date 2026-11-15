@@ -37,7 +37,8 @@
     "listening": "Escuchando… empieza a hablar.",
     "speaker": "Hablante {{n}}",
     "you": "Tú",
-    "back": "Vuelve a la lista"
+    "back": "Vuelve a la lista",
+    "resume": "Continuar"
   },
   "notes": {
     "placeholder": "Escribe una nota…",

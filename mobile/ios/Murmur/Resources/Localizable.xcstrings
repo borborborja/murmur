@@ -806,6 +806,29 @@
         }
       }
     },
+    "rec.resume": {
+      "extractionState": "manual",
+      "localizations": {
+        "ca": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Continua"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Continuar"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Resume"
+          }
+        }
+      }
+    },
     "rec.speaker": {
       "extractionState": "manual",
       "localizations": {

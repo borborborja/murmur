@@ -143,5 +143,8 @@ xcodegen && open Murmur.xcodeproj
 
 Per provar-la al simulador sense parlar: `xcrun simctl launch <simulador> com.quicodomingo.murmur.ios -simulate ../data/reunio-3min.wav -autostart -autostop 60` llegeix el WAV com si fos el micròfon, comença a gravar en obrir-se i s'atura sola (marcant el moment) al cap de 60 s.
 
-Encara no hi ha: la Live Activity, les fotos, l'editor de notes amb format, l'emparellament, l'iPad, el Duo ni Android.
+- **La pantalla bloquejada i la Dynamic Island** (`Widgets/`, una extensió de WidgetKit, i `Shared/RecordingActivity.swift`): una Live Activity amb el títol, el temps (el compta el sistema, i s'atura en pausa), l'última frase i qui l'ha dit, i Marca, Pausa i Atura. Els botons són `LiveActivityIntent`: s'executen dins el procés de l'app i arriben a la gravació per `RecordingControls`. S'actualitza amb cada frase acabada, no amb el text provisional. Una targeta fosca, com la píndola de gravació de l'ordinador, en mode clar i fosc. `Shared/` té el que comparteixen l'app i l'extensió: els colors (`Sources/Theme.swift`), el logotip, els textos i les ordres.
+- **Signatura:** l'equip (`DEVELOPMENT_TEAM`) és a `project.yml`, perquè regenerar el projecte no el perdi.
+
+Encara no hi ha: posar nom als parlants, les fotos, l'editor de notes amb format, l'emparellament, l'iPad, el Duo ni Android.
 

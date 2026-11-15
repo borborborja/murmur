@@ -192,7 +192,10 @@ Entre reunions (bloc 5):
   - [x] La prova d'una tarda a l'iPhone: velocitat amb i sense text provisional, i qualitat comparada amb l'ordinador.
   - [ ] La bateria i la temperatura en mitja hora de gravació (MurmurProbe, «Grava en directe»).
   - [x] L'esquelet de l'app (`mobile/ios/Murmur`): el motor amb UniFFI (`mobile/ffi`), la llista, gravar amb el text en directe, marcar un moment, notes amb el minut, la reunió acabada al mòbil i la configuració. Provat al simulador.
-  - [ ] A l'iPhone de debò; la Live Activity i la Dynamic Island; fotos amb el minut; l'editor de notes amb format.
+  - [x] A l'iPhone de debò.
+  - [ ] La Live Activity i la Dynamic Island (Marca, Pausa i Atura des de la pantalla bloquejada): feta i compilada, falta veure-la a l'iPhone.
+  - [ ] Posar nom als parlants (el menú de l'etiqueta: reanomena, tria'n un que ja ha sortit, ajunta'n dos).
+  - [ ] Fotos amb el minut; l'editor de notes amb format.
   - [ ] Emparellar i sincronitzar amb l'ordinador (la part del mòbil de `core/src/sync.rs`).
   - [ ] iPad, iPhone Duo i Android.
   - [x] Provar l'emparellament de punta a punta amb `fake_phone` i l'app: emparellar, enviar una reunió de 3 minuts, passada final (Whisper i dos parlants trobats) i recollir-ne el resultat.

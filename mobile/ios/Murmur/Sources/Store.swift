@@ -1,12 +1,6 @@
+import ActivityKit
 import AVFoundation
 import SwiftUI
-
-/// The phone's texts: app/src/locales/<lang>/mobile.json, made into Localizable.xcstrings by
-/// tools/mobile-strings.mjs ({{x}} becomes %@).
-func L(_ key: String, _ args: CVarArg...) -> String {
-    let format = Bundle.main.localizedString(forKey: key, value: nil, table: nil)
-    return args.isEmpty ? format : String(format: format, arguments: args)
-}
 
 extension Line: Identifiable {}
 extension MeetingRow: Identifiable {}
@@ -125,6 +119,48 @@ final class Store: ObservableObject {
         // The models load in the background, so the first recording starts at once.
         let engine = engine
         queue.async { try? engine?.prepare() }
+        // The Live Activity's buttons (lock screen, Dynamic Island) land here.
+        RecordingControls.handler = { [weak self] command in
+            guard let self else { return }
+            switch command {
+            case .mark: self.mark()
+            case .togglePause: self.togglePause()
+            case .stop: Task { _ = await self.stop() }
+            }
+        }
+    }
+
+    // MARK: The Live Activity
+
+    private var activity: Activity<RecordingAttributes>?
+
+    private var activityState: RecordingAttributes.ContentState {
+        let seconds = meter.seconds
+        let last = live?.lines.last
+        return RecordingAttributes.ContentState(
+            startedAt: Date().addingTimeInterval(-seconds),
+            pausedAt: live?.paused == true ? seconds : nil,
+            lastLine: String((last?.text ?? "").suffix(140)),
+            speaker: last.map { L("rec.speaker", "\($0.speaker + 1)") })
+    }
+
+    private func startActivity(title: String) {
+        guard ActivityAuthorizationInfo().areActivitiesEnabled else { return }
+        let attributes = RecordingAttributes(title: title, language: languageName(language))
+        activity = try? Activity.request(attributes: attributes, content: .init(state: activityState, staleDate: nil))
+    }
+
+    private func updateActivity() {
+        guard let activity else { return }
+        let state = activityState
+        Task { await activity.update(.init(state: state, staleDate: nil)) }
+    }
+
+    private func endActivity() {
+        guard let activity else { return }
+        self.activity = nil
+        let state = activityState
+        Task { await activity.end(.init(state: state, staleDate: nil), dismissalPolicy: .immediate) }
     }
 
     func reload() {
@@ -161,6 +197,7 @@ final class Store: ObservableObject {
                 }
             }
             UIApplication.shared.isIdleTimerDisabled = true
+            startActivity(title: title)
             return true
         } catch {
             self.error = error.localizedDescription
@@ -173,6 +210,7 @@ final class Store: ObservableObject {
         live?.paused.toggle()
         paused.isOn = live?.paused ?? false
         if paused.isOn { meter.pause() } else { meter.resume() }
+        updateActivity()
     }
 
     func mark() {
@@ -192,6 +230,7 @@ final class Store: ObservableObject {
         guard let engine, let current = live else { return nil }
         microphone.stop()
         UIApplication.shared.isIdleTimerDisabled = false
+        endActivity()
         let extra = Self.extra(notes: current.notes)
         do {
             let id = try await onQueue { try engine.stop(extra: extra) }
@@ -218,7 +257,11 @@ final class Store: ObservableObject {
     private func apply(_ u: LiveUpdate) {
         guard live != nil else { return }
         live?.lines.append(contentsOf: u.finals)
-        if !u.finals.isEmpty { live?.partial = "" }
+        if !u.finals.isEmpty {
+            live?.partial = ""
+            // The lock screen gets each finished sentence (not the provisional text: too many updates).
+            updateActivity()
+        }
         if let p = u.partial { live?.partial = p }
         live?.seconds = u.seconds
     }
@@ -273,15 +316,4 @@ struct MeetingDetail {
     }
 
     func isMarked(_ u: Utterance) -> Bool { notes.contains { $0.mark && $0.t >= u.start - 1 && $0.t <= u.end + 2 } }
-}
-
-func clock(_ seconds: Double) -> String {
-    let s = Int(seconds)
-    return s >= 3600 ? String(format: "%d:%02d:%02d", s / 3600, s / 60 % 60, s % 60) : String(format: "%d:%02d", s / 60, s % 60)
-}
-
-/// "00:12:34", as the recording card shows it.
-func longClock(_ seconds: Double) -> String {
-    let s = Int(seconds)
-    return String(format: "%02d:%02d:%02d", s / 3600, s / 60 % 60, s % 60)
 }

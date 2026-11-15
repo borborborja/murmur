@@ -37,7 +37,8 @@
     "listening": "Listening… start talking.",
     "speaker": "Speaker {{n}}",
     "you": "You",
-    "back": "Back to the list"
+    "back": "Back to the list",
+    "resume": "Resume"
   },
   "notes": {
     "placeholder": "Write a note…",

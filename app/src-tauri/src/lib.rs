@@ -1460,10 +1460,26 @@ fn delete_screen(app: AppHandle, path: String) -> Result<(), String> {
 /// Stops `record_voice` before its time (the user pressed stop).
 static VOICE_STOP: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
 
-/// "La teva veu": records the user reading a sentence for up to `seconds` ("voice-level" events
-/// meanwhile), then saves the print of their voice (voice.rs). Returns when it was made.
+/// How much of the sentence has been read ("voice-progress", the karaoke).
+#[derive(Clone, Serialize)]
+struct VoiceProgress {
+    said: usize,
+    total: usize,
+}
+
+/// "La teva veu": records the user reading `sentence` (in `language`) for up to `seconds`, then
+/// saves the print of their voice (voice.rs). Meanwhile, "voice-level" for the meter and, every
+/// half second, what the live engine has heard so far against the sentence ("voice-progress"):
+/// it stops a moment after the last word. Returns when the print was made.
 #[tauri::command]
-async fn record_voice(app: AppHandle, state: State<'_, AppState>, device: Option<String>, seconds: f32) -> Result<f64, String> {
+async fn record_voice(
+    app: AppHandle,
+    state: State<'_, AppState>,
+    device: Option<String>,
+    seconds: f32,
+    sentence: String,
+    language: String,
+) -> Result<f64, String> {
     if let Some(stop) = state.monitor.lock().unwrap().take() {
         let _ = stop.send(());
     }
@@ -1475,10 +1491,18 @@ async fn record_voice(app: AppHandle, state: State<'_, AppState>, device: Option
     tauri::async_runtime::spawn_blocking(move || -> Result<f64, String> {
         let (tx, rx) = unbounded::<audio::Frame>();
         let capture = audio::start_capture(true, device.as_deref(), false, tx).map_err(|e| format!("{e:#}"))?;
+        // The live model, for the karaoke (cached as for recording; the audio waits meanwhile).
+        let kind = if language == "en" && models::ENGLISH.installed(&models_dir()) { LiveModel::English } else { LiveModel::CatalanSpanish };
+        let live = models(&app.state::<AppState>(), kind).ok();
+        let words: Vec<&str> = sentence.split_whitespace().collect();
         let want = (seconds.clamp(3.0, 30.0) * SAMPLE_RATE as f32) as usize;
         let mut samples: Vec<f32> = Vec::with_capacity(want);
         let mut pending = 0usize;
-        while samples.len() < want && !VOICE_STOP.load(std::sync::atomic::Ordering::SeqCst) {
+        let mut heard_at = 0usize;
+        let mut said = 0usize;
+        // Once the last word is heard, a little more, then stop.
+        let mut finish_at: Option<usize> = None;
+        while samples.len() < want && !VOICE_STOP.load(std::sync::atomic::Ordering::SeqCst) && finish_at.is_none_or(|end| samples.len() < end) {
             match rx.recv_timeout(Duration::from_millis(100)) {
                 Ok((_, chunk)) => {
                     samples.extend_from_slice(&chunk);
@@ -1492,6 +1516,19 @@ async fn record_voice(app: AppHandle, state: State<'_, AppState>, device: Option
                 let rms = (tail.iter().map(|x| x * x).sum::<f32>() / tail.len() as f32).sqrt();
                 pending = 0;
                 let _ = app.emit("voice-level", Level { rms });
+            }
+            if let Some(live) = &live {
+                if samples.len() - heard_at >= SAMPLE_RATE / 2 && finish_at.is_none() {
+                    heard_at = samples.len();
+                    let now = voice::progress(&words, &live.transcribe(&samples)).max(said);
+                    if now != said {
+                        said = now;
+                        let _ = app.emit("voice-progress", VoiceProgress { said, total: words.len() });
+                    }
+                    if said >= words.len() {
+                        finish_at = Some(samples.len() + SAMPLE_RATE * 6 / 10);
+                    }
+                }
             }
         }
         drop(capture);

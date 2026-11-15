@@ -110,7 +110,10 @@ export const setGlossary = (terms: string[]) => invoke<void>("set_glossary", { t
 export const deleteMeeting = (id: string, audioPath: string | null) =>
   invoke<void>("delete_meeting", { id, audioPath });
 /** "La teva veu" (voice.rs): records the user for up to `seconds`, saves the print, returns when (s since epoch). */
-export const recordVoice = (device: string | null, seconds: number) => invoke<number>("record_voice", { device, seconds });
+export const recordVoice = (device: string | null, seconds: number, sentence: string, language: string) =>
+  invoke<number>("record_voice", { device, seconds, sentence, language });
+/** How much of the sentence the live engine has heard (the karaoke). */
+export const onVoiceProgress = (fn: (said: number) => void) => listen<{ said: number; total: number }>("voice-progress", (e) => fn(e.payload.said));
 export const stopVoiceRecording = () => invoke<void>("stop_voice_recording");
 export const voiceStatus = () => invoke<number | null>("voice_status");
 export const deleteVoice = () => invoke<void>("delete_voice");

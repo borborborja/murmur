@@ -108,9 +108,80 @@ pub fn enroll(models: &Path, data: &Path, samples: &[f32]) -> Result<Voice> {
     Ok(voice)
 }
 
+/// A word as compared: lowercase, without accents or marks ("Sóc," → "soc").
+fn fold(word: &str) -> String {
+    word.chars()
+        .filter_map(|c| {
+            let c = match c {
+                'à' | 'á' | 'À' | 'Á' => 'a',
+                'è' | 'é' | 'È' | 'É' => 'e',
+                'í' | 'ï' | 'Í' | 'Ï' => 'i',
+                'ò' | 'ó' | 'Ò' | 'Ó' => 'o',
+                'ú' | 'ü' | 'Ú' | 'Ü' => 'u',
+                'ç' | 'Ç' => 'c',
+                'ñ' | 'Ñ' => 'n',
+                c => c,
+            };
+            c.is_alphanumeric().then(|| c.to_ascii_lowercase())
+        })
+        .collect()
+}
+
+fn close(a: &str, b: &str) -> bool {
+    if a == b {
+        return true;
+    }
+    // A long word heard with one letter off, or cut short ("reconèixer" as "reconeix").
+    let (short, long) = if a.len() <= b.len() { (a, b) } else { (b, a) };
+    if short.len() >= 4 && long.starts_with(short) {
+        return true;
+    }
+    if short.len() < 4 {
+        return false;
+    }
+    let (a, b): (Vec<char>, Vec<char>) = (a.chars().collect(), b.chars().collect());
+    let mut d: Vec<usize> = (0..=b.len()).collect();
+    for i in 1..=a.len() {
+        let mut prev = d[0];
+        d[0] = i;
+        for j in 1..=b.len() {
+            let tmp = d[j];
+            d[j] = (d[j] + 1).min(d[j - 1] + 1).min(prev + usize::from(a[i - 1] != b[j - 1]));
+            prev = tmp;
+        }
+    }
+    d[b.len()] <= 1
+}
+
+/// How many words of `sentence` have been read, going by what the live engine heard: each word
+/// heard moves on to the next few words of the sentence that it matches (a word skipped or
+/// misheard doesn't hold it back). The karaoke of "La teva veu".
+pub fn progress(sentence: &[&str], heard: &str) -> usize {
+    let words: Vec<String> = sentence.iter().map(|w| fold(w)).collect();
+    let mut at = 0;
+    for word in heard.split_whitespace().map(fold).filter(|w| !w.is_empty()) {
+        if let Some(j) = (at..(at + 3).min(words.len())).find(|&j| close(&words[j], &word)) {
+            at = j + 1;
+        }
+    }
+    at
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn the_karaoke_follows_what_was_heard() {
+        let s: Vec<&str> = "Bon dia. Sóc la veu que Murmur ha d'aprendre a reconèixer a les reunions".split(' ').collect();
+        assert_eq!(progress(&s, ""), 0);
+        assert_eq!(progress(&s, "bon dia soc la"), 4);
+        // Misheard and skipped words don't stop it; the next ones that match move it on.
+        assert_eq!(progress(&s, "bon dia so la veu que mur mur ha"), 8);
+        assert_eq!(progress(&s, "bon dia soc la veu que murmur ha daprendre a reconeix"), 11);
+        // Words that aren't in the sentence don't move it.
+        assert_eq!(progress(&s, "hola què tal"), 0);
+    }
 
     #[test]
     fn a_voice_from_another_model_is_ignored_and_delete_is_quiet() {

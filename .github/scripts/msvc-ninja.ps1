@@ -24,5 +24,6 @@ cmd /c "`"$vs\VC\Auxiliary\Build\vcvarsall.bat`" $Arch >nul && set" | ForEach-Ob
   }
 }
 # CMake hi posaria /EHsc, però el crate cmake substitueix els seus flags pels de cc, que no el
-# porten: cl.exe només avisa, però clang-cl no compila els try i throw de llama.cpp.
-@("CMAKE_GENERATOR=Ninja", "CXXFLAGS=/EHsc") | Out-File -FilePath $env:GITHUB_ENV -Append
+# porten: cl.exe només avisa, però clang-cl no compila els try i throw de llama.cpp. Amb guió i no
+# amb barra: Git Bash converteix «/EHsc» en un camí (C:/Program Files/Git/EHsc).
+@("CMAKE_GENERATOR=Ninja", "CXXFLAGS=-EHsc") | Out-File -FilePath $env:GITHUB_ENV -Append

@@ -11,6 +11,7 @@ Tot el que cal per fer la pàgina de descàrrega de Murmur: el missatge, els tex
 | Preu | Gratuïta. Codi obert amb llicència MIT |
 | Descàrrega | https://github.com/quicodomingo/murmur-releases/releases/latest (els fitxers porten la versió al nom, així que l'enllaç estable és el de la pàgina, no el del fitxer): el `.dmg` del Mac, `Murmur_<versió>_x64-setup.exe` per a Windows (`_arm64-setup.exe` per als PC amb ARM), i el `.deb` i el `.rpm` per a Linux |
 | Codi | https://github.com/quicodomingo/murmur |
+| Targeta gràfica | Whisper (la passada final) i el model del resum la fan servir sols, sense configurar res: Metal al Mac, i Vulkan a Windows x64 i a Linux (NVIDIA, AMD o Intel). Als PC amb ARM, de moment, el processador. La transcripció en directe sempre va pel processador |
 | Signatura | Al Mac, signada i notaritzada per Apple. A Windows, l'instal·lador encara no està signat (SmartScreen avisa el primer cop). S'actualitza sola a tot arreu |
 | Idiomes de les reunions | Català (central, valencià i balear), castellà, català i castellà barrejats, anglès |
 | Idiomes de la interfície | Català, castellà, anglès |
@@ -41,7 +42,7 @@ Captura: `01-reunio` (o `02-reunio-fosc` si la pàgina és fosca).
 
 #### Quin instal·lador de Windows
 
-A Windows hi ha dos instal·ladors: `_x64-setup.exe` (Intel i AMD, gairebé tots els PC) i `_arm64-setup.exe` (PC amb ARM, com els Snapdragon dels Surface i els Copilot+ PC). La targeta gràfica no cal triar-la: l'app la detecta sola en obrir-se. El botó «Descarrega per a Windows» ha de donar el que toca sense preguntar res:
+A Windows hi ha dos instal·ladors: `_x64-setup.exe` (Intel i AMD, gairebé tots els PC) i `_arm64-setup.exe` (PC amb ARM, com els Snapdragon dels Surface i els Copilot+ PC). La targeta gràfica no cal triar-la: l'app la detecta sola en obrir-se (vegeu «Fa servir la targeta gràfica?» a les preguntes freqüents). El botó «Descarrega per a Windows» ha de donar el que toca sense preguntar res:
 
 - **Edge i Chrome** diuen si el PC és ARM amb `navigator.userAgentData.getHighEntropyValues(["architecture"])`, que torna `"arm"` o `"x86"`. Firefox i la resta no ho diuen: llavors, l'x64.
 - **Si no se sap, l'x64.** En un PC amb ARM també funciona, emulat i més a poc a poc. L'ARM, en canvi, no s'instal·la en un PC x64.
@@ -124,7 +125,9 @@ Nota que ha de sortir a prop: **per gravar una reunió cal el consentiment de to
 | Funciona amb Zoom, Meet o Teams? | Amb qualsevol: Murmur grava l'àudio del sistema, no s'hi connecta. Ningú de la trucada veu cap bot. |
 | Cal connexió a internet? | Només el primer cop, per descarregar els models (uns 600 MB), i per buscar actualitzacions. |
 | Quanta memòria cal? | En té prou amb 8 GB. Per al resum local se'n recomanen 16; si no, el resum el pot fer Claude o OpenAI amb la teva clau. |
-| Funciona a Windows, a Linux o a Macs amb Intel? | A Windows 10 o 11 i a Linux de 64 bits, sí, des de la 0.12, gràcies a @xaviviro (cal un processador amb AVX2: Intel des del 2013, AMD des del 2015). Als Macs amb Intel, no. |
+| Funciona a Windows, a Linux o a Macs amb Intel? | A Windows 10 o 11 i a Linux de 64 bits, sí, des de la 0.12, gràcies a @xaviviro (cal un processador amb AVX2: Intel des del 2013, AMD des del 2015). Als PC amb ARM (Snapdragon), amb Windows 11, des de la 0.15. Als Macs amb Intel, no. |
+| Fa servir la targeta gràfica? | Sí, sola, per a les dues feines més pesades: la passada final de Whisper i el resum. Al Mac, sempre. A Windows i a Linux, si tens una gràfica NVIDIA, AMD o Intel amb els controladors al dia; si en tens una de dedicada i una d'integrada, fa servir la dedicada. Si no en tens, o el model no hi cap, Murmur fa servir el processador: va més a poc a poc, però funciona igual. La transcripció en directe sempre va pel processador, que no li cal més. |
+| Tinc un PC amb Snapdragon. Quin baixo? | La versió per a ARM (`_arm64-setup.exe`); el botó de descàrrega ja te la dona si fas servir Edge o Chrome. La versió per a Intel i AMD també funciona, però emulada i més lenta. De moment, als PC amb ARM tot va pel processador, que és prou ràpid; la gràfica Adreno potser vindrà més endavant. |
 | Entén el valencià i el balear? | Sí. En acabar, el Whisper català del BSC torna a escoltar la reunió, i és el millor de les nostres proves amb totes tres variants. |
 | Pot transcriure un vídeo? | Sí: mp4, mov, m4v, mkv i webm. Murmur n'agafa només el so, i en pots exportar els subtítols. |
 | Què s'envia a Notion? | Només el text de la reunió (resum, notes i transcripció), quan l'exportes o en acabar si ho tens activat. Mai l'àudio ni les captures. |

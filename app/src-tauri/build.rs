@@ -54,6 +54,27 @@ fn bundled_libs() {
     if std::env::var_os("CARGO_FEATURE_VULKAN").is_some() {
         vulkan_loader(&os, &dest);
     }
+    if os == "windows" && std::env::var("CARGO_CFG_TARGET_ARCH").as_deref() == Ok("aarch64") {
+        libomp(&dest);
+    }
+}
+
+/// Windows ARM: llama.cpp is built with clang-cl (.github/scripts/msvc-ninja.ps1), and with
+/// OpenMP, which llama-cpp-sys always turns on. cl.exe brings its own runtime (vcomp); clang-cl
+/// needs LLVM's libomp, linked here and shipped next to the executable. `MURMUR_LLVM_DIR` says
+/// where LLVM is, if not in its usual folder.
+fn libomp(dest: &std::path::Path) {
+    println!("cargo:rerun-if-env-changed=MURMUR_LLVM_DIR");
+    let llvm = std::env::var_os("MURMUR_LLVM_DIR")
+        .map(std::path::PathBuf::from)
+        .unwrap_or_else(|| "C:\\Program Files\\LLVM".into());
+    let dll = llvm.join("bin").join("libomp.dll");
+    if !dll.is_file() || !llvm.join("lib").join("libomp.lib").is_file() {
+        panic!("Falta libomp de LLVM a {} (MURMUR_LLVM_DIR)", llvm.display());
+    }
+    println!("cargo:rustc-link-search=native={}", llvm.join("lib").display());
+    println!("cargo:rustc-link-lib=dylib=libomp");
+    std::fs::copy(&dll, dest.join("libomp.dll")).unwrap();
 }
 
 /// With `vulkan`, llama.cpp (here) and whisper.cpp (murmur-whisper) link against the Vulkan

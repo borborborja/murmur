@@ -2,7 +2,7 @@
   "about": {
     "description": "Transcripció de reunions en directe, amb el català al centre. Tot es processa en aquest ordinador: l'àudio i el text no en surten mai. Local vol dir privat.",
     "chips": {
-      "local": "Res surt d'aquest ordinador"
+      "local": "Les reunions no surten de l'ordinador"
     }
   },
   "app": {

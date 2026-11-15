@@ -36,5 +36,6 @@
   },
   "hideTools": "Ocultar las herramientas",
   "showTools": "Ver todas las licencias y dependencias",
-  "madeBy": "Hecho en Barcelona por Quico Domingo"
+  "madeBy": "Hecho en Barcelona por Quico Domingo",
+  "pcBy": "Las versiones para Windows y Linux, gracias a Xavi Vinaixa"
 }

@@ -184,6 +184,13 @@ export function AboutDialog({ open: visible, onOpenChange }: { open: boolean; on
         <footer className="mt-8 flex items-center gap-3 border-t border-border px-10 py-4">
           <div className="flex-1">
             <div className="text-[13px]">{t("madeBy")}</div>
+            <div className="text-[12px] text-muted-foreground">
+              {t("pcBy")} (
+              <ExternalLink url="https://x.com/xaviviro" className="text-mm-link hover:underline">
+                @xaviviro
+              </ExternalLink>
+              )
+            </div>
             <div className="text-[12px] text-muted-foreground">© 2026</div>
           </div>
           <ExternalLink

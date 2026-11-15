@@ -2,7 +2,7 @@
   "about": {
     "description": "Live meeting transcription, with Catalan at its heart. Everything is processed on this computer: audio and text never leave it. Local means private.",
     "chips": {
-      "local": "Nothing leaves this computer"
+      "local": "Your meetings never leave your computer"
     }
   },
   "app": {

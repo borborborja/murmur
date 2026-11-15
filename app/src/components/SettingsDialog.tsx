@@ -201,11 +201,6 @@ function GeneralTab({
           <Switch checked={!!autostart} disabled={autostart === null} onCheckedChange={toggleAutostart} />
         </Row>
       </Group>
-      <Group title={t("general.privacy")}>
-        <Row label={t("general.analytics")} hint={t("general.analyticsHint")}>
-          <Switch checked={settings.analytics} onCheckedChange={(analytics) => onChange({ analytics })} />
-        </Row>
-      </Group>
       <Group title={t("general.updates")}>
         <Row label={version ? t("general.version", { version }) : "Murmur"} hint={t("general.updatesHint")}>
           <button type="button" onClick={onCheckUpdates} disabled={!backend.isTauri()} className="h-6 shrink-0 rounded-md border border-input bg-background px-2.5 text-[13px] hover:bg-muted disabled:opacity-50">
@@ -261,6 +256,11 @@ function GeneralTab({
             <Switch checked={settings.compactNotes} disabled={!settings.recordingIndicator} onCheckedChange={(compactNotes) => onChange({ compactNotes })} />
           </Row>
         </div>
+      </Group>
+      <Group title={t("general.privacy")}>
+        <Row label={t("general.analytics")} hint={t("general.analyticsHint")}>
+          <Switch checked={settings.analytics} onCheckedChange={(analytics) => onChange({ analytics })} />
+        </Row>
       </Group>
     </>
   );

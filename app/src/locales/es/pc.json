@@ -2,7 +2,7 @@
   "about": {
     "description": "Transcripción de reuniones en directo, con el catalán en el centro. Todo se procesa en este ordenador: el audio y el texto nunca salen de él. Local quiere decir privado.",
     "chips": {
-      "local": "Nada sale de este ordenador"
+      "local": "Las reuniones no salen del ordenador"
     }
   },
   "app": {

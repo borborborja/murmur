@@ -31,6 +31,8 @@ export type Settings = {
   verifySpeakers: boolean;
   /** Final pass: Whisper listens again to meetings in one language (lib/finalpass.ts). */
   finalPass: boolean;
+  /** Anonymous usage statistics (lib/analytics.ts). */
+  analytics: boolean;
   /** ⌘+ / ⌘−: size of the notes text, one of TEXT_ZOOMS. */
   textZoom: number;
   /** What takes the main area; the other one goes in the side panel. */
@@ -101,6 +103,7 @@ export const DEFAULT_SETTINGS: Settings = {
   threshold: 0.7,
   verifySpeakers: true,
   finalPass: true,
+  analytics: true,
   roomSpeakers: false,
   // Notes in the middle, transcript on the right (v3).
   primaryPanel: "notes",

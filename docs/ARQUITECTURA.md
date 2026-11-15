@@ -337,3 +337,10 @@ El mateix binari de l'app, cridat amb `--mcp` (`main.rs`), és un servidor MCP p
 Les finestres de 20 s ajunten persones diferents, i amb 6 s ja empitjora (79%). Només s'ha provat amb una reunió de sala i una trucada: cal validar-ho amb més dades abans d'integrar-ho.
 
 Variables per experimentar: `TRANSCRIPTOR_EMBEDDING` (directe), `TRANSCRIPTOR_DIARIZE_EMBEDDING` (verificació) i `TRANSCRIPTOR_NO_PARTIALS`.
+
+## Estadístiques d'ús (`lib/analytics.ts`)
+
+- [Aptabase](https://aptabase.com), amb el connector oficial per a Tauri (`tauri-plugin-aptabase`, amb rustls). Només es carrega si `APTABASE_KEY` (lib.rs) té una clau; sense, no s'envia res. En tancar l'app, `flush_events_blocking` envia el que quedi a la cua.
+- El connector afegeix a cada esdeveniment la versió de l'app, el sistema operatiu i el seu idioma, i un identificador de sessió que viu en memòria i caduca. No fa servir cap identificador del dispositiu ni desa res al disc. No hi ha informes d'errors automàtics.
+- `track()` no fa res si l'usuari ho ha desactivat (`Settings.analytics`, activat per defecte: casella a l'onboarding i interruptor a Configuració › General). Els valors de cert o fals van com a «yes» o «no».
+- Esdeveniments: `app_opened` (com està configurat i quantes reunions, en franges), `recording_started`, `recording_continued`, `recording_finished` i `file_transcribed` (idioma, fonts, durada i nombre de frases en franges), `file_opened`, `retranscribed`, `translated`, `summary_generated`, `exported` (format) i `shared` (què s'hi inclou, caducitat, contrasenya). Mai títols, text, noms, notes ni àudio.

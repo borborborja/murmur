@@ -10,6 +10,7 @@ import { locale, t, uiLanguage } from "./i18n";
 import { notesDoc } from "./notes";
 import type { Meeting, ShareLink, SharePart } from "./types";
 import { capabilities } from "./platform";
+import { track } from "./analytics";
 
 // Shared links (docs/COMPARTIR.md). The meeting is put together here as the page will show it,
 // already translated, then compressed and encrypted with AES-GCM; only that goes to the user's
@@ -274,6 +275,7 @@ export async function shareMeeting(
 ): Promise<ShareLink> {
   const ttl = TTL[expiry];
   const expiresAt = ttl ? Date.now() + ttl * 1000 : null;
+  track("shared", { parts: [...parts].sort().join("+"), expiry, password: !!password });
   const { key, secret, kdf } = await newKey(password);
 
   // Read everything first: a file that can't be read stops it before anything is published.

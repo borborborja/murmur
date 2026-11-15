@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import * as backend from "./backend";
 import { cloudModelName, coverEngine } from "./cloud";
 import { speakerName } from "./format";
+import { countBucket, track } from "./analytics";
 import { t } from "./i18n";
 import type { Settings } from "./settings";
 import type { Action } from "./store";
@@ -108,6 +109,7 @@ export async function translateMeeting(m: Meeting, lang: TranslationLanguage, se
   const save = (done: boolean) =>
     dispatch({ type: "translation", id: m.id, translation: { lang, texts, sources, done, writtenBy: engine ? cloudModelName(engine) : undefined } });
   setProgress(m.id, { lang, done: 0, total });
+  track("translated", { to: lang, engine: engine ? engine.provider : "local", lines: countBucket(total) });
   save(false);
   const job = `translate:${m.id}`;
   // Gemma: its progress, group by group, comes as llm-progress events.

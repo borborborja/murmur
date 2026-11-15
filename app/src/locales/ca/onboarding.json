@@ -98,6 +98,7 @@
     "cloudConnect": "Connecta",
     "cloudChecking": "Comprovant…",
     "cloudConnected": "{{name}} connectat. Clau desada al clauer, acaba en …{{hint}}",
-    "offlineCloud": "L'àudio no surt mai d'aquest ordinador. Per fer els resums, només s'envia el text de la reunió, amb la teva clau."
+    "offlineCloud": "L'àudio no surt mai d'aquest ordinador. Per fer els resums, només s'envia el text de la reunió, amb la teva clau.",
+    "analytics": "Envia estadístiques d'ús anònimes: quines funcions es fan servir, sense res del que es diu a les reunions. Ho pots canviar a Configuració › General."
   }
 }

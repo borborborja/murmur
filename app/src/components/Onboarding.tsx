@@ -336,6 +336,8 @@ function Models({ step, onBack, onClose, onChange }: { step: number; onBack: () 
   const models = useModels();
   const cloud = useCloud();
   const [writer, setWriter] = useState<Writer>("local");
+  // Anonymous usage statistics (lib/analytics.ts): on unless unticked here or in Settings › General.
+  const [analytics, setAnalytics] = useState(true);
   const [started, setStarted] = useState(false);
   const status = (id: ModelId) => models.status[id];
   const installed = (ids: ModelId[]) => ids.every((id) => status(id)?.installed);
@@ -353,7 +355,7 @@ function Models({ step, onBack, onClose, onChange }: { step: number; onBack: () 
   const waitingForKey = !!remote && !cloud.status[remote];
 
   const start = () => {
-    if (writer !== "none") onChange({ punctuate: toolIds.includes("punctuation"), summarize: true, coverEngine: writer });
+    onChange({ analytics, ...(writer !== "none" ? { punctuate: toolIds.includes("punctuation"), summarize: true, coverEngine: writer } : {}) });
     setStarted(true);
     downloadQueue(wanted);
   };
@@ -429,6 +431,10 @@ function Models({ step, onBack, onClose, onChange }: { step: number; onBack: () 
           <Lock className="mt-0.5 size-3.5 shrink-0" aria-hidden />
           <span>{remote ? t("models.offlineCloud") : t("models.offline")}</span>
         </div>
+        <label className={cn("mt-2 flex items-start gap-2.5 text-[12px] leading-normal text-muted-foreground", phase !== "choose" && "pointer-events-none opacity-60")}>
+          <input type="checkbox" checked={analytics} onChange={(e) => setAnalytics(e.target.checked)} className="mt-0.5 size-3.5 shrink-0 accent-primary" />
+          <span>{t("models.analytics")}</span>
+        </label>
       </div>
       {phase === "ready" ? (
         <Footer step={step} primary={t("models.close")} onNext={onClose} />

@@ -137,6 +137,8 @@ export function AboutDialog({ open: visible, onOpenChange }: { open: boolean; on
               </span>
             ))}
           </div>
+          {/* What leaves the computer besides updates: anonymous statistics (lib/analytics.ts). */}
+          <p className="mt-4 max-w-[460px] text-[12px] leading-normal text-muted-foreground">{t("analytics")}</p>
         </div>
 
         <section aria-labelledby="oss-h" className="mx-10 mt-7 overflow-hidden rounded-xl border border-border">

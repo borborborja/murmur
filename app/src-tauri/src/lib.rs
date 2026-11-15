@@ -1524,8 +1524,14 @@ fn set_ui_language(app: AppHandle, language: String) {
     }
 }
 
+/// Anonymous usage statistics (Aptabase; lib/analytics.ts decides what's sent and whether the
+/// user allows it). Without a key the plugin isn't loaded and nothing is ever sent.
+const APTABASE_KEY: &str = "";
+
 pub fn run() {
-    tauri::Builder::default()
+    let builder = tauri::Builder::default();
+    let builder = if APTABASE_KEY.is_empty() { builder } else { builder.plugin(tauri_plugin_aptabase::Builder::new(APTABASE_KEY).build()) };
+    builder
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_process::init())
@@ -1719,6 +1725,11 @@ pub fn run() {
                     app.state::<Opened>().0.lock().unwrap().extend(audio);
                     shell::show_main(app);
                     let _ = app.emit("opened-files", ());
+                }
+                // Statistics still queued go before quitting.
+                tauri::RunEvent::Exit if !APTABASE_KEY.is_empty() => {
+                    use tauri_plugin_aptabase::EventTracker;
+                    app.flush_events_blocking();
                 }
                 _ => {}
             }

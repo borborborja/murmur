@@ -48,6 +48,7 @@ import { bytes, downloadModel, modelInstalled, useModels } from "@/lib/models";
 import { ensurePermissions } from "@/lib/permissions";
 import { usePostProcess } from "@/lib/postprocess";
 import { MarkdownSwitch, RoomMenu, StartOptions, type StartChoice } from "@/components/StartOptions";
+import { countBucket, minutesBucket, setAnalyticsAllowed, track } from "@/lib/analytics";
 import { reveal } from "@/lib/reveal";
 import { finalPassModel } from "@/lib/finalpass";
 import { CONTINUE_MS } from "@/lib/parts";
@@ -302,6 +303,7 @@ export default function App() {
         const imported = importingRef.current?.id === rec?.id;
         dispatch({ type: "stopped" });
         setImporting(null);
+        if (rec) track(imported ? "file_transcribed" : "recording_finished", { minutes: minutesBucket(rec.duration), language: rec.language ?? "?", lines: countBucket(rec.utterances.length) });
         if (rec && !imported) {
           setStoppedAt({ id: rec.id, at: Date.now() });
           if (stoppedFromIndicator.current)
@@ -508,6 +510,7 @@ export default function App() {
     const finalModel = finalPassModel(language);
     const finalText = settings.finalPass && !!finalModel && modelInstalled(finalModel);
     post.planRecording(m.id, { verifySpeakers: settings.verifySpeakers, finalText, language });
+    track("recording_started", { language, mic: sources.mic, system: sources.system, room: roomSpeakers, whisper: finalText, summary: settings.summarize ? settings.coverEngine : "off" });
     startedAt.current = Date.now();
     startOffset.current = 0;
     try {
@@ -575,6 +578,7 @@ export default function App() {
     const finalModel = finalPassModel(language);
     const finalText = settings.finalPass && !!finalModel && modelInstalled(finalModel);
     post.planRecording(m.id, { verifySpeakers: settings.verifySpeakers, finalText, language, from: m.duration });
+    track("recording_continued", { language, whisper: finalText });
     dispatch({ type: "resumed", id: m.id, part: { startedAt: Date.now(), at: m.duration } });
     setMarkdown((list) => ({ ...list, [m.id]: settings.saveMarkdown && !!settings.markdownDir }));
     startedAt.current = Date.now();
@@ -656,6 +660,7 @@ export default function App() {
     const finalModel = finalPassModel(language);
     const finalText = settings.finalPass && !!finalModel && modelInstalled(finalModel);
     post.planRecording(m.id, { verifySpeakers: settings.verifySpeakers, finalText, language });
+    track("file_opened", { language, detected: !!detected.language, whisper: finalText });
     try {
       const { audioPath: audio } = await backend.startRecording({
         meetingId: m.id,
@@ -728,12 +733,12 @@ export default function App() {
   };
 
   const doExport = (m: Meeting, format: ExportFormat, content?: ExportContent) =>
-    exportMeeting(m, format, content)
+    (track("exported", { format, content: content ?? "all" }), exportMeeting(m, format, content))
       .then((done) => done && toast(t("exported")))
       .catch((e) => toast.error(String(e)));
 
   const copyMarkdown = (m: Meeting) =>
-    navigator.clipboard.writeText(toMarkdown(m)).then(() => toast(t("copiedMarkdown")));
+    (track("exported", { format: "clipboard" }), navigator.clipboard.writeText(toMarkdown(m)).then(() => toast(t("copiedMarkdown"))));
 
   /** From the sidebar (right click) or ⌘⌫: the meeting may not be loaded yet. */
   const removeById = async (id: string) => {
@@ -826,6 +831,7 @@ export default function App() {
     const ext = capabilities.audioExtension;
     const dest = await save({ title: t("exportAudioTitle"), defaultPath: `${m.title.replace(/[/:\\]/g, "-")}.${ext}`, filters: [{ name: t("audioFilter"), extensions: [ext] }] });
     if (!dest) return;
+    track("exported", { format: "audio" });
     try {
       await backend.exportAudio(m.id, m.audioPath, dest);
       toast(t("audioExported"));
@@ -858,6 +864,7 @@ export default function App() {
       }))
       .filter((c) => c.spans.length);
     post.planRetranscribe(m.id, language);
+    track("retranscribed", { to: language });
     dispatch({ type: "language", id: m.id, language });
     try {
       await backend.retranscribeMeeting(m.id, m.audioPath, language, channels, m.guests ?? []);
@@ -872,6 +879,7 @@ export default function App() {
     if (!screens.length) return;
     const dir = await openDialog({ title: t("exportScreensTitle"), directory: true, canCreateDirectories: true });
     if (typeof dir !== "string") return;
+    track("exported", { format: "screens" });
     const safe = (name: string) => name.replace(/[/\\:]/g, "-").replace(/^\.+/, "").trim();
     const dest = await join(dir, safe(t("screensFolder", { title: m.title })));
     const width = String(screens.length).length;
@@ -1016,6 +1024,24 @@ export default function App() {
       action: { label: t("settings:model.download"), onClick: () => void downloadModel("whisper-ca") },
     });
   }, [state.loaded, models.loaded, models.status, onboarding.open, whatsNew, settings.language, settings.finalPass, t]);
+
+  // Statistics follow the setting; one event when Murmur opens, with how it's set up (never content).
+  useEffect(() => setAnalyticsAllowed(settings.analytics), [settings.analytics]);
+  const openedTracked = useRef(false);
+  useEffect(() => {
+    if (openedTracked.current || !state.loaded || onboarding.open) return;
+    openedTracked.current = true;
+    track("app_opened", {
+      ui: settings.uiLanguage,
+      theme: settings.theme,
+      mode: settings.mode,
+      language: settings.language,
+      whisper: settings.finalPass,
+      summary: settings.summarize ? settings.coverEngine : "off",
+      markdown: settings.saveMarkdown,
+      meetings: countBucket(state.summaries.length),
+    });
+  }, [state.loaded, onboarding.open]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Recording stopped: back to the full window, where the cover and processing show.
   useEffect(() => {

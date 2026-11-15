@@ -98,6 +98,7 @@
     "cloudConnect": "Connect",
     "cloudChecking": "Checking…",
     "cloudConnected": "{{name}} connected. Key saved in the keychain, ending in …{{hint}}",
-    "offlineCloud": "Audio never leaves this computer. For the summaries, only the meeting's text is sent, with your key."
+    "offlineCloud": "Audio never leaves this computer. For the summaries, only the meeting's text is sent, with your key.",
+    "analytics": "Send anonymous usage statistics: which features are used, with nothing of what's said in your meetings. You can change it in Settings › General."
   }
 }

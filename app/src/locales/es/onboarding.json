@@ -98,6 +98,7 @@
     "cloudConnect": "Conectar",
     "cloudChecking": "Comprobando…",
     "cloudConnected": "{{name}} conectado. Clave guardada en el llavero, acaba en …{{hint}}",
-    "offlineCloud": "El audio nunca sale de este ordenador. Para hacer los resúmenes, solo se envía el texto de la reunión, con tu clave."
+    "offlineCloud": "El audio nunca sale de este ordenador. Para hacer los resúmenes, solo se envía el texto de la reunión, con tu clave.",
+    "analytics": "Enviar estadísticas de uso anónimas: qué funciones se usan, sin nada de lo que se dice en las reuniones. Puedes cambiarlo en Configuración › General."
   }
 }

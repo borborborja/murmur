@@ -47,7 +47,7 @@ It started as a tool for meetings in **Catalan**, where most transcription servi
 ## Privacy
 
 - Everything runs on your computer: speech recognition, speakers, Whisper and the summary model. Writing the summary with Claude or OpenAI is optional, uses your own key (kept in the system's keychain: the macOS Keychain, Windows Credential Manager or the Secret Service on Linux) and only sends text.
-- Murmur only connects to the internet to download models (the first time, and when you enable an optional feature) and to check for updates. You can turn the update check off. Shared meetings are encrypted on your computer before leaving it, and only you and whoever has the link can read them. With the Claude connector on, Claude gets the text it asks for, never the audio.
+- Murmur only connects to the internet to download models (the first time, and when you enable an optional feature), to check for updates and to send anonymous usage statistics ([Aptabase](https://aptabase.com): which features are used and how long meetings last, with no identifier and nothing of what's said in your meetings). You can turn both off in Settings › General. Shared meetings are encrypted on your computer before leaving it, and only you and whoever has the link can read them. With the Claude connector on, Claude gets the text it asks for, never the audio.
 - Meetings are stored in a local SQLite database. Audio is only saved if you turn it on.
 - Recording a meeting requires the consent of everyone in it. Murmur reminds you when you start.
 

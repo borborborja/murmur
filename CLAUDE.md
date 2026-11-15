@@ -12,6 +12,7 @@ Guia per a qui treballa en aquest repositori, persones o agents de codi. Murmur 
 | [`docs/TRADUCCIONS.md`](docs/TRADUCCIONS.md) | Com s'escriuen i es tradueixen els textos de la interfície |
 | [`docs/PUBLICAR.md`](docs/PUBLICAR.md) | Com es publica una versió de l'app o d'un model |
 | [`docs/LANDING.md`](docs/LANDING.md) | Els textos i les captures per a la pàgina de descàrrega |
+| [`docs/MOBIL.md`](docs/MOBIL.md) | L'exploració d'una versió per a mòbil |
 
 | Carpeta | Què hi ha |
 |---|---|
@@ -51,6 +52,7 @@ cd app/src-tauri && cargo run --release --example lang_probe -- ../../data/reuni
 - Compartir una reunió publica només el que tria l'usuari, xifrat al Mac abans de sortir-ne, al seu propi Worker de Cloudflare.
 - El connector per a Claude (`mcp.rs`) està desactivat fins que l'usuari l'afegeix. Llegeix la base de dades només en lectura, i a Claude només li dona text, mai àudio.
 - Gravar una reunió requereix el consentiment de qui hi participa, i l'app ho recorda en començar.
+- Les estadístiques d'ús (`lib/analytics.ts`, Aptabase) són anònimes i es poden desactivar (casella a l'onboarding, interruptor a Configuració › General). Un esdeveniment nou mai porta contingut de les reunions (títols, text, noms, notes, àudio) ni cap identificador, i les mides i quantitats van en franges (`minutesBucket`, `countBucket`).
 
 **Models i dades**
 - Les gravacions, els models i els resultats no es pugen al repositori (`data/`, `models/`, `results/`).

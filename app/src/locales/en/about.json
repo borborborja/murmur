@@ -2,6 +2,7 @@
   "title": "About Murmur",
   "version": "Version {{version}}",
   "description": "Live meeting transcription, with Catalan at its heart. Everything is processed on this Mac: audio and text never leave the computer. Local means private.",
+  "analytics": "Unless you turn them off, Murmur sends anonymous usage statistics with Aptabase: which features are used, how long meetings last, the version and the system. No identifier and nothing from your meetings (titles, text, names, notes or audio). Turn them off in Settings › General.",
   "chips": {
     "local": "Nothing leaves this Mac",
     "noCloud": "No cloud, no accounts",

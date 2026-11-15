@@ -47,7 +47,7 @@ Nació para reuniones en **catalán**, donde la mayoría de servicios de transcr
 ## Privacidad
 
 - Todo se hace en el ordenador: el reconocimiento de voz, los hablantes, Whisper y el modelo del resumen. Escribir el resumen con Claude u OpenAI es opcional, usa tu clave (guardada en el llavero del sistema: el de macOS, el Administrador de credenciales de Windows o el Secret Service de Linux) y solo envía texto.
-- Murmur solo se conecta a internet para descargar modelos (la primera vez, y cuando activas una función opcional) y para buscar actualizaciones. Esta comprobación se puede desactivar. Las reuniones compartidas se cifran en el ordenador antes de salir de él, y solo puede leerlas quien tiene el enlace. Con el conector para Claude activado, Claude recibe el texto que pide, nunca el audio.
+- Murmur solo se conecta a internet para descargar modelos (la primera vez, y cuando activas una función opcional), para buscar actualizaciones y para enviar estadísticas de uso anónimas ([Aptabase](https://aptabase.com): qué funciones se usan y cuánto duran las reuniones, sin ningún identificador ni nada de lo que se dice en las reuniones). Las dos cosas se pueden desactivar en Configuración › General. Las reuniones compartidas se cifran en el ordenador antes de salir de él, y solo puede leerlas quien tiene el enlace. Con el conector para Claude activado, Claude recibe el texto que pide, nunca el audio.
 - Las reuniones se guardan en una base de datos SQLite local. El audio solo se guarda si lo activas.
 - Para grabar una reunión hace falta el consentimiento de todas las personas que participan. Murmur te lo recuerda al empezar.
 

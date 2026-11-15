@@ -24,6 +24,7 @@ import { modelInstalled } from "./models";
 import type { Settings } from "./settings";
 import type { Action, State } from "./store";
 import type { Language, Meeting, PostStage } from "./types";
+import { track } from "./analytics";
 import { reveal } from "./reveal";
 import { finalPassModel } from "./finalpass";
 
@@ -186,6 +187,7 @@ export function usePostProcess(state: State, dispatch: Dispatch<Action>, setting
       const current = latest.current.open[id]?.cover;
       const chosen = lng ?? (current ? coverLanguage(current) : undefined);
       if (chosen) coverLangs.current.set(id, chosen);
+      track("summary_generated", { language: chosen ?? "default", changed: !!lng && lng !== (current ? coverLanguage(current) : undefined) });
       return run(id, ["cover"], ["cover"]);
     },
     [run],

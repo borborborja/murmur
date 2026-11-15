@@ -20,6 +20,14 @@
         "linkLabel": "Configuració › Exportar"
       },
       {
+        "title": "Subtítols",
+        "text": "Exporta › Subtítols desa la transcripció en SRT o WebVTT, en frases curtes de dues línies, amb el nom de qui parla si vols i en la traducció si n'has fet. Si la reunió ve d'un vídeo, es desen al seu costat amb el mateix nom."
+      },
+      {
+        "title": "Transcriu vídeos",
+        "text": "Obre o deixa anar un vídeo (mp4, mov, mkv, webm) i Murmur en transcriu el so, com amb un àudio. També des del menú Compartir i amb «Obre amb»."
+      },
+      {
         "title": "Una configuració més endreçada",
         "text": "Les seccions de la configuració són ara en una barra lateral, i el Markdown s'ha mogut a la nova secció Exportar, amb Notion i Obsidian."
       }

@@ -20,6 +20,14 @@
         "linkLabel": "Settings › Export"
       },
       {
+        "title": "Subtitles",
+        "text": "Export › Subtitles saves the transcript as SRT or WebVTT, in short two-line cues, with the speaker's name if you like and in the translation if you made one. If the meeting came from a video, they're saved next to it with the same name."
+      },
+      {
+        "title": "Transcribe videos",
+        "text": "Open or drop a video (mp4, mov, mkv, webm) and Murmur transcribes its sound, as with audio. Also from the Share menu and with Open With."
+      },
+      {
         "title": "Tidier settings",
         "text": "The settings sections now sit in a sidebar, and Markdown has moved to the new Export section, alongside Notion and Obsidian."
       }

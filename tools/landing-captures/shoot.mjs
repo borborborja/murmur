@@ -92,6 +92,10 @@ const clickText = (text, sel = "*") => ev(`(()=>{const e=[...document.querySelec
 async function open(lang, { theme = "acid", mode = "light", cover = false, notes = true, panel = 340, w = W, h = H, live = null, mock = false, intro = false } = {}) {
   await size(w, h);
   const d = seed(lang, slides[lang]);
+  // The sample's line in Spanish shows off "Català + castellà" on the landing; the captures of
+  // what's new (with `mock` or `intro`) are all in Catalan.
+  if ((mock || intro) && lang === "ca")
+    for (const m of d.meetings) for (const u of m.utterances) if (u.text.startsWith("La puc fer yo")) u.text = "La puc fer jo, però necessito que em passeu els preus definitius abans de dimecres.";
   // `live`: seconds into the meeting. Only what was said by then, no summary yet.
   if (live) {
     // Only what was said by then, no summary yet, and the next line half said (the engine is still writing it).

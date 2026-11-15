@@ -243,7 +243,7 @@ fn tools() -> Value {
         {
             "name": "transcribe_file",
             "title": "Transcribe an audio file",
-            "description": "Transcribes an audio or video file on this Mac (mp3, m4a, wav, ogg, flac, mp4, mov…) with Murmur's local models, telling speakers apart. Catalan, Spanish, both mixed, or English. Runs in the background and returns a job id: then call get_transcription. Pass the language when you know it; otherwise Murmur listens for it.",
+            "description": "Transcribes an audio or video file on this Mac (mp3, m4a, wav, ogg, flac, mp4, mov, mkv, webm…) with Murmur's local models, telling speakers apart. Catalan, Spanish, both mixed, or English. Runs in the background and returns a job id: then call get_transcription. Pass the language when you know it; otherwise Murmur listens for it.",
             "inputSchema": { "type": "object", "properties": {
                 "path": { "type": "string", "description": "Absolute path to the file (~/ is fine)." },
                 "language": { "type": "string", "enum": LANGUAGES, "description": "ca (Catalan), es (Spanish), en (English) or ca-es (Catalan and Spanish mixed). Leave it out to detect it." },

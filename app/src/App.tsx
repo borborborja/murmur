@@ -3,7 +3,7 @@ import { getVersion } from "@tauri-apps/api/app";
 import { join } from "@tauri-apps/api/path";
 import { ask, open as openDialog, save } from "@tauri-apps/plugin-dialog";
 import { openUrl, revealItemInDir } from "@tauri-apps/plugin-opener";
-import { Camera, Copy, FileAudio, MoreHorizontal, FileDown, FileText, FolderOpen, Gem, Globe, NotebookText, Images, Languages, Link2, Maximize2, Mic, PanelLeft, PanelRight, Share, Trash2 } from "lucide-react";
+import { Camera, Captions, Copy, FileAudio, MoreHorizontal, FileDown, FileText, FolderOpen, Gem, Globe, NotebookText, Images, Languages, Link2, Maximize2, Mic, PanelLeft, PanelRight, Share, Trash2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
@@ -25,6 +25,7 @@ import {
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
+  DropdownMenuCheckboxItem,
   DropdownMenuSub,
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
@@ -65,6 +66,7 @@ import { copyText } from "@/lib/clipboard";
 import { MarkerBackground, useMarker } from "@/lib/motion";
 import { openInObsidian, saveToObsidian } from "@/lib/obsidian";
 import { saveToNotion } from "@/lib/notion";
+import { exportSubtitles, rememberSource, type SubtitleFormat } from "@/lib/subtitles";
 import { markSeen, pendingReleases, releasesBetween, type WhatsNewRelease } from "@/lib/whatsnew";
 
 const ONBOARDED_KEY = "murmur.onboarded.v1";
@@ -708,6 +710,7 @@ export default function App() {
     const title = path.split(/[\\/]/).pop()!.replace(/\.[^.]+$/, "");
     const m = newMeeting({ mic: true, system: false }, language, title);
     dispatch({ type: "new", meeting: m });
+    rememberSource(m.id, path);
     setImporting({ id: m.id, done: 0, total: 0 });
     setMarkdown((list) => ({ ...list, [m.id]: settings.saveMarkdown && !!settings.markdownDir }));
     obsidianPending.current.add(m.id);
@@ -836,6 +839,13 @@ export default function App() {
 
   const doExport = (m: Meeting, format: ExportFormat, content?: ExportContent) =>
     (track("exported", { format, content: content ?? "all" }), exportMeeting(m, format, content))
+      .then((done) => done && toast(t("exported")))
+      .catch((e) => toast.error(String(e)));
+
+  /** Exporta › Subtítols (lib/subtitles.ts). */
+  const doSubtitles = (m: Meeting, format: SubtitleFormat) =>
+    (track("exported", { format }),
+    exportSubtitles(m, format, { speakers: settings.subtitleSpeakers, translated: settings.subtitleTranslated && !!m.translation?.done }))
       .then((done) => done && toast(t("exported")))
       .catch((e) => toast.error(String(e)));
 
@@ -1486,6 +1496,37 @@ export default function App() {
                         <DropdownMenuItem onSelect={() => toObsidian(meeting)}>
                           <Gem className="size-3.5" /> {t("exportObsidian")}
                         </DropdownMenuItem>
+                      )}
+                      {meeting.utterances.length > 0 && (
+                        <DropdownMenuSub>
+                          <DropdownMenuSubTrigger>
+                            <Captions className="size-3.5" /> {t("exportSubtitles")}
+                          </DropdownMenuSubTrigger>
+                          <DropdownMenuSubContent className="min-w-56">
+                            {(["srt", "vtt"] as const).map((format) => (
+                              <DropdownMenuItem key={format} onSelect={() => doSubtitles(meeting, format)}>
+                                {t(format === "srt" ? "exportSrt" : "exportVtt")}
+                              </DropdownMenuItem>
+                            ))}
+                            <DropdownMenuSeparator />
+                            <DropdownMenuCheckboxItem
+                              checked={settings.subtitleSpeakers}
+                              onSelect={(e) => e.preventDefault()}
+                              onCheckedChange={(on) => updateSettings({ subtitleSpeakers: on })}
+                            >
+                              {t("subtitleSpeakers")}
+                            </DropdownMenuCheckboxItem>
+                            {meeting.translation?.done && (
+                              <DropdownMenuCheckboxItem
+                                checked={settings.subtitleTranslated}
+                                onSelect={(e) => e.preventDefault()}
+                                onCheckedChange={(on) => updateSettings({ subtitleTranslated: on })}
+                              >
+                                {t("subtitleTranslated", { language: t(`settings:transcription.languages.${meeting.translation.lang}`) })}
+                              </DropdownMenuCheckboxItem>
+                            )}
+                          </DropdownMenuSubContent>
+                        </DropdownMenuSub>
                       )}
                       {!!meeting.screens?.length && (
                         <DropdownMenuItem onSelect={() => exportScreens(meeting)}>

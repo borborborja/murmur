@@ -12,9 +12,10 @@ use sherpa_onnx::{SileroVadModelConfig, VadModelConfig, VoiceActivityDetector};
 use crate::diarize::Span;
 use crate::engine::SAMPLE_RATE;
 
-/// What the open panel offers. macOS reads all of them (`afconvert`), Ogg/Opus included; on
-/// Windows and Linux Symphonia does, except Opus and CAF's own codecs.
-pub const EXTENSIONS: &[&str] = &["mp3", "m4a", "aac", "wav", "aif", "aiff", "caf", "flac", "ogg", "opus", "mp4", "mov"];
+/// What the open panel offers, audio and video (only its sound is used). macOS reads most of them
+/// with `afconvert`, and Symphonia the rest (Matroska, WebM); on Windows and Linux Symphonia reads
+/// them all except CAF's own codecs, with Opus through our own decoder.
+pub const EXTENSIONS: &[&str] = &["mp3", "m4a", "aac", "wav", "aif", "aiff", "caf", "flac", "ogg", "opus", "mp4", "mov", "m4v", "mkv", "webm"];
 
 /// The file as 16 kHz mono samples: macOS's `afconvert` (or Symphonia elsewhere) decodes it, or,
 /// for an Ogg/Opus they can't read, our own decoder (the format Murmur records in).
@@ -46,7 +47,8 @@ fn system_decode(path: &Path, tmp_dir: &Path) -> Result<std::result::Result<Vec<
         .is_ok_and(|s| s.success());
     if !converted {
         let _ = std::fs::remove_file(&wav);
-        return Ok(Err("afconvert".into()));
+        // Matroska and WebM (a video from the browser or OBS): Symphonia reads them.
+        return Ok(symphonia_decode(path).map_err(|why| format!("afconvert; {why}")));
     }
     let bytes = std::fs::read(&wav);
     let _ = std::fs::remove_file(&wav);
@@ -60,10 +62,9 @@ fn system_decode(path: &Path, _tmp_dir: &Path) -> Result<std::result::Result<Vec
     Ok(symphonia_decode(path))
 }
 
-#[cfg(any(not(target_os = "macos"), test))]
 fn symphonia_decode(path: &Path) -> std::result::Result<Vec<f32>, String> {
     use symphonia::core::audio::SampleBuffer;
-    use symphonia::core::codecs::{CODEC_TYPE_NULL, DecoderOptions};
+    use symphonia::core::codecs::{CODEC_TYPE_NULL, CODEC_TYPE_OPUS, DecoderOptions};
     use symphonia::core::errors::Error;
     use symphonia::core::formats::FormatOptions;
     use symphonia::core::io::MediaSourceStream;
@@ -88,8 +89,22 @@ fn symphonia_decode(path: &Path) -> std::result::Result<Vec<f32>, String> {
         .ok_or("Symphonia: no audio track")?;
     let track_id = track.id;
     let rate = track.codec_params.sample_rate.unwrap_or(SAMPLE_RATE as u32);
-    let mut decoder = symphonia::default::get_codecs().make(&track.codec_params, &DecoderOptions::default()).map_err(|e| format!("Symphonia: {e}"))?;
+    // Symphonia has no Opus decoder (WebM's usual sound): the packets go to libopus, at 48 kHz.
+    let opus_channels = track.codec_params.channels.map(|c| c.count()).unwrap_or(2);
+    let mut opus = if track.codec_params.codec == CODEC_TYPE_OPUS {
+        let channels = if opus_channels == 1 { opus::Channels::Mono } else { opus::Channels::Stereo };
+        Some((opus::Decoder::new(48_000, channels).map_err(|e| format!("Opus: {e}"))?, channels as usize))
+    } else {
+        None
+    };
+    let rate = if opus.is_some() { 48_000 } else { rate };
+    let mut decoder = match opus {
+        Some(_) => None,
+        None => Some(symphonia::default::get_codecs().make(&track.codec_params, &DecoderOptions::default()).map_err(|e| format!("Symphonia: {e}"))?),
+    };
     let mut resampler = crate::audio::Resampler::new(rate);
+    // The longest Opus packet: 120 ms at 48 kHz, per channel.
+    let mut pcm = vec![0f32; 5760 * 2];
     let mut mono = Vec::new();
     let mut out = Vec::new();
     // The buffer and how many frames it holds: a bigger packet needs a new one.
@@ -103,6 +118,14 @@ fn symphonia_decode(path: &Path) -> std::result::Result<Vec<f32>, String> {
         if packet.track_id() != track_id {
             continue;
         }
+        if let Some((opus, channels)) = opus.as_mut() {
+            let Ok(frames) = opus.decode_float(&packet.data, &mut pcm, false) else { continue };
+            mono.clear();
+            mono.extend(pcm[..frames * *channels].chunks_exact(*channels).map(|f| f.iter().sum::<f32>() / *channels as f32));
+            resampler.process(&mono, &mut out);
+            continue;
+        }
+        let Some(decoder) = decoder.as_mut() else { break };
         let decoded = match decoder.decode(&packet) {
             Ok(d) => d,
             // A damaged packet: skip it, as players do.
@@ -451,6 +474,23 @@ mod tests {
         assert_eq!(decide(&mixed).language.as_deref(), Some("ca-es"));
         // Sentences in each language within the same window.
         assert_eq!(decide(&[heard(0.53, 0.45, 0.0)]).language.as_deref(), Some("ca-es"));
+    }
+
+    /// Videos made with ffmpeg (docs/ARQUITECTURA.md › Obrir un fitxer): every container and the
+    /// sound of each, 20 s long. `MURMUR_VIDEOS=<folder> cargo test -- --ignored videos`.
+    #[test]
+    #[ignore]
+    fn videos() {
+        let dir = std::path::PathBuf::from(std::env::var("MURMUR_VIDEOS").expect("MURMUR_VIDEOS"));
+        let tmp = std::env::temp_dir().join("murmur-videos");
+        for name in ["test.mp4", "test.mov", "test.m4v", "test.mkv", "test.webm", "test-opus.mkv"] {
+            let samples = decode(&dir.join(name), &tmp).unwrap_or_else(|e| panic!("{name}: {e:#}"));
+            let seconds = samples.len() as f32 / SAMPLE_RATE as f32;
+            let loud = samples.iter().map(|s| s * s).sum::<f32>() / samples.len() as f32;
+            println!("{name}: {seconds:.2} s, rms {:.4}", loud.sqrt());
+            assert!((19.0..21.0).contains(&seconds), "{name}: {seconds} s");
+            assert!(loud.sqrt() > 0.005, "{name}: silent");
+        }
     }
 
     #[test]

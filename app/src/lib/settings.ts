@@ -59,6 +59,10 @@ export type Settings = {
   notionPage: { id: string; title: string } | null;
   /** Each meeting goes to Notion when it's done. */
   notionAuto: boolean;
+  /** Subtitles (lib/subtitles.ts): the speaker's name at the start of their lines. */
+  subtitleSpeakers: boolean;
+  /** Subtitles in the translation's language, when the meeting has one. */
+  subtitleTranslated: boolean;
   /** Who writes the cover: the local model, or Claude or OpenAI with the user's key (lib/cloud.ts). */
   coverEngine: "local" | CloudProvider;
   /** The model chosen for each provider; missing = its default (lib/cloud.ts). */
@@ -132,6 +136,8 @@ export const DEFAULT_SETTINGS: Settings = {
   obsidianPeople: false,
   notionPage: null,
   notionAuto: false,
+  subtitleSpeakers: true,
+  subtitleTranslated: false,
   coverEngine: "local",
   cloudModels: {},
   shareExpiry: "7d",

@@ -37,6 +37,9 @@ En aturar la gravació, reprocessar l'àudio desat:
 - [x] **Tradueix la transcripció** al català, al castellà o a l'anglès amb el model dels resums (Gemma, Claude o ChatGPT), sense tocar l'original: un segmentat Original / traducció a la transcripció (`lib/translate.ts`, columna `translation`).
 - [x] Exportar a Obsidian: les caixes fortes trobades a la llista d'Obsidian, propietats, tasques, captures a «attachments», persones com a enllaços, desar-hi sola en acabar i «Obre a Obsidian». Configuració › Exportar (amb el Markdown, que era a Transcripció).
 - [x] Exportar a Notion amb «Connecta amb Notion» (OAuth amb PKCE contra el servidor MCP de Notion, sense servidor propi), triar la pàgina on es desa, desar-hi sola en acabar i «Obre a Notion». Les transcripcions llargues van a subpàgines.
+- [x] **Subtítols:** Exporta › Subtítols en SRT o WebVTT, amb trossos de dues línies, el nom de qui parla i la traducció si n'hi ha; al costat del vídeo d'on ve, amb el seu nom (`lib/subtitles.ts`).
+- [x] **Transcriure un vídeo:** mp4, mov i m4v amb `afconvert`, i mkv i webm amb Symphonia (l'Opus amb libopus), també des de Compartir, «Obre amb» i deixant-lo anar a la finestra.
+- [ ] Subtítols amb el temps de cada paraula (Whisper els pot donar) en lloc de repartir-lo per llargada.
 - [ ] Notion: desar les reunions com a files d'una base de dades, o com a notes de reunió de Notion, quan se n'hagi mirat el format amb `tools/list`.
 - [ ] La traducció a les exportacions (Word, Markdown, PDF) i als enllaços compartits.
 - [x] **Idioma del resum** a la portada: un menú al costat de «Torna a generar» el torna a escriure en català, castellà o anglès.

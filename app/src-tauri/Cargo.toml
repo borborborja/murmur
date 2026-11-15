@@ -34,6 +34,9 @@ crossbeam-channel = "0.5"
 anyhow = "1"
 log = "0.4"
 opus = "0.4"
+# Opening audio and video files: everywhere off macOS, and on macOS what afconvert can't read
+# (Matroska and WebM).
+symphonia = { version = "0.5", features = ["all-codecs", "all-formats"] }
 sonora = "0.2"
 ogg = "0.9"
 tauri-plugin-dialog = "2"
@@ -77,8 +80,6 @@ objc2-app-kit = { version = "0.3", default-features = false, features = ["NSColo
 # Off macOS: the system's secret store through keyring (Credential Manager, Secret Service).
 [target.'cfg(not(target_os = "macos"))'.dependencies]
 keyring = { version = "3", features = ["windows-native", "sync-secret-service", "crypto-rust"] }
-# Opening audio files (afconvert does it on macOS).
-symphonia = { version = "0.5", features = ["all-codecs", "all-formats"] }
 
 # Off macOS, sherpa-onnx as shared libraries, which build.rs hands to the installers:
 # - Windows: its static libraries use the static C runtime (/MT), which can't be linked with

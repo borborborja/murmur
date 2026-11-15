@@ -63,7 +63,7 @@ export const startRecording = (opts: {
   invoke<{ audioPath: string | null; offset: number }>("start_recording", { ...opts, file: opts.file ?? null, guests: opts.guests ?? [], resume: opts.resume ?? null });
 
 /** Audio files File › Open Audio… offers (import.rs EXTENSIONS). */
-export const AUDIO_EXTENSIONS = ["mp3", "m4a", "aac", "wav", "aif", "aiff", "caf", "flac", "ogg", "opus", "mp4", "mov"];
+export const AUDIO_EXTENSIONS = ["mp3", "m4a", "aac", "wav", "aif", "aiff", "caf", "flac", "ogg", "opus", "mp4", "mov", "m4v", "mkv", "webm"];
 /** The language of an audio file, by listening to a few moments of it; null if it isn't clear. */
 export const detectLanguage = (path: string) => invoke<{ language: Language | null; windows: number }>("detect_language", { path });
 /** Settings › Claude: the connector (mcp.rs). `command`: what Claude runs, with `--mcp`. */

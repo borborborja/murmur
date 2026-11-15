@@ -208,7 +208,7 @@ La mateixa app, amb el que cada sistema permet. La interfície pregunta què hi 
 | Micròfon | Sí | Sí | Sí |
 | Àudio del sistema | Core Audio tap (`systap.rs`) | Loopback WASAPI | No |
 | Calendari, captures, «Reunió detectada», menú Compartir | Sí | No | No |
-| Obrir un àudio | `afconvert` | Symphonia (Opus, el nostre descodificador) | Igual que Windows |
+| Obrir un àudio o un vídeo | `afconvert`, i Symphonia per a Matroska i WebM | Symphonia (l'Opus, amb libopus) | Igual que Windows |
 | Escoltar i exportar l'àudio | `.m4a` (AAC) | `.ogg` (Opus) | `.ogg` (Opus) |
 | Clauer | Keychain (`security-framework`) | Gestor de credencials (`keyring`) | Secret Service (`keyring`) |
 | Whisper i Gemma | Metal | CPU amb AVX2 | CPU amb AVX2 |
@@ -267,11 +267,11 @@ La mateixa app, amb el que cada sistema permet. La interfície pregunta què hi 
 
 Si una reunió s'ha gravat amb l'idioma equivocat, «Torna a transcriure en…» (menú del títol) la torna a passar per Whisper en català, castellà o anglès. `retranscribe_meeting` descodifica l'.ogg canal per canal (`playback::decode_channels`: el micròfon a l'esquerra i, en una trucada, el sistema a la dreta), en fa els mateixos fitxers PCM temporals que la gravació i crida `final_pass` només amb el text. Les frases són les de la reunió (inici i final), així que qui parla i quan es manté; les corregides a mà no es toquen. La interfície desa l'idioma nou i, si la portada està activada, la torna a fer. «Català + castellà» no hi és perquè Whisper només treballa en una llengua.
 
-### Obrir un àudio (`import.rs`)
+### Obrir un àudio o un vídeo (`import.rs`)
 
-Fitxer › Transcriu des d'un fitxer… (⌘O) fa una reunió a partir d'un fitxer, com si s'hagués gravat:
+Fitxer › Transcriu des d'un fitxer… (⌘O) fa una reunió a partir d'un fitxer, com si s'hagués gravat. D'un vídeo només se'n fa servir el so: la imatge no es descodifica mai.
 
-- **Descodificar.** `afconvert` de macOS ho passa a WAV de 16 kHz (mp3, m4a, wav, aiff, flac, mp4 i també Ogg/Opus a les versions noves de macOS). Si no pot, un .ogg passa pel decodificador d'Opus de l'app. Els canals es barregen a `import::wav_samples`: amb `-c 1`, `afconvert` es queda només amb l'esquerre, i en una trucada gravada en estèreo cada persona va en un canal.
+- **Descodificar.** `afconvert` de macOS ho passa a WAV de 16 kHz (mp3, m4a, wav, aiff, flac, mp4 i també Ogg/Opus a les versions noves de macOS). Si no pot (Matroska i WebM, que fan OBS i els navegadors), ho prova Symphonia, que també és el que llegeix tot a Windows i Linux: agafa la primera pista amb so, i si és Opus (el so habitual d'un WebM), en passa els paquets a libopus a 48 kHz. Si tampoc, un .ogg passa pel decodificador d'Opus de l'app. L'AVI no es llegeix. `MURMUR_VIDEOS=<carpeta> cargo test -- --ignored videos` prova mp4, mov, m4v, mkv (AAC i Opus) i webm fets amb ffmpeg. Els canals es barregen a `import::wav_samples`: amb `-c 1`, `afconvert` es queda només amb l'esquerre, i en una trucada gravada en estèreo cada persona va en un canal.
 - **Idioma.** Si no se sap, `detect_language` el demana a Whisper. Silero VAD troba on es parla, `import::windows` en fa fins a 8 finestres d'uns 10 s de veu repartides pel fitxer, i `murmur-whisper <model> detect` en dona les probabilitats de català, castellà i anglès. `import::decide` compta les finestres clares (≥ 0,6). Si el català i el castellà hi surten tots dos (≥ 15% de les finestres; una finestra amb tots dos ≥ 0,3 compta mig per a cadascun), és «Català + castellà». Si no està clar, es fa servir l'idioma de sempre. Una reunió de 20 minuts triga uns 20 s.
 - **Transcriure.** `start_recording` amb `file`: el fitxer va pel canal del micròfon (tothom en un canal, com a la sala), sense eco ni farciment de silenci, tan de pressa com el motor el pren (unes 25 vegades el temps real a l'M4). Després hi ha la passada final de sempre. No mostra l'indicador ni fa esperar la feina d'una altra reunió.
 
@@ -280,6 +280,10 @@ Fitxer › Transcriu des d'un fitxer… (⌘O) fa una reunió a partir d'un fitx
 L'entrada del menú Compartir és una extensió d'app a part (`app/share-extension/`, Swift, `com.apple.share-services`). No té finestra: recull els fitxers i els obre amb el Murmur que la conté (`NSWorkspace.open`), que torna a ser `RunEvent::Opened`. Les extensions van en sandbox; si l'app d'origen només en comparteix el contingut i no un fitxer (una nota de veu, un adjunt), en fa una còpia a la carpeta del grup d'apps `NYQHV4FSKC.com.quicodomingo.murmur` (`~/Library/Group Containers/…/Shared`), que Murmur també pot llegir i on les còpies de més d'un dia s'esborren. Tauri no sap compilar extensions: `scripts/share-extension.sh` la compila amb `swiftc`, la posa a `Contents/PlugIns/`, la signa amb les seves entitlements i torna a signar l'app. `release.sh` el crida abans de notaritzar.
 
 Mesura amb `examples/lang_probe.rs` (decisió per fitxer) i `examples/import_probe.rs` (velocitat del motor).
+
+### Subtítols (`lib/subtitles.ts`)
+
+Exporta › Subtítols escriu la transcripció en SRT o WebVTT. Una frase de la transcripció pot durar mig minut, i un subtítol no: cada frase es talla en trossos de dues línies de 42 caràcters com a màxim, millor després d'un punt o d'una coma, i el seu temps es reparteix segons la llargada (no tenim el temps de cada paraula). Cap tros dura més de 6 s ni menys d'1 s, ni passa d'un parlant al següent. Opcionalment, el nom de qui parla quan canvia («Marta: …», o `<v Marta>` al WebVTT) i, si la reunió està traduïda, el text de la traducció. Si la reunió ve d'un fitxer obert en aquest ordinador, el diàleg de desar proposa la mateixa carpeta i el mateix nom (`video.srt`, o `video.en.srt` per a la traducció), perquè els reproductors els trobin sols; el camí del fitxer només es recorda al `localStorage`.
 
 ### Obsidian (`lib/obsidian.ts`, `obsidian.rs`)
 

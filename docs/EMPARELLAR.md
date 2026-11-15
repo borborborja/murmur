@@ -83,4 +83,5 @@ Només dos esdeveniments nous, sense contingut ni identificadors (CLAUDE.md): `m
 2. [x] `app/src-tauri/src/mobile.rs`: la clau al clauer, els mòbils a `phones.json`, el QR, Bonjour (`mdns-sd`), el servidor i on va cada reunió que arriba (l'àudio a `recordings/`, les captures a `screens/`, marcada amb `device` i en `processing`). L'app l'obre i hi passa la revisió de parlants i Whisper (`retranscribe_meeting` amb `max_speakers`), la puntuació i el resum.
 3. [x] Configuració › Mòbil (interfície, textos en tres idiomes, `DESIGN.md`). Només es veu en desenvolupament fins que hi hagi l'app del mòbil.
 4. [x] `examples/fake_phone.rs`, que fa de mòbil: `pair <codi>`, `send <fitxer.wav> [títol]` i `results`.
-5. [ ] Provar-ho de punta a punta amb l'app i, després, amb l'app d'iOS.
+5. [x] Provat de punta a punta amb l'app i `fake_phone` (15/11/2026).
+6. [ ] Provar-ho amb l'app d'iOS.

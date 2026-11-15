@@ -74,13 +74,16 @@ struct RecordingView: View {
                     if let partial = live?.partial, !partial.isEmpty {
                         (Text(partial).foregroundColor(palette.textTertiary) + Text(" |").foregroundColor(palette.caret))
                             .font(.system(size: 17)).lineSpacing(4)
+                            .frame(maxWidth: .infinity, alignment: .leading)
                     }
                     Color.clear.frame(height: 20).id("end")
                 }
+                // The column is always the full width: rows coming and going never resize it.
+                .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.horizontal, 20).padding(.top, 8)
             }
-            .onChange(of: live?.lines.count) { _, _ in withAnimation { proxy.scrollTo("end") } }
-            .onChange(of: live?.partial) { _, _ in proxy.scrollTo("end") }
+            .onChange(of: live?.lines.count) { _, _ in withAnimation(.easeOut(duration: 0.25)) { proxy.scrollTo("end", anchor: .bottom) } }
+            .onChange(of: live?.partial) { _, _ in proxy.scrollTo("end", anchor: .bottom) }
         }
     }
 
@@ -243,9 +246,14 @@ struct LineView: View {
             Text(text).font(.system(size: 17)).lineSpacing(4).fixedSize(horizontal: false, vertical: true)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.horizontal, marked ? 12 : 0).padding(.vertical, marked ? 9 : 0)
-        .background(marked ? palette.fillSubtle : .clear, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
-        .padding(.horizontal, marked ? -12 : 0)
+        .padding(.vertical, marked ? 9 : 0)
+        // The marked line's fill reaches past the text without changing the layout: a negative
+        // padding would make the whole column measure itself again (and jump while it scrolls).
+        .background {
+            if marked {
+                RoundedRectangle(cornerRadius: 14, style: .continuous).fill(palette.fillSubtle).padding(.horizontal, -12)
+            }
+        }
     }
 }
 

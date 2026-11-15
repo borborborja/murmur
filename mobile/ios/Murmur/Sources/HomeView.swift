@@ -144,6 +144,9 @@ struct HomeView: View {
                             row(MeetingCard(row: meeting)) { open(.meeting(meeting.id)) }
                                 .swipeActions(edge: .trailing, allowsFullSwipe: false) {
                                     Button(L("home.delete"), systemImage: "trash", role: .destructive) { toDelete = meeting }
+                                        // The light theme's dark red in both modes: white on it is 5.6:1
+                                        // (the system red gives about 3.5:1). Without it, the app's tint (white in dark) wins.
+                                        .tint(MurmurPalette.acidLight.recordingLabel)
                                 }
                         }
                     }
@@ -209,14 +212,30 @@ struct EmptyHome: View {
         .padding(.horizontal, 36).padding(.top, 70)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         // The acid light from below: here is where you record.
-        .background(alignment: .bottom) {
+        .background(alignment: .bottom) { AcidGlow().ignoresSafeArea() }
+    }
+}
+
+/// The acid light that rises from the record button. It breathes slowly (about 6 s a breath:
+/// it grows a little and brightens, then settles), like something waiting to listen. With Reduce
+/// Motion it stays still.
+struct AcidGlow: View {
+    @Environment(\.murmur) private var palette
+    @Environment(\.colorScheme) private var scheme
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    var body: some View {
+        TimelineView(.animation(minimumInterval: 1 / 30, paused: reduceMotion)) { timeline in
+            // 0 → 1 → 0 over a breath, eased at both ends.
+            let breath = reduceMotion ? 0.5 : (1 - cos(timeline.date.timeIntervalSinceReferenceDate * 2 * .pi / 6)) / 2
             Ellipse()
-                .fill(RadialGradient(colors: [palette.accent.opacity(scheme == .dark ? 0.16 : 0.34), palette.accent.opacity(0)], center: .center, startRadius: 0, endRadius: 230))
+                .fill(RadialGradient(colors: [palette.accent.opacity((scheme == .dark ? 0.16 : 0.34) * (0.75 + 0.25 * breath)), palette.accent.opacity(0)],
+                                     center: .center, startRadius: 0, endRadius: 230))
                 .frame(width: 520, height: 420)
+                .scaleEffect(0.94 + 0.1 * breath, anchor: .bottom)
                 .offset(y: 170)
-                .allowsHitTesting(false)
-                .ignoresSafeArea()
         }
+        .allowsHitTesting(false)
     }
 }
 

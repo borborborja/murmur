@@ -220,9 +220,74 @@
   .activity .stop { width: 44px; height: 44px; border-radius: 22px; background: #FF3B30; display: grid; place-items: center; }
   .activity .stop span { width: 14px; height: 14px; border-radius: 3px; background: #fff; }
   .activity .said { font-size: 15px; line-height: 1.4; margin-top: 12px; color: #d8d8d8; }
-  .island.expanded { width: 158px; display: flex; align-items: center; justify-content: space-between; padding: 0 14px; color: #fff; font-size: 14px; font-weight: 600; }
+  .island.expanded { width: 150px; display: flex; align-items: center; justify-content: space-between; padding: 0 14px; color: #fff; font-size: 14px; font-weight: 600; }
   .lock-bottom { position: absolute; bottom: 52px; left: 46px; right: 46px; display: flex; justify-content: space-between; }
   .lock-bottom span { width: 50px; height: 50px; border-radius: 25px; background: rgba(255,255,255,.18); display: grid; place-items: center; color: #fff; }
+  .flagchip { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; font-weight: 600; padding: 3px 8px 3px 6px; border-radius: 6px; background: var(--mm-accent); color: var(--mm-on-accent); }
+  .flagchip svg { width: 13px; height: 13px; stroke-width: 2.2; }
+  .line.marked { margin-left: -12px; margin-right: -12px; padding: 8px 12px 10px; border-radius: 14px; background: var(--mm-fill-subtle); }
+  .controls .btn.round { width: 52px; }
+  .activity.big { bottom: 118px; padding: 16px 18px 14px; border-radius: 30px; }
+  .activity .bigtime { display: flex; align-items: center; justify-content: space-between; margin-top: 12px; }
+  .activity .bigtime .mono { font-size: 44px; font-weight: 500; letter-spacing: -0.02em; color: #fff; }
+  .activity .bigtime .levels { height: 28px; gap: 4px; } .activity .bigtime .levels i { width: 5px; border-radius: 3px; }
+  .activity .acts { display: flex; gap: 8px; margin-top: 14px; }
+  .activity .acts span { flex: 1; height: 44px; border-radius: 22px; background: rgba(255,255,255,.14); display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 15px; font-weight: 600; color: #fff; }
+  .activity .acts svg { width: 18px; height: 18px; }
+  .activity .acts .stopb { background: #FF3B30; } .activity .acts .stopb i { width: 12px; height: 12px; border-radius: 3px; background: #fff; display: block; }
+
+  /* Android (Pixel, 412 x 915 dp): Roboto, punch-hole camera, no glass; the same tokens */
+  .phone.android { width: 412px; height: 915px; border-radius: 46px; font-family: Roboto, "Google Sans", system-ui, sans-serif; }
+  .android .status { padding: 6px 28px 0 30px; font-size: 15px; font-weight: 500; height: 44px; }
+  .android .island { width: 26px; height: 26px; top: 14px; border-radius: 13px; }
+  .android .content { inset: 44px 0 0 0; }
+  .android .home-indicator { width: 108px; height: 4px; bottom: 10px; opacity: .8; }
+  .android .dock { backdrop-filter: none; -webkit-backdrop-filter: none; background: var(--mm-fill-subtle); box-shadow: 0 6px 20px rgba(0,0,0,.18); border-radius: 36px; padding: 8px; }
+  .android .dock .main { border-radius: 20px; height: 56px; }
+  .android .dock .side { border-radius: 18px; }
+  .android .circle { background: transparent; }
+  .android .nav .t { text-align: left; font-size: 22px; font-weight: 400; }
+  .android .card { border-radius: 24px; }
+  .android .btn { border-radius: 20px; }
+  .android .btn.round { border-radius: 18px; }
+  .android .seg { border-radius: 20px; padding: 0; background: none; box-shadow: inset 0 0 0 1px var(--mm-text-tertiary); }
+  .android .seg span { border-radius: 20px; padding: 9px 0; }
+  .android .seg span.on { background: var(--mm-sidebar-selection); box-shadow: none; }
+  .shade { position: absolute; inset: 0; background: color-mix(in srgb, var(--mm-background) 70%, #000 30%); }
+  [data-mode="light"] .shade { background: #DADCE0; }
+  .qs { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 70px 16px 0; }
+  .qs span { height: 64px; border-radius: 32px; background: var(--mm-background); opacity: .85; display: flex; align-items: center; padding: 0 18px; gap: 10px; font-size: 14px; font-weight: 500; color: var(--mm-text-primary); }
+  .qs span.on { background: var(--mm-text-primary); color: var(--mm-background); }
+  .notif { margin: 18px 12px 0; border-radius: 28px; background: var(--mm-background); padding: 16px 18px 14px; color: var(--mm-text-primary); }
+  .notif .h { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--mm-text-secondary); }
+  .notif .h .lg { width: 22px; height: 22px; border-radius: 11px; background: var(--mm-logo-background); display: grid; place-items: center; }
+  .notif .tt { font-size: 16px; font-weight: 500; margin-top: 10px; display: flex; justify-content: space-between; align-items: center; }
+  .notif .bd { font-size: 14px; color: var(--mm-text-secondary); margin-top: 4px; line-height: 1.4; }
+  .notif .acts { display: flex; gap: 8px; margin-top: 12px; }
+  .notif .acts > span { height: 40px; padding: 0 18px; border-radius: 20px; display: flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 500; background: var(--mm-fill-subtle); }
+  .notif .acts > span.stop { background: var(--mm-new-meeting); color: var(--mm-on-new-meeting); }
+  .notif .acts svg { width: 16px; height: 16px; }
+  .notif2 { margin: 8px 12px 0; border-radius: 28px; background: var(--mm-background); padding: 14px 18px; font-size: 14px; color: var(--mm-text-secondary); opacity: .9; }
+
+  /* iPhone Duo: inner screen open (626 x 890) and half-folded in landscape (890 x 626) */
+  .phone.duo { width: 626px; height: 890px; border-radius: 40px; }
+  .phone.duo-fold { width: 890px; height: 626px; border-radius: 40px; }
+  .pane { position: absolute; top: 0; bottom: 0; overflow: hidden; }
+  .narrow .who { display: none; }
+  .narrow .timer { font-size: 34px; }
+  .narrow .recstate { padding: 12px 16px 14px; }
+  .narrow .ruler span:nth-child(odd) { visibility: hidden; }
+  .narrow .controls { gap: 6px; left: 12px; right: 12px; }
+  .narrow .controls .btn { height: 48px; font-size: 15px; }
+  .narrow .controls .btn.round { width: 48px; }
+  .narrow .controls .btn.ghost { flex: none; width: 48px; font-size: 0; gap: 0; }
+  .narrow .card .snippet, .narrow .card .meta { font-size: 13px; }
+  .hinge { position: absolute; top: 0; bottom: 0; left: 293px; width: 40px; z-index: 50; background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--mm-text-primary) 5%, transparent) 45%, color-mix(in srgb, var(--mm-text-primary) 9%, transparent) 50%, color-mix(in srgb, var(--mm-text-primary) 5%, transparent) 55%, transparent); }
+  .hinge.h { left: 0; right: 0; top: 293px; bottom: auto; height: 40px; width: auto; background: linear-gradient(180deg, transparent, color-mix(in srgb, var(--mm-text-primary) 6%, transparent) 50%, transparent); }
+  .duo-fold .status { padding-left: 40px; padding-right: 40px; }
+  .duo-fold .island { top: 11px; }
+  .fold-top { position: absolute; left: 0; right: 0; top: 44px; height: 249px; display: flex; gap: 22px; padding: 0 28px; }
+  .fold-bottom { position: absolute; left: 0; right: 0; top: 333px; bottom: 0; display: flex; gap: 14px; align-items: center; padding: 0 28px 24px; }
   .btn.accent { flex: 1; background: var(--mm-accent); color: var(--mm-on-accent); }
 </style>
 </head>
@@ -315,6 +380,38 @@
   </div>
 </div>
 
+<!-- Android -->
+<div class="row">
+  <div class="screen">
+    <h2>10 · Android: inici mentre graves i gravant</h2>
+    <p class="note">Les mateixes pantalles amb les maneres d'Android (Material 3): Roboto, sense vidre, la barra d'eines flotant de Material, títols a l'esquerra i botons més quadrats. Els colors, els mateixos.</p>
+    <div class="pair" id="s-alist"></div>
+  </div>
+</div>
+<div class="row">
+  <div class="screen">
+    <h2>11 · Android: la notificació fixa</h2>
+    <p class="note">Android no té Live Activity: la gravació és un servei en primer pla, amb una notificació que no es pot treure mentre grava. Amb el temps, l'última frase, Marca, Pausa i Atura.</p>
+    <div class="pair" id="s-anotif"></div>
+  </div>
+</div>
+
+<!-- iPhone Duo -->
+<div class="row">
+  <div class="screen">
+    <h2>12 · iPhone Duo obert: la llista i la reunió alhora</h2>
+    <p class="note">Amplada regular: dues columnes, una per banda del plec, i res a la zona del plec (40 pt). A l'esquerra les reunions, a la dreta la que es grava.</p>
+    <div class="pair" id="s-duo"></div>
+  </div>
+</div>
+<div class="row">
+  <div class="screen">
+    <h2>13 · iPhone Duo mig plegat, damunt la taula</h2>
+    <p class="note">Com un portàtil petit: a dalt el que es llegeix (el temps i el que s'acaba de dir, en gran), a baix el que es toca (marca, foto, pausa, atura i una nota ràpida).</p>
+    <div class="pair" id="s-duofold"></div>
+  </div>
+</div>
+
 <template id="t-chrome">
   <div class="island"></div>
   <div class="status"><span class="tab">9:41</span><span class="icons">
@@ -338,6 +435,7 @@ const icon = {
   laptop: '<svg class="i" viewBox="0 0 24 24" style="width:20px;height:20px"><rect x="4" y="5" width="16" height="11" rx="1.5"/><path d="M2 19h20"/></svg>',
   back: '<svg class="i" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg>',
   more: '<svg class="i" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.2" fill="currentColor"/><circle cx="12" cy="12" r="1.2" fill="currentColor"/><circle cx="19" cy="12" r="1.2" fill="currentColor"/></svg>',
+  flag: '<svg class="i" viewBox="0 0 24 24"><path d="M5 21V4m0 0h11l-2 4 2 4H5"/></svg>',
   camera: '<svg class="i" viewBox="0 0 24 24"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>',
   pause: '<svg width="14" height="16" viewBox="0 0 14 16"><rect x="1" y="1" width="4" height="14" rx="1.2" fill="currentColor"/><rect x="9" y="1" width="4" height="14" rx="1.2" fill="currentColor"/></svg>',
   share: '<svg class="i" viewBox="0 0 24 24"><path d="M12 15V3m-4 4 4-4 4 4M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg>',
@@ -439,7 +537,7 @@ const screens = {
       <div class="seg"><span class="on">Transcripció</span><span>Notes · 2</span></div>
       <div class="lines">
         <div class="line"><div class="head"><span class="chip s1">Parlant 2</span><span class="ts mono">11:40</span></div><p>Els textos en anglès els tinc gairebé llestos. Me'ls podria mirar algú abans de divendres?</p></div>
-        <div class="line"><div class="head"><span class="chip you">Tu</span><span class="ts mono">12:02</span></div><p>Sí, els reviso jo. I la pàgina de preus, qui la porta?</p></div>
+        <div class="line marked"><div class="head"><span class="chip you">Tu</span><span class="ts mono">12:02</span><span class="flagchip">${icon.flag} Important</span></div><p>Sí, els reviso jo. I la pàgina de preus, qui la porta?</p></div>
         <div class="line"><div class="head"><span class="chip s2">Laia</span><span class="ts mono">12:21</span></div><p>La puc fer jo, però necessito que em passeu <span class="pending">els preus definitius abans de</span><span class="caret"></span></p></div>
       </div>
     </div>
@@ -447,6 +545,7 @@ const screens = {
     <div class="glow" style="z-index:24;height:300px;bottom:-170px"></div>
     <div class="controls">
       <div class="btn round" aria-label="Fes una foto">${icon.camera}</div>
+      <div class="btn round" aria-label="Marca aquest moment">${icon.flag}</div>
       <div class="btn ghost">${icon.pause} Pausa</div>
       <div class="btn primary"><span class="stopsq"></span> Atura</div>
     </div>`;
@@ -486,6 +585,7 @@ Object.assign(screens, {
       <div class="notes">
         <div class="note-l"><span class="ts mono">1:40</span><h3>Llançament · dimarts 18</h3></div>
         <div class="note-l"><span class="ts mono">7:20</span><span>Portada acabada. Falten preus i textos en anglès.</span></div>
+        <div class="note-l"><span class="ts mono">12:02</span><span class="flagchip" style="margin:3px 0 0">${icon.flag} Moment important</span></div>
         <div class="note-l"><span class="ts mono">12:40</span><div class="photo"><b>Pàgina de preus</b><i>Foto · 12:40</i></div></div>
         <div class="note-l"><span class="ts mono">12:52</span><span style="display:flex;gap:10px"><span class="check" style="margin-top:4px"></span><span>Preus definitius abans de dimecres<span class="caret"></span></span></span></div>
       </div>
@@ -521,9 +621,11 @@ Object.assign(screens, {
     <div class="lock">
       <div class="date">Dissabte, 15 de novembre</div>
       <div class="clock">10:12</div>
-      <div class="activity">
-        <div class="tp"><div class="lg">${icon.logo}</div><div class="tt">Gravant <span class="mono" style="font-weight:500">12:34</span><small>Reunió de les 10:00 · 3 veus</small></div><span class="levels" style="margin-right:6px">${[10,16,12].map((x) => `<i style="height:${x}px;background:#D4FF3A"></i>`).join("")}</span><div class="stop" aria-label="Atura"><span></span></div></div>
-        <div class="said">«…si tot va bé, publiquem el dimarts 18 al matí?»</div>
+      <div class="activity big">
+        <div class="tp"><div class="lg">${icon.logo}</div><div class="tt">Reunió de les 10:00<small>Gravant · 3 veus · Català + castellà</small></div></div>
+        <div class="bigtime"><span class="mono">12:34</span><span class="levels">${[12,22,16,26,10].map((x) => `<i style="height:${x}px;background:#D4FF3A"></i>`).join("")}</span></div>
+        <div class="said"><b style="color:#fff;font-weight:600">Laia</b> · …si tot va bé, publiquem el dimarts 18 al matí, i deixarem la versió antiga desada per si de cas.</div>
+        <div class="acts"><span>${icon.flag} Marca</span><span>${icon.pause} Pausa</span><span class="stopb"><i></i> Atura</span></div>
       </div>
       <div class="lock-bottom"><span>${'<svg class="i" viewBox="0 0 24 24"><path d="M9 2h6l-1 7h3l-7 13 1-9H8z"/></svg>'}</span><span>${icon.camera}</span></div>
     </div>`,
@@ -573,9 +675,71 @@ Object.assign(screens, {
     ${dock({ active: "settings" })}`,
 });
 
+const androidChrome = `<div class="island"></div><div class="status"><span class="tab">9:41</span><span class="icons">
+  <svg width="16" height="12" viewBox="0 0 16 12"><path d="M8 11.5 5.6 9a3.4 3.4 0 0 1 4.8 0zM3.4 6.8a6.5 6.5 0 0 1 9.2 0l-1.3 1.3a4.7 4.7 0 0 0-6.6 0zM1.2 4.6a9.6 9.6 0 0 1 13.6 0l-1.3 1.3a7.8 7.8 0 0 0-11 0z" fill="currentColor"/></svg>
+  <svg width="14" height="14" viewBox="0 0 14 14"><path d="M13 1v12H1z" fill="currentColor"/></svg>
+  <svg width="10" height="16" viewBox="0 0 10 16"><rect x="1" y="2" width="8" height="13" rx="1.5" fill="currentColor"/><rect x="3" y="0.5" width="4" height="2" rx=".5" fill="currentColor"/></svg>
+  </span></div><div class="home-indicator"></div>`;
+
+const extra = {
+  alist: [() => screens.list(), () => screens.rec()],
+  anotif: [() => `
+    <div class="shade">
+      <div class="qs"><span class="on">${icon.mic} Micròfon</span><span>Wi-Fi</span><span>Bluetooth</span><span>No molestis</span></div>
+      <div class="notif">
+        <div class="h"><span class="lg">${icon.logo.replace('width="26" height="26"', 'width="16" height="16"')}</span>Murmur · ara</div>
+        <div class="tt"><span>Gravant · <span class="mono">12:34</span></span><span class="levels">${[10,16,12].map((x) => `<i style="height:${x}px"></i>`).join("")}</span></div>
+        <div class="bd">Laia: …si tot va bé, publiquem el dimarts 18 al matí.</div>
+        <div class="acts"><span>${icon.flag} Marca</span><span>${icon.pause} Pausa</span><span class="stop"><span class="stopsq" style="width:11px;height:11px"></span> Atura</span></div>
+      </div>
+      <div class="notif2">Correu · 2 missatges nous</div>
+    </div>`],
+};
+
+const duo = () => `
+  <div class="pane narrow" style="left:0;width:293px">${screens.list()}</div>
+  <div class="hinge"></div>
+  <div class="pane narrow" style="left:333px;width:293px">${screens.rec()}</div>`;
+
+const duofold = () => {
+  const heights = [8,14,22,30,18,10,6,4,12,26,38,44,30,18,24,36,48,40,28,16,10,8,14,20,34,46,52,38,24,14,8,6,10,22,30,26,18,12,20,32,44,36,22,12,8,16,28,40,34,20,14,26,38,30,18,10];
+  return `
+  <div class="fold-top">
+    <div style="width:300px;flex:none;display:flex;flex-direction:column;justify-content:center;gap:8px">
+      <div class="label mono"><span class="dot"></span>Gravant · 3 veus</div>
+      <div class="timer mono" style="font-size:56px">00:12:34</div>
+      <div class="wave" style="height:64px;padding:0">${heights.map((h) => `<i style="height:${Math.round(h * 0.9)}px"></i>`).join("")}</div>
+    </div>
+    <div style="flex:1;display:flex;flex-direction:column;justify-content:center">
+      <div class="head" style="display:flex;gap:8px;align-items:center"><span class="chip s2">Laia</span><span class="ts mono">12:21</span></div>
+      <p style="font-size:24px;line-height:1.35;margin:8px 0 0;letter-spacing:-0.01em">La puc fer jo, però necessito que em passeu <span class="pending">els preus definitius abans de</span><span class="caret"></span></p>
+    </div>
+  </div>
+  <div class="hinge h"></div>
+  <div class="fold-bottom">
+    <div class="btn round" style="width:72px;height:72px;border-radius:36px">${icon.camera}</div>
+    <div class="btn round" style="width:72px;height:72px;border-radius:36px">${icon.flag}</div>
+    <div style="flex:1;height:72px;border-radius:22px;background:var(--mm-fill-subtle);display:flex;align-items:center;padding:0 20px;font-size:17px;color:var(--mm-text-tertiary)">Escriu una nota…</div>
+    <div class="btn ghost" style="flex:none;width:140px;height:72px;border-radius:36px">${icon.pause} Pausa</div>
+    <div class="btn primary" style="flex:none;width:150px;height:72px;border-radius:36px"><span class="stopsq"></span> Atura</div>
+  </div>`;
+};
+
 const chrome = document.getElementById("t-chrome").innerHTML;
+for (const [key, renders] of Object.entries(extra)) {
+  const pair = document.getElementById(`s-${key}`);
+  const list = renders.length === 1 ? [renders[0], renders[0]] : renders;
+  const modes = renders.length === 1 ? ["light", "dark"] : ["light", "dark"];
+  list.forEach((render, i) => pair.insertAdjacentHTML("beforeend", `<div class="phone android" data-theme="acid" data-mode="${modes[i]}">${androidChrome}${render()}</div>`));
+}
+for (const [key, render, cls] of [["duo", duo, "duo"], ["duofold", duofold, "duo-fold"]]) {
+  const pair = document.getElementById(`s-${key}`);
+  pair.style.flexDirection = "column";
+  for (const mode of ["light", "dark"]) pair.insertAdjacentHTML("beforeend", `<div class="phone ${cls}" data-theme="acid" data-mode="${mode}">${chrome}${render()}</div>`);
+}
 for (const [key, render] of Object.entries(screens)) {
   const pair = document.getElementById(`s-${key}`);
+  if (!pair) continue;
   for (const mode of ["light", "dark"]) {
     const onDark = key === "lock" || key === "pair";
     const island = key === "lock" ? chrome.replace('<div class="island"></div>', `<div class="island expanded"><span class="dot"></span><span class="mono">12:34</span></div>`) : chrome;

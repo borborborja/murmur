@@ -100,5 +100,23 @@
     "cloudConnected": "{{name}} connectat. Clau desada al clauer, acaba en …{{hint}}",
     "offlineCloud": "L'àudio no surt mai d'aquest ordinador. Per fer els resums, només s'envia el text de la reunió, amb la teva clau.",
     "analytics": "Envia estadístiques d'ús anònimes: quines funcions es fan servir, sense res del que es diu a les reunions. Ho pots canviar a Configuració › General."
+  },
+  "voice": {
+    "kicker": "Opcional",
+    "title": "Fes que Murmur et reconegui",
+    "intro": "Murmur pot desar una empremta de la teva veu per reconèixer-te automàticament a totes les reunions. Per fer-ho, llegeix aquesta frase en veu alta.",
+    "sentence": "Bon dia. Sóc la veu que Murmur ha d'aprendre a reconèixer a les reunions, tant si som a la sala com en una trucada.",
+    "ready": "Prem el botó i llegeix la frase.",
+    "record": "Grava",
+    "stop": "Atura",
+    "level": "Nivell del micròfon",
+    "recording": "Gravant",
+    "time": "{{done}} de {{total}}",
+    "saving": "Desant…",
+    "saved": "Desada",
+    "again": "Torna-la a gravar",
+    "privacy": "Murmur no desa la gravació, només una empremta de la teva veu (una dada biomètrica). Es queda en aquest ordinador, no surt mai, i la pots esborrar a Configuració › Àudio.",
+    "skip": "Ara no",
+    "done": "Fet"
   }
 }

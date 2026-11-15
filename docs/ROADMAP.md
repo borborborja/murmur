@@ -41,7 +41,8 @@ En aturar la gravació, reprocessar l'àudio desat:
 - [x] **Glossari:** quantes vegades s'ha corregit cada paraula, al costat de cadascuna.
 - [x] **«Murmur, sóc la Marta»:** qui es presenta així posa el nom al seu parlant, ajustat als convidats del calendari, als noms ja posats i al glossari (`lib/intro.ts`); avís amb Desfés, i el nom torna a aplicar-se després de la verificació de parlants. «Murmur» és al glossari de manera interna.
 - [ ] Mesurar-ho amb dues o tres gravacions de debò: quantes presentacions cauen al parlant correcte, de seguida i després de la verificació.
-- [ ] La teva veu desada (opcional): un pas a l'onboarding per llegir una frase, i Murmur et reconeix sempre com a «Tu» (`known_speakers`). Mockup pendent.
+- [x] **La teva veu desada** (opcional): un pas a l'onboarding, després dels models, per llegir una frase, i a Configuració › Àudio; Murmur et reconeix com a «Tu» des de la primera paraula (`voice.rs`, `known_speakers`).
+- [ ] Mesurar «La teva veu» amb gent a la sala: quantes de les teves frases cauen a «Tu».
 - [x] **Estadístiques d'ús anònimes** amb Aptabase (`lib/analytics.ts`), que es poden desactivar.
 - [x] Posar la clau d'Aptabase a `APTABASE_KEY` (lib.rs): sense, l'app no envia res.
 - [ ] Glossari: «com se sent» (les formes en què la transcripció escriu malament una paraula, per corregir-les encara que siguin lluny) i suggeriments a partir dels noms corregits a mà i dels convidats.

@@ -24,6 +24,7 @@ pub mod recorder;
 pub mod retranscribe;
 pub mod shell;
 pub mod storage;
+pub mod voice;
 #[cfg(target_os = "macos")]
 pub mod systap;
 
@@ -190,6 +191,12 @@ async fn start_recording(
     // A meeting that goes on carries on in its own recording, if it has one; without it, the new
     // part isn't saved either (its audio wouldn't line up with the meeting's time).
     let earlier_audio = resume.as_ref().and_then(|r| r.audio_path.as_deref()).and_then(|p| recording_path(p).ok());
+    // The user's saved voice (voice.rs): the microphone knows them as speaker 0, "Tu", from the
+    // first word. Not for a file (it isn't the user talking), nor a meeting that goes on (its
+    // voices come back from its own audio).
+    let my_voice = (mic && !importing && resume.is_none())
+        .then(|| app.path().app_data_dir().ok().and_then(|dir| voice::load(&dir)))
+        .flatten();
     let audio_path = match &resume {
         Some(_) => earlier_audio.clone(),
         None => audio_path,
@@ -282,6 +289,8 @@ async fn start_recording(
             pipeline.set_offset(offset);
             // Audio that arrives meanwhile waits in the queue.
             resume_meeting(&mut pipeline, &models, resume, earlier_audio.as_deref(), mic, system, verify_speakers.then_some(speakers_channel));
+        } else if let Some(voice) = my_voice {
+            pipeline.known_speakers(Channel::Mic, vec![(0, voice.embedding)], 1);
         }
         // A call with nobody else in the room: the microphone is only the user.
         let mut room_now = room_speakers;
@@ -1448,6 +1457,67 @@ fn delete_screen(app: AppHandle, path: String) -> Result<(), String> {
     std::fs::remove_file(path).map_err(|e| e.to_string())
 }
 
+/// Stops `record_voice` before its time (the user pressed stop).
+static VOICE_STOP: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
+
+/// "La teva veu": records the user reading a sentence for up to `seconds` ("voice-level" events
+/// meanwhile), then saves the print of their voice (voice.rs). Returns when it was made.
+#[tauri::command]
+async fn record_voice(app: AppHandle, state: State<'_, AppState>, device: Option<String>, seconds: f32) -> Result<f64, String> {
+    if let Some(stop) = state.monitor.lock().unwrap().take() {
+        let _ = stop.send(());
+    }
+    if state.recording.lock().unwrap().is_some() {
+        return Err(tr!("already_recording").into());
+    }
+    VOICE_STOP.store(false, std::sync::atomic::Ordering::SeqCst);
+    let data = app.path().app_data_dir().map_err(|e| e.to_string())?;
+    tauri::async_runtime::spawn_blocking(move || -> Result<f64, String> {
+        let (tx, rx) = unbounded::<audio::Frame>();
+        let capture = audio::start_capture(true, device.as_deref(), false, tx).map_err(|e| format!("{e:#}"))?;
+        let want = (seconds.clamp(3.0, 30.0) * SAMPLE_RATE as f32) as usize;
+        let mut samples: Vec<f32> = Vec::with_capacity(want);
+        let mut pending = 0usize;
+        while samples.len() < want && !VOICE_STOP.load(std::sync::atomic::Ordering::SeqCst) {
+            match rx.recv_timeout(Duration::from_millis(100)) {
+                Ok((_, chunk)) => {
+                    samples.extend_from_slice(&chunk);
+                    pending += chunk.len();
+                }
+                Err(RecvTimeoutError::Timeout) => continue,
+                Err(RecvTimeoutError::Disconnected) => break,
+            }
+            if pending >= SAMPLE_RATE / 20 {
+                let tail = &samples[samples.len().saturating_sub(pending)..];
+                let rms = (tail.iter().map(|x| x * x).sum::<f32>() / tail.len() as f32).sqrt();
+                pending = 0;
+                let _ = app.emit("voice-level", Level { rms });
+            }
+        }
+        drop(capture);
+        voice::enroll(&models_dir(), &data, &samples).map(|v| v.created_at).map_err(|e| format!("{e:#}"))
+    })
+    .await
+    .map_err(|e| e.to_string())?
+}
+
+#[tauri::command]
+fn stop_voice_recording() {
+    VOICE_STOP.store(true, std::sync::atomic::Ordering::SeqCst);
+}
+
+/// When the user's voice was saved (seconds since the epoch), if it was.
+#[tauri::command]
+fn voice_status(app: AppHandle) -> Option<f64> {
+    voice::load(&app.path().app_data_dir().ok()?).map(|v| v.created_at)
+}
+
+#[tauri::command]
+fn delete_voice(app: AppHandle) -> Result<(), String> {
+    let data = app.path().app_data_dir().map_err(|e| e.to_string())?;
+    voice::delete(&data).map_err(|e| e.to_string())
+}
+
 /// Shows the selected microphone's level in the settings window ("mic-level" events).
 #[tauri::command]
 async fn start_mic_monitor(
@@ -1646,6 +1716,10 @@ pub fn run() {
             get_glossary,
             set_glossary,
             glossary_hits,
+            record_voice,
+            stop_voice_recording,
+            voice_status,
+            delete_voice,
             delete_meeting,
             list_microphones,
             start_mic_monitor,

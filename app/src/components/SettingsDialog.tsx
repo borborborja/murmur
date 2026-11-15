@@ -25,6 +25,7 @@ import { preferredFinalModel } from "@/lib/finalpass";
 import { cn } from "@/lib/utils";
 import { MEETING_LANGUAGES } from "./StartOptions";
 import { capabilities, isMac } from "@/lib/platform";
+import { VoicePrivacy, VoiceRecorder } from "@/components/VoiceRecorder";
 
 type Props = {
   open: boolean;
@@ -555,6 +556,7 @@ function AudioTab({ open, settings, onChange, recording }: { open: boolean; sett
             <Row label={t("audio.inputLevel")} hint={recording ? t("audio.inputLevelInUse") : t("audio.inputLevelHint")}>
               {recording ? <span className="text-[12px] text-muted-foreground">{t("audio.inUse")}</span> : <InputLevel device={settings.micDevice} />}
             </Row>
+            <VoiceRow open={open} device={settings.micDevice} recording={recording} />
           </>
         )}
         {capabilities.systemAudio && (
@@ -585,6 +587,50 @@ function AudioTab({ open, settings, onChange, recording }: { open: boolean; sett
           </span>
         </Row>
       </Group>
+    </>
+  );
+}
+
+/** "La teva veu" (voice.rs): saved or not, record it (again), delete it. */
+function VoiceRow({ open, device, recording }: { open: boolean; device: string | null; recording: boolean }) {
+  const { t } = useTranslation("settings");
+  const [at, setAt] = useState<number | null>(null);
+  const [recorder, setRecorder] = useState(false);
+  useEffect(() => {
+    if (open && backend.isTauri()) backend.voiceStatus().then(setAt).catch(() => setAt(null));
+  }, [open]);
+  const remove = async () => {
+    const confirmed = backend.isTauri()
+      ? await ask(t("audio.voiceDeleteMessage"), { title: t("audio.voiceDeleteTitle"), kind: "warning", okLabel: t("audio.voiceDeleteConfirm"), cancelLabel: t("common:cancel") })
+      : window.confirm(t("audio.voiceDeleteMessage"));
+    if (!confirmed) return;
+    await backend.deleteVoice().catch((e) => toast.error(String(e)));
+    setAt(null);
+  };
+  const date = at ? new Date(at * 1000).toLocaleDateString(locale(), { day: "numeric", month: "long", year: "numeric" }) : "";
+  const button = "h-6 shrink-0 rounded-md border border-input bg-background px-2.5 text-[13px] hover:bg-muted disabled:opacity-50";
+  return (
+    <>
+      <Row label={t("audio.voice")} hint={at ? t("audio.voiceSaved", { date }) : t("audio.voiceNone")}>
+        <span className="flex shrink-0 gap-1.5">
+          <button type="button" className={button} disabled={recording || !backend.isTauri()} onClick={() => setRecorder(true)}>
+            {at ? t("audio.voiceAgain") : t("audio.voiceRecord")}
+          </button>
+          {at && (
+            <button type="button" className={cn(button, "text-destructive")} onClick={remove}>
+              {t("audio.voiceDelete")}
+            </button>
+          )}
+        </span>
+      </Row>
+      <Dialog open={recorder} onOpenChange={setRecorder}>
+        <DialogContent className="sm:max-w-[560px]">
+          <DialogTitle>{t("onboarding:voice.title")}</DialogTitle>
+          <DialogDescription>{t("onboarding:voice.intro")}</DialogDescription>
+          <VoiceRecorder device={device} saved={false} onSaved={(when) => setAt(when)} />
+          <VoicePrivacy />
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

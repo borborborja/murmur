@@ -13,6 +13,7 @@ import { bytes, downloadQueue, useModels } from "@/lib/models";
 import type { Settings } from "@/lib/settings";
 import type { CloudProvider, ModelId } from "@/lib/types";
 import { cn } from "@/lib/utils";
+import { VoicePrivacy, VoiceRecorder } from "@/components/VoiceRecorder";
 
 type Props = {
   open: boolean;
@@ -23,7 +24,10 @@ type Props = {
   startAtModels?: boolean;
 };
 
-const STEPS = 7;
+const STEPS = 8;
+/** The models, then (optional) the user's voice: its print needs the speaker model downloaded. */
+const MODELS_STEP = 6;
+const VOICE_STEP = 7;
 
 /** Who writes the summaries, chosen on the last step: the local model, Claude, ChatGPT or nobody yet. */
 type Writer = "local" | CloudProvider | "none";
@@ -31,7 +35,7 @@ type Writer = "local" | CloudProvider | "none";
 /** First-run screens (docs/design/DESIGN.md › Onboarding): six steps, then the models. */
 export function Onboarding({ open, onClose, onChange, startAtModels }: Props) {
   const { t } = useTranslation("onboarding");
-  const [step, setStep] = useState(startAtModels ? STEPS - 1 : 0);
+  const [step, setStep] = useState(startAtModels ? MODELS_STEP : 0);
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
       <DialogContent
@@ -43,9 +47,11 @@ export function Onboarding({ open, onClose, onChange, startAtModels }: Props) {
         <DialogDescription className="sr-only">{t("dialogDescription")}</DialogDescription>
         <div className="h-10 shrink-0" />
         {step === 0 && <Welcome />}
-        {step > 0 && step < STEPS - 1 && <Feature step={step} />}
-        {step === STEPS - 1 ? (
-          <Models step={step} onBack={() => setStep(step - 1)} onClose={onClose} onChange={onChange} />
+        {step > 0 && step < MODELS_STEP && <Feature step={step} />}
+        {step === VOICE_STEP ? (
+          <VoiceStep step={step} onClose={onClose} />
+        ) : step === MODELS_STEP ? (
+          <Models step={step} onBack={() => setStep(step - 1)} onClose={onClose} onChange={onChange} onNext={startAtModels ? undefined : () => setStep(VOICE_STEP)} />
         ) : (
           <Footer step={step} onBack={step > 0 ? () => setStep(step - 1) : undefined} primary={step === 0 ? t("start") : t("continue")} onNext={() => setStep(step + 1)} />
         )}
@@ -329,9 +335,47 @@ function AlertIllustration() {
   );
 }
 
+// --- 8. The user's voice (optional) ----------------------------------------------------------
+
+function VoiceStep({ step, onClose }: { step: number; onClose: () => void }) {
+  const { t } = useTranslation("onboarding");
+  const [saved, setSaved] = useState(false);
+  return (
+    <>
+      <div className="flex flex-1 flex-col overflow-y-auto px-12 pt-1">
+        <div className="text-[12px] font-semibold text-muted-foreground">{t("voice.kicker")}</div>
+        <h1 className="mt-1 text-[24px] font-bold leading-tight tracking-[-0.015em]">{t("voice.title")}</h1>
+        <p className="mt-1.5 text-[14px] leading-normal text-foreground/80">{t("voice.intro")}</p>
+        <div className="mt-4">
+          <VoiceRecorder device={null} saved={saved} onSaved={() => setSaved(true)} />
+        </div>
+        <VoicePrivacy className="mt-3" />
+      </div>
+      {saved ? (
+        <Footer step={step} primary={t("voice.done")} onNext={onClose} />
+      ) : (
+        <Footer step={step} back={t("voice.skip")} onBack={onClose} primary={t("voice.done")} onNext={onClose} disabled />
+      )}
+    </>
+  );
+}
+
 // --- 7. Models -----------------------------------------------------------------------------
 
-function Models({ step, onBack, onClose, onChange }: { step: number; onBack: () => void; onClose: () => void; onChange: Props["onChange"] }) {
+function Models({
+  step,
+  onBack,
+  onClose,
+  onChange,
+  onNext,
+}: {
+  step: number;
+  onBack: () => void;
+  onClose: () => void;
+  onChange: Props["onChange"];
+  /** The models are ready: on to the user's voice (not when opened just for the models). */
+  onNext?: () => void;
+}) {
   const { t } = useTranslation("onboarding");
   const models = useModels();
   const cloud = useCloud();
@@ -437,7 +481,7 @@ function Models({ step, onBack, onClose, onChange }: { step: number; onBack: () 
         </label>
       </div>
       {phase === "ready" ? (
-        <Footer step={step} primary={t("models.close")} onNext={onClose} />
+        <Footer step={step} primary={onNext ? t("continue") : t("models.close")} onNext={onNext ?? onClose} />
       ) : phase === "downloading" ? (
         <Footer step={step} back={t("models.continueInBackground")} onBack={onClose} primary={t("models.downloading")} onNext={() => {}} disabled />
       ) : (

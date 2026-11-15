@@ -100,5 +100,23 @@
     "cloudConnected": "{{name}} conectado. Clave guardada en el llavero, acaba en …{{hint}}",
     "offlineCloud": "El audio nunca sale de este ordenador. Para hacer los resúmenes, solo se envía el texto de la reunión, con tu clave.",
     "analytics": "Enviar estadísticas de uso anónimas: qué funciones se usan, sin nada de lo que se dice en las reuniones. Puedes cambiarlo en Configuración › General."
+  },
+  "voice": {
+    "kicker": "Opcional",
+    "title": "Haz que Murmur te reconozca",
+    "intro": "Murmur puede guardar una huella de tu voz para reconocerte automáticamente en todas las reuniones. Para hacerlo, lee esta frase en voz alta.",
+    "sentence": "Buenos días. Soy la voz que Murmur tiene que aprender a reconocer en las reuniones, tanto si estamos en la sala como en una llamada.",
+    "ready": "Pulsa el botón y lee la frase.",
+    "record": "Grabar",
+    "stop": "Parar",
+    "level": "Nivel del micrófono",
+    "recording": "Grabando",
+    "time": "{{done}} de {{total}}",
+    "saving": "Guardando…",
+    "saved": "Guardada",
+    "again": "Volver a grabarla",
+    "privacy": "Murmur no guarda la grabación, solo una huella de tu voz (un dato biométrico). Se queda en este ordenador, nunca sale de él, y puedes borrarla en Configuración › Audio.",
+    "skip": "Ahora no",
+    "done": "Hecho"
   }
 }

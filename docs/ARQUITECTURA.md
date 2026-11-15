@@ -352,3 +352,9 @@ Variables per experimentar: `TRANSCRIPTOR_EMBEDDING` (directe), `TRANSCRIPTOR_DI
 - `matchName` ajusta el nom als convidats del calendari, als noms ja posats i al glossari: el nom sencer, o el primer nom si només n'hi ha un que s'hi assembli (una lletra de diferència a partir de 4). Si no, el nom tal com s'ha sentit, amb majúscules.
 - L'acció `introduce` del store posa el nom al parlant d'aquella frase i la fixa (`speakerLocked`); si un altre parlant ja té el nom, els ajunta. Després de la verificació de parlants es tornen a aplicar totes les presentacions de la reunió, perquè el nom segueixi la persona i no el número. Un avís diu «"Parlant 2" és la Marta», amb Desfés si no s'han ajuntat dos parlants.
 - No es desa cap veu: la presentació només serveix dins d'aquella reunió.
+
+## La teva veu (`voice.rs`)
+
+- Opcional: un pas a l'onboarding, després dels models (l'empremta necessita el model de parlants), i a Configuració › Àudio. L'usuari llegeix una frase d'uns 8 s; `record_voice` grava el micròfon (amb «voice-level» per al nivell, i `stop_voice_recording` per acabar abans), `voice::enroll` en treu la veu amb Silero VAD (n'ha de quedar com a mínim 4 s) i en calcula l'empremta amb TitaNet, el mateix model que agrupa les veus en directe, normalitzada.
+- Només es desa l'empremta, mai la gravació: `voice.json` a la carpeta de dades de l'app, amb el model que la va fer (una empremta d'un altre model s'ignora). No surt mai de l'ordinador i es pot esborrar. És una dada biomètrica, i la interfície ho diu.
+- En començar a gravar (no en un fitxer ni en una reunió que continua), el canal del micròfon comença amb aquesta veu com a parlant 0, «Tu» (`LiveSession::known_speakers`, el mateix que fa «Continua»).

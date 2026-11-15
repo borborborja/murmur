@@ -109,6 +109,12 @@ export const getGlossary = () => invoke<string[]>("get_glossary");
 export const setGlossary = (terms: string[]) => invoke<void>("set_glossary", { terms });
 export const deleteMeeting = (id: string, audioPath: string | null) =>
   invoke<void>("delete_meeting", { id, audioPath });
+/** "La teva veu" (voice.rs): records the user for up to `seconds`, saves the print, returns when (s since epoch). */
+export const recordVoice = (device: string | null, seconds: number) => invoke<number>("record_voice", { device, seconds });
+export const stopVoiceRecording = () => invoke<void>("stop_voice_recording");
+export const voiceStatus = () => invoke<number | null>("voice_status");
+export const deleteVoice = () => invoke<void>("delete_voice");
+export const onVoiceLevel = (fn: (rms: number) => void) => listen<{ rms: number }>("voice-level", (e) => fn(e.payload.rms));
 export const startMicMonitor = (device: string | null) => invoke<void>("start_mic_monitor", { device });
 export const stopMicMonitor = () => invoke<void>("stop_mic_monitor");
 export const onMicLevel = (fn: (rms: number) => void) => listen<{ rms: number }>("mic-level", (e) => fn(e.payload.rms));

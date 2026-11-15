@@ -241,6 +241,11 @@ fn strings(key: &str) -> Option<[&'static str; 3]> {
             "No se ha podido cargar el modelo de hablantes",
             "Couldn't load the speaker model",
         ],
+        "voice_too_short" => [
+            "S'ha sentit massa poca veu. Torna a llegir la frase, més a prop del micròfon.",
+            "Se ha oído demasiada poca voz. Vuelve a leer la frase, más cerca del micrófono.",
+            "Too little voice was heard. Read the sentence again, closer to the microphone.",
+        ],
         "vad_load_failed" => [
             "No s'ha pogut carregar el detector de veu",
             "No se ha podido cargar el detector de voz",

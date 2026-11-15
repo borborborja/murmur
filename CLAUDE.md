@@ -39,6 +39,7 @@ cd app/src-tauri && cargo run --release --example lang_probe -- ../../data/reuni
 - Codi, noms i comentaris en anglès. Documentació en català.
 - Cap text visible s'escriu al codi: sempre amb `t()` i claus a `app/src/locales/`, o a `i18n.rs` des de Rust. El català és la font, i el castellà i l'anglès s'actualitzen alhora. `npm run check-locales` ha de passar.
 - Cap text, en cap idioma, porta guions llargs (—).
+- Els textos parlen de l'**ordinador**, no del Mac: Murmur funciona a macOS, Windows i Linux. Només es diu «Mac» del que és exclusiu del Mac (el Finder, el Dock, Configuració del Sistema…). Els textos antics que diuen «Mac» tenen la versió de PC a `locales/*/pc.json`.
 
 **Disseny**
 - Qualsevol canvi d'interfície segueix `docs/design/DESIGN.md`.

@@ -100,5 +100,23 @@
     "cloudConnected": "{{name}} connected. Key saved in the keychain, ending in …{{hint}}",
     "offlineCloud": "Audio never leaves this computer. For the summaries, only the meeting's text is sent, with your key.",
     "analytics": "Send anonymous usage statistics: which features are used, with nothing of what's said in your meetings. You can change it in Settings › General."
+  },
+  "voice": {
+    "kicker": "Optional",
+    "title": "Let Murmur recognize you",
+    "intro": "Murmur can save a print of your voice to recognize you automatically in every meeting. To do it, read this sentence out loud.",
+    "sentence": "Good morning. I'm the voice Murmur needs to learn to recognize in meetings, whether we're in the room or on a call.",
+    "ready": "Press the button and read the sentence.",
+    "record": "Record",
+    "stop": "Stop",
+    "level": "Microphone level",
+    "recording": "Recording",
+    "time": "{{done}} of {{total}}",
+    "saving": "Saving…",
+    "saved": "Saved",
+    "again": "Record it again",
+    "privacy": "Murmur doesn't keep the recording, only a print of your voice (biometric data). It stays on this computer, never leaves it, and you can delete it in Settings › Audio.",
+    "skip": "Not now",
+    "done": "Done"
   }
 }

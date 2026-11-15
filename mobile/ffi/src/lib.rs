@@ -157,10 +157,48 @@ impl Murmur {
         if title.is_empty() {
             return Ok(());
         }
-        let mut db = lock(&self.db);
-        let Some(mut meeting) = db.get(&id)? else { return Ok(()) };
-        meeting["title"] = json!(title);
-        db.put(&meeting).map_err(Into::into)
+        self.edit(&id, |m| m["title"] = json!(title))
+    }
+
+    /// A speaker's name ("Parlant 2" is "Laia"); empty takes it away. As the computer stores it:
+    /// `speakerNames` by number.
+    pub fn set_speaker_name(&self, id: String, speaker: i64, name: String) -> Result<()> {
+        let name = name.trim().to_owned();
+        self.edit(&id, |m| {
+            if !m["speakerNames"].is_object() {
+                m["speakerNames"] = json!({});
+            }
+            if name.is_empty() {
+                m["speakerNames"].as_object_mut().map(|o| o.remove(&speaker.to_string()));
+            } else {
+                m["speakerNames"][speaker.to_string()] = json!(name);
+            }
+        })
+    }
+
+    /// One line goes to another speaker, set by hand (`speakerLocked`: the computer's final pass
+    /// leaves it alone).
+    pub fn set_line_speaker(&self, id: String, line: String, speaker: i64) -> Result<()> {
+        self.edit(&id, |m| {
+            for u in m["utterances"].as_array_mut().into_iter().flatten() {
+                if u["id"] == json!(line) {
+                    u["speaker"] = json!(speaker);
+                    u["speakerLocked"] = json!(true);
+                }
+            }
+        })
+    }
+
+    /// Every line of `from` is `into`'s: two speakers that were the same person.
+    pub fn merge_speakers(&self, id: String, from: i64, into: i64) -> Result<()> {
+        self.edit(&id, |m| {
+            for u in m["utterances"].as_array_mut().into_iter().flatten() {
+                if u["speaker"] == json!(from) {
+                    u["speaker"] = json!(into);
+                }
+            }
+            m["speakerNames"].as_object_mut().map(|o| o.remove(&from.to_string()));
+        })
     }
 
     /// Starts recording a meeting: `title` as the phone shows it until the computer names it,
@@ -209,14 +247,28 @@ impl Murmur {
                 lines.push(json!({ "id": line_id(&prefix, id), "start": start, "end": end, "speaker": speaker, "text": text }));
             }
         }
-        meeting["utterances"] = Value::Array(lines);
         meeting["duration"] = json!(samples as f64 / SAMPLE_RATE as f64);
         meeting["status"] = json!("done");
-        if let Ok(Value::Object(add)) = serde_json::from_str::<Value>(&extra) {
+        if let Ok(Value::Object(mut add)) = serde_json::from_str::<Value>(&extra) {
+            // What was changed while recording: speakers merged (`speakerAliases`, from → into,
+            // also for the last lines, which only arrive now) and lines given to someone else
+            // (`lineSpeakers`, by line id, set by hand).
+            let aliases = add.remove("speakerAliases").unwrap_or_default();
+            let by_line = add.remove("lineSpeakers").unwrap_or_default();
+            for u in &mut lines {
+                let id = u["id"].as_str().unwrap_or_default().to_owned();
+                if let Some(s) = by_line.get(&id).and_then(Value::as_i64) {
+                    u["speaker"] = json!(s);
+                    u["speakerLocked"] = json!(true);
+                } else if let Some(s) = u["speaker"].as_i64().and_then(|s| aliases.get(s.to_string()).and_then(Value::as_i64)) {
+                    u["speaker"] = json!(s);
+                }
+            }
             for (k, v) in add {
                 meeting[k] = v;
             }
         }
+        meeting["utterances"] = Value::Array(lines);
         lock(&self.db).put(&meeting)?;
         Ok(meeting["id"].as_str().unwrap_or_default().to_owned())
     }
@@ -228,6 +280,14 @@ impl Murmur {
 }
 
 impl Murmur {
+    /// Reads a meeting, changes it and saves it back (nothing if it isn't there).
+    fn edit(&self, id: &str, change: impl FnOnce(&mut Value)) -> Result<()> {
+        let mut db = lock(&self.db);
+        let Some(mut meeting) = db.get(id)? else { return Ok(()) };
+        change(&mut meeting);
+        db.put(&meeting).map_err(Into::into)
+    }
+
     fn models(&self) -> Result<&'static Models> {
         let mut slot = lock(&self.models);
         if let Some(SharedModels(m)) = slot.as_ref() {
@@ -260,4 +320,47 @@ fn update(live: &mut Live, events: Vec<Event>, level: f32) -> LiveUpdate {
         }
     }
     LiveUpdate { finals, partial, seconds: live.samples as f64 / SAMPLE_RATE as f64, level }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn line(id: &str, speaker: i64) -> Value {
+        json!({ "id": id, "start": 0.0, "end": 1.0, "speaker": speaker, "text": "hola" })
+    }
+
+    fn saved(m: &Murmur) -> Value {
+        serde_json::from_str(&m.meeting_json("phone-1".into()).unwrap().unwrap()).unwrap()
+    }
+
+    #[test]
+    fn speakers_are_named_moved_and_merged() {
+        let dir = std::env::temp_dir().join(format!("murmur-mobile-test-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&dir);
+        let m = Murmur::new("/nowhere".into(), dir.to_string_lossy().into_owned()).unwrap();
+        let meeting = json!({ "id": "phone-1", "title": "T", "createdAt": 0.0, "duration": 3.0, "status": "done",
+            "utterances": [line("phone-1-0", 0), line("phone-1-1", 1), line("phone-1-2", 2)] });
+        lock(&m.db).put(&meeting).unwrap();
+
+        m.set_speaker_name("phone-1".into(), 1, " Laia ".into()).unwrap();
+        m.set_speaker_name("phone-1".into(), 2, "Jordi".into()).unwrap();
+        m.set_line_speaker("phone-1".into(), "phone-1-0".into(), 1).unwrap();
+        m.merge_speakers("phone-1".into(), 2, 1).unwrap();
+        m.rename_meeting("phone-1".into(), "Llançament".into()).unwrap();
+
+        let s = saved(&m);
+        assert_eq!(s["title"], "Llançament");
+        assert_eq!(s["speakerNames"]["1"], "Laia");
+        assert!(s["speakerNames"].get("2").is_none());
+        let speakers: Vec<i64> = s["utterances"].as_array().unwrap().iter().map(|u| u["speaker"].as_i64().unwrap()).collect();
+        assert_eq!(speakers, vec![1, 1, 1]);
+        let locked: Vec<bool> = s["utterances"].as_array().unwrap().iter().map(|u| u["speakerLocked"] == json!(true)).collect();
+        assert_eq!(locked, vec![true, false, false]);
+
+        // An empty name takes it away.
+        m.set_speaker_name("phone-1".into(), 1, "".into()).unwrap();
+        assert!(saved(&m)["speakerNames"].get("1").is_none());
+        let _ = std::fs::remove_dir_all(&dir);
+    }
 }

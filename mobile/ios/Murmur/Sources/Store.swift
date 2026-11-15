@@ -22,12 +22,39 @@ struct LiveMeeting {
     var partial = ""
     var notes: [NoteItem] = []
     var paused = false
+    /// Names given while recording, by speaker number.
+    var speakerNames: [Int: String] = [:]
+    /// Speakers merged into another (from → into): also the lines still to come.
+    var aliases: [Int: Int] = [:]
+    /// Lines given to another speaker by hand, by line id.
+    var lineSpeakers: [String: Int] = [:]
 
     /// The last thing said, for the list.
     var lastLine: String { partial.isEmpty ? (lines.last?.text ?? "") : partial }
     func isMarked(_ line: Line) -> Bool {
         notes.contains { $0.mark && $0.t >= line.start - 1 && $0.t <= line.end + 2 }
     }
+
+    /// Who said a line, after what was changed by hand.
+    func speaker(of line: Line) -> Int {
+        if let s = lineSpeakers[line.id] { return s }
+        var s = Int(line.speaker)
+        var seen: Set<Int> = []
+        while let next = aliases[s], !seen.contains(next) { seen.insert(s); s = next }
+        return s
+    }
+
+    /// The speakers there are, by number, with their names.
+    var speakers: [Speaker] {
+        Set(lines.map(speaker(of:))).sorted().map { Speaker(id: $0, name: speakerNames[$0]) }
+    }
+}
+
+/// A speaker in a meeting: their number, and the name given, if any.
+struct Speaker: Identifiable, Hashable {
+    let id: Int
+    var name: String?
+    var label: String { name ?? L("rec.speaker", "\(id + 1)") }
 }
 
 /// A lock-protected switch the microphone's thread reads (paused or not).
@@ -164,7 +191,7 @@ final class Store: ObservableObject {
             startedAt: Date().addingTimeInterval(-seconds),
             pausedAt: live?.paused == true ? seconds : nil,
             lastLine: String((last?.text ?? "").suffix(140)),
-            speaker: last.map { L("rec.speaker", "\($0.speaker + 1)") },
+            speaker: last.flatMap { line in live.map { Speaker(id: $0.speaker(of: line), name: $0.speakerNames[$0.speaker(of: line)]).label } },
             confirmingStop: stopArmed,
             levels: recentLevels())
     }
@@ -263,6 +290,47 @@ final class Store: ObservableObject {
         updateActivity()
     }
 
+    // MARK: Speakers (the label's menu, as on the desktop)
+
+    /// While recording: they're kept here and go with the meeting when it stops.
+    func nameLiveSpeaker(_ speaker: Int, _ name: String) {
+        let name = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        live?.speakerNames[speaker] = name.isEmpty ? nil : name
+        updateActivity()
+    }
+
+    func reassignLiveLine(_ line: String, to speaker: Int) {
+        live?.lineSpeakers[line] = speaker
+        updateActivity()
+    }
+
+    func mergeLiveSpeakers(_ from: Int, into: Int) {
+        guard from != into else { return }
+        live?.aliases[from] = into
+        // Lines given by hand to the one that goes follow it.
+        for (line, s) in live?.lineSpeakers ?? [:] where s == from { live?.lineSpeakers[line] = into }
+        if live?.speakerNames[into] == nil { live?.speakerNames[into] = live?.speakerNames[from] }
+        live?.speakerNames[from] = nil
+        updateActivity()
+    }
+
+    /// A finished meeting: saved at once.
+    func nameSpeaker(_ speaker: Int, _ name: String, in meeting: String) {
+        try? engine?.setSpeakerName(id: meeting, speaker: Int64(speaker), name: name)
+        reload()
+    }
+
+    func reassignLine(_ line: String, to speaker: Int, in meeting: String) {
+        try? engine?.setLineSpeaker(id: meeting, line: line, speaker: Int64(speaker))
+        reload()
+    }
+
+    func mergeSpeakers(_ from: Int, into: Int, in meeting: String) {
+        guard from != into else { return }
+        try? engine?.mergeSpeakers(id: meeting, from: Int64(from), into: Int64(into))
+        reload()
+    }
+
     func mark() {
         guard let t = live?.seconds else { return }
         live?.notes.append(NoteItem(t: t, text: L("rec.markNote"), mark: true))
@@ -284,7 +352,7 @@ final class Store: ObservableObject {
         routeObserver = nil
         stopArmed = false
         endActivity()
-        let extra = Self.extra(notes: current.notes)
+        let extra = Self.extra(current)
         do {
             let id = try await onQueue { try engine.stop(extra: extra) }
             live = nil
@@ -329,12 +397,18 @@ final class Store: ObservableObject {
     }
 
     /// The notes as the computer stores them (a TipTap document, each paragraph with its second),
-    /// and the marked moments.
-    private static func extra(notes: [NoteItem]) -> String {
-        let paragraphs: [[String: Any]] = notes.sorted { $0.t < $1.t }.map {
+    /// the marked moments, and what was changed about the speakers while recording (the engine
+    /// applies the aliases and the lines' speakers, also to the last lines).
+    private static func extra(_ live: LiveMeeting) -> String {
+        let paragraphs: [[String: Any]] = live.notes.sorted { $0.t < $1.t }.map {
             ["type": "paragraph", "attrs": ["t": $0.t], "content": [["type": "text", "text": $0.text]]]
         }
-        var extra: [String: Any] = ["marks": notes.filter(\.mark).map { ["t": $0.t] }]
+        var extra: [String: Any] = [
+            "marks": live.notes.filter(\.mark).map { ["t": $0.t] },
+            "speakerNames": Dictionary(uniqueKeysWithValues: live.speakerNames.map { ("\($0.key)", $0.value) }),
+            "speakerAliases": Dictionary(uniqueKeysWithValues: live.aliases.map { ("\($0.key)", $0.value) }),
+            "lineSpeakers": live.lineSpeakers,
+        ]
         if !paragraphs.isEmpty { extra["notesDoc"] = ["type": "doc", "content": paragraphs] }
         let data = (try? JSONSerialization.data(withJSONObject: extra)) ?? Data("{}".utf8)
         return String(decoding: data, as: UTF8.self)
@@ -374,4 +448,8 @@ struct MeetingDetail {
     }
 
     func isMarked(_ u: Utterance) -> Bool { notes.contains { $0.mark && $0.t >= u.start - 1 && $0.t <= u.end + 2 } }
+
+    var speakers: [Speaker] {
+        Set(utterances.map(\.speaker)).sorted().map { Speaker(id: $0, name: speakerNames[$0]) }
+    }
 }

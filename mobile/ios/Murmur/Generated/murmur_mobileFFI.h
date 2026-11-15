@@ -278,6 +278,11 @@ RustBuffer uniffi_murmur_mobile_fn_method_murmur_meeting_json(uint64_t ptr, Rust
 RustBuffer uniffi_murmur_mobile_fn_method_murmur_meetings(uint64_t ptr, RustCallStatus *_Nonnull out_status
 );
 #endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_MURMUR_MOBILE_FN_METHOD_MURMUR_MERGE_SPEAKERS
+#define UNIFFI_FFIDEF_UNIFFI_MURMUR_MOBILE_FN_METHOD_MURMUR_MERGE_SPEAKERS
+void uniffi_murmur_mobile_fn_method_murmur_merge_speakers(uint64_t ptr, RustBuffer id, int64_t from, int64_t into, RustCallStatus *_Nonnull out_status
+);
+#endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_MURMUR_MOBILE_FN_METHOD_MURMUR_PREPARE
 #define UNIFFI_FFIDEF_UNIFFI_MURMUR_MOBILE_FN_METHOD_MURMUR_PREPARE
 void uniffi_murmur_mobile_fn_method_murmur_prepare(uint64_t ptr, RustCallStatus *_Nonnull out_status
@@ -291,6 +296,16 @@ RustBuffer uniffi_murmur_mobile_fn_method_murmur_push(uint64_t ptr, RustBuffer s
 #ifndef UNIFFI_FFIDEF_UNIFFI_MURMUR_MOBILE_FN_METHOD_MURMUR_RENAME_MEETING
 #define UNIFFI_FFIDEF_UNIFFI_MURMUR_MOBILE_FN_METHOD_MURMUR_RENAME_MEETING
 void uniffi_murmur_mobile_fn_method_murmur_rename_meeting(uint64_t ptr, RustBuffer id, RustBuffer title, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_MURMUR_MOBILE_FN_METHOD_MURMUR_SET_LINE_SPEAKER
+#define UNIFFI_FFIDEF_UNIFFI_MURMUR_MOBILE_FN_METHOD_MURMUR_SET_LINE_SPEAKER
+void uniffi_murmur_mobile_fn_method_murmur_set_line_speaker(uint64_t ptr, RustBuffer id, RustBuffer line, int64_t speaker, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_MURMUR_MOBILE_FN_METHOD_MURMUR_SET_SPEAKER_NAME
+#define UNIFFI_FFIDEF_UNIFFI_MURMUR_MOBILE_FN_METHOD_MURMUR_SET_SPEAKER_NAME
+void uniffi_murmur_mobile_fn_method_murmur_set_speaker_name(uint64_t ptr, RustBuffer id, int64_t speaker, RustBuffer name, RustCallStatus *_Nonnull out_status
 );
 #endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_MURMUR_MOBILE_FN_METHOD_MURMUR_START
@@ -587,6 +602,12 @@ uint16_t uniffi_murmur_mobile_checksum_method_murmur_meetings(void
     
 );
 #endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_MURMUR_MOBILE_CHECKSUM_METHOD_MURMUR_MERGE_SPEAKERS
+#define UNIFFI_FFIDEF_UNIFFI_MURMUR_MOBILE_CHECKSUM_METHOD_MURMUR_MERGE_SPEAKERS
+uint16_t uniffi_murmur_mobile_checksum_method_murmur_merge_speakers(void
+    
+);
+#endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_MURMUR_MOBILE_CHECKSUM_METHOD_MURMUR_PREPARE
 #define UNIFFI_FFIDEF_UNIFFI_MURMUR_MOBILE_CHECKSUM_METHOD_MURMUR_PREPARE
 uint16_t uniffi_murmur_mobile_checksum_method_murmur_prepare(void
@@ -602,6 +623,18 @@ uint16_t uniffi_murmur_mobile_checksum_method_murmur_push(void
 #ifndef UNIFFI_FFIDEF_UNIFFI_MURMUR_MOBILE_CHECKSUM_METHOD_MURMUR_RENAME_MEETING
 #define UNIFFI_FFIDEF_UNIFFI_MURMUR_MOBILE_CHECKSUM_METHOD_MURMUR_RENAME_MEETING
 uint16_t uniffi_murmur_mobile_checksum_method_murmur_rename_meeting(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_MURMUR_MOBILE_CHECKSUM_METHOD_MURMUR_SET_LINE_SPEAKER
+#define UNIFFI_FFIDEF_UNIFFI_MURMUR_MOBILE_CHECKSUM_METHOD_MURMUR_SET_LINE_SPEAKER
+uint16_t uniffi_murmur_mobile_checksum_method_murmur_set_line_speaker(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_MURMUR_MOBILE_CHECKSUM_METHOD_MURMUR_SET_SPEAKER_NAME
+#define UNIFFI_FFIDEF_UNIFFI_MURMUR_MOBILE_CHECKSUM_METHOD_MURMUR_SET_SPEAKER_NAME
+uint16_t uniffi_murmur_mobile_checksum_method_murmur_set_speaker_name(void
     
 );
 #endif

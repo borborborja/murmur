@@ -82,5 +82,12 @@
     "roomTitle": "At the microphone",
     "onlyMe": "Just me",
     "moreInRoom": "More people in the room"
+  },
+  "speakers": {
+    "rename": "Rename…",
+    "nameTitle": "Speaker's name",
+    "namePlaceholder": "For example, Laia",
+    "thisLine": "This line is from",
+    "allLines": "All of “{{name}}”'s lines are from"
   }
 }

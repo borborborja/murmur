@@ -11,6 +11,8 @@ struct MeetingView: View {
     @State private var confirmDelete = false
     @State private var renaming = false
     @State private var newTitle = ""
+    /// The speaker being renamed (the label's menu).
+    @State private var naming: Speaker?
 
     var body: some View {
         let m = store.meeting(id)
@@ -63,8 +65,14 @@ struct MeetingView: View {
                         VStack(alignment: .leading, spacing: 14) {
                             if tab == .transcript {
                                 if m.utterances.isEmpty { Text(L("meeting.empty")).foregroundStyle(palette.textTertiary) }
+                                let actions = SpeakerActions(
+                                    speakers: m.speakers,
+                                    rename: { naming = $0 },
+                                    reassign: { store.reassignLine($0, to: $1, in: id) },
+                                    merge: { store.mergeSpeakers($0, into: $1, in: id) })
                                 ForEach(m.utterances) { u in
-                                    LineView(speaker: u.speaker, name: m.speakerNames[u.speaker], start: u.start, text: u.text, marked: m.isMarked(u))
+                                    LineView(id: u.id, speaker: u.speaker, name: m.speakerNames[u.speaker], start: u.start, text: u.text,
+                                             marked: m.isMarked(u), actions: actions)
                                 }
                             } else {
                                 ForEach(m.notes) { NoteRow(note: $0) }
@@ -79,6 +87,7 @@ struct MeetingView: View {
         .background(palette.background.ignoresSafeArea())
         .foregroundStyle(palette.textPrimary)
         .toolbar(.hidden, for: .navigationBar)
+        .speakerNameAlert($naming) { store.nameSpeaker($0.id, $1, in: id) }
         .confirmationDialog(L("meeting.deleteConfirm"), isPresented: $confirmDelete, titleVisibility: .visible) {
             Button(L("meeting.delete"), role: .destructive) {
                 store.delete(id)

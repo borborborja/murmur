@@ -603,6 +603,11 @@ public protocol MurmurProtocol: AnyObject, Sendable {
     func meetings() throws  -> [MeetingRow]
     
     /**
+     * Every line of `from` is `into`'s: two speakers that were the same person.
+     */
+    func mergeSpeakers(id: String, from: Int64, into: Int64) throws 
+    
+    /**
      * Loads the models now (they load on the first recording otherwise): about half a second.
      */
     func prepare() throws 
@@ -616,6 +621,18 @@ public protocol MurmurProtocol: AnyObject, Sendable {
      * A new title for a meeting (empty: left as it was).
      */
     func renameMeeting(id: String, title: String) throws 
+    
+    /**
+     * One line goes to another speaker, set by hand (`speakerLocked`: the computer's final pass
+     * leaves it alone).
+     */
+    func setLineSpeaker(id: String, line: String, speaker: Int64) throws 
+    
+    /**
+     * A speaker's name ("Parlant 2" is "Laia"); empty takes it away. As the computer stores it:
+     * `speakerNames` by number.
+     */
+    func setSpeakerName(id: String, speaker: Int64, name: String) throws 
     
     /**
      * Starts recording a meeting: `title` as the phone shows it until the computer names it,
@@ -745,6 +762,20 @@ open func meetings()throws  -> [MeetingRow]  {
 }
     
     /**
+     * Every line of `from` is `into`'s: two speakers that were the same person.
+     */
+open func mergeSpeakers(id: String, from: Int64, into: Int64)throws   {try rustCallWithError(FfiConverterTypeMurmurError_lift) {
+        uniffiCallStatus in
+    uniffi_murmur_mobile_fn_method_murmur_merge_speakers(
+            self.uniffiCloneHandle(),
+        FfiConverterString.lower(id),
+        FfiConverterInt64.lower(from),
+        FfiConverterInt64.lower(into),uniffiCallStatus
+    )
+}
+}
+    
+    /**
      * Loads the models now (they load on the first recording otherwise): about half a second.
      */
 open func prepare()throws   {try rustCallWithError(FfiConverterTypeMurmurError_lift) {
@@ -777,6 +808,36 @@ open func renameMeeting(id: String, title: String)throws   {try rustCallWithErro
             self.uniffiCloneHandle(),
         FfiConverterString.lower(id),
         FfiConverterString.lower(title),uniffiCallStatus
+    )
+}
+}
+    
+    /**
+     * One line goes to another speaker, set by hand (`speakerLocked`: the computer's final pass
+     * leaves it alone).
+     */
+open func setLineSpeaker(id: String, line: String, speaker: Int64)throws   {try rustCallWithError(FfiConverterTypeMurmurError_lift) {
+        uniffiCallStatus in
+    uniffi_murmur_mobile_fn_method_murmur_set_line_speaker(
+            self.uniffiCloneHandle(),
+        FfiConverterString.lower(id),
+        FfiConverterString.lower(line),
+        FfiConverterInt64.lower(speaker),uniffiCallStatus
+    )
+}
+}
+    
+    /**
+     * A speaker's name ("Parlant 2" is "Laia"); empty takes it away. As the computer stores it:
+     * `speakerNames` by number.
+     */
+open func setSpeakerName(id: String, speaker: Int64, name: String)throws   {try rustCallWithError(FfiConverterTypeMurmurError_lift) {
+        uniffiCallStatus in
+    uniffi_murmur_mobile_fn_method_murmur_set_speaker_name(
+            self.uniffiCloneHandle(),
+        FfiConverterString.lower(id),
+        FfiConverterInt64.lower(speaker),
+        FfiConverterString.lower(name),uniffiCallStatus
     )
 }
 }
@@ -1321,6 +1382,9 @@ private let initializationResult: InitializationResult = {
     if (uniffi_murmur_mobile_checksum_method_murmur_meetings() != 13712) {
         return InitializationResult.apiChecksumMismatch
     }
+    if (uniffi_murmur_mobile_checksum_method_murmur_merge_speakers() != 56595) {
+        return InitializationResult.apiChecksumMismatch
+    }
     if (uniffi_murmur_mobile_checksum_method_murmur_prepare() != 7086) {
         return InitializationResult.apiChecksumMismatch
     }
@@ -1328,6 +1392,12 @@ private let initializationResult: InitializationResult = {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_murmur_mobile_checksum_method_murmur_rename_meeting() != 2007) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_murmur_mobile_checksum_method_murmur_set_line_speaker() != 47918) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_murmur_mobile_checksum_method_murmur_set_speaker_name() != 44142) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_murmur_mobile_checksum_method_murmur_start() != 65183) {

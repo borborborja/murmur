@@ -82,5 +82,12 @@
     "roomTitle": "En el micrófono",
     "onlyMe": "Solo yo",
     "moreInRoom": "Más gente en la sala"
+  },
+  "speakers": {
+    "rename": "Cambiar el nombre…",
+    "nameTitle": "Nombre del hablante",
+    "namePlaceholder": "Por ejemplo, Laia",
+    "thisLine": "Esta frase es de",
+    "allLines": "Todas las frases de «{{name}}» son de"
   }
 }

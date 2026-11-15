@@ -194,7 +194,7 @@ Entre reunions (bloc 5):
   - [x] L'esquelet de l'app (`mobile/ios/Murmur`): el motor amb UniFFI (`mobile/ffi`), la llista, gravar amb el text en directe, marcar un moment, notes amb el minut, la reunió acabada al mòbil i la configuració. Provat al simulador.
   - [x] A l'iPhone de debò.
   - [ ] La Live Activity i la Dynamic Island (Marca, Pausa i Atura des de la pantalla bloquejada): feta i compilada, falta veure-la a l'iPhone.
-  - [ ] Posar nom als parlants (el menú de l'etiqueta: reanomena, tria'n un que ja ha sortit, ajunta'n dos).
+  - [x] Posar nom als parlants (el menú de l'etiqueta: canvia el nom, aquesta frase és d'un altre, totes les frases són d'un altre), mentre graves i a la reunió acabada.
   - [ ] Fotos amb el minut; l'editor de notes amb format.
   - [ ] Emparellar i sincronitzar amb l'ordinador (la part del mòbil de `core/src/sync.rs`).
   - [ ] iPad, iPhone Duo i Android.

@@ -150,6 +150,8 @@ Per provar-la al simulador sense parlar: `xcrun simctl launch <simulador> com.qu
 - **El micròfon:** «Automàtic» per defecte, el que tria iOS (un de cable o USB si n'hi ha; si no, el de l'iPhone). A Configuració › Àudio se'n pot triar un, també uns auriculars Bluetooth, que no entren mai sols: només senten qui els porta, no la sala (`Microphone.swift`, `.allowBluetooth` només si són els triats). Si el micròfon canvia a mitja gravació, el motor d'àudio es torna a engegar amb el nou (`AVAudioEngineConfigurationChange`) i la gravació continua; la targeta diu quin micròfon sent.
 - **Aturar demana confirmació,** com l'indicador de l'ordinador: el primer toc posa el botó en vermell, «Toca per aturar», durant 4 s. També a la pantalla bloquejada.
 - **Orientació:** a l'iPhone només en vertical; a l'iPad, totes.
+- **Els parlants:** tocar l'etiqueta obre el menú de l'ordinador: «Canvia el nom…», «Aquesta frase és de ›» i «Totes les frases de … són de ›» (ajunta dos parlants). A la reunió acabada es desa de seguida (`setSpeakerName`, `setLineSpeaker`, `mergeSpeakers`). Mentre graves es guarda a l'app i va amb la reunió en aturar (`speakerNames`, `speakerAliases`, `lineSpeakers`); el motor ho aplica també a les últimes frases, que només arriben en aturar. Una frase canviada a mà porta `speakerLocked`, i la passada final de l'ordinador la respecta. Els convidats del calendari, com a l'ordinador, encara no: el mòbil no llegeix el calendari.
+- **La lletra:** SF Pro a tot arreu, com a l'ordinador. Els temps porten xifres tabulars (`Font.tabular`), mai una lletra monoespaiada.
 
 Encara no hi ha: posar nom als parlants, les fotos, l'editor de notes amb format, l'emparellament, l'iPad, el Duo ni Android.
 

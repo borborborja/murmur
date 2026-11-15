@@ -82,5 +82,12 @@
     "roomTitle": "Al micròfon",
     "onlyMe": "Només jo",
     "moreInRoom": "Més gent a la sala"
+  },
+  "speakers": {
+    "rename": "Canvia el nom…",
+    "nameTitle": "Nom del parlant",
+    "namePlaceholder": "Per exemple, Laia",
+    "thisLine": "Aquesta frase és de",
+    "allLines": "Totes les frases de «{{name}}» són de"
   }
 }

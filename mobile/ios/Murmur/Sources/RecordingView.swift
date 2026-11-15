@@ -15,6 +15,16 @@ struct RecordingView: View {
     @State private var stopping = false
     /// Atura was tapped once: it turns red, "Toca per aturar", for 4 s (as the desktop's indicator).
     @State private var confirmStop = false
+    /// The speaker being renamed (the label's menu).
+    @State private var naming: Speaker?
+
+    private func actions(_ live: LiveMeeting?) -> SpeakerActions {
+        SpeakerActions(
+            speakers: live?.speakers ?? [],
+            rename: { naming = $0 },
+            reassign: { store.reassignLiveLine($0, to: $1) },
+            merge: { store.mergeLiveSpeakers($0, into: $1) })
+    }
 
     var body: some View {
         let live = store.live
@@ -56,6 +66,7 @@ struct RecordingView: View {
         }
         .foregroundStyle(palette.textPrimary)
         .toolbar(.hidden, for: .navigationBar)
+        .speakerNameAlert($naming) { store.nameLiveSpeaker($0.id, $1) }
         // `-autostop <seconds>` (development): stops by itself, to try the end without touching the screen.
         .task {
             let args = ProcessInfo.processInfo.arguments
@@ -83,7 +94,9 @@ struct RecordingView: View {
                         Text(L("rec.listening")).font(.system(size: 17)).foregroundStyle(palette.textTertiary).padding(.top, 8)
                     }
                     ForEach(live?.lines ?? []) { line in
-                        LineView(speaker: Int(line.speaker), start: line.start, text: line.text, marked: live?.isMarked(line) ?? false)
+                        let speaker = live?.speaker(of: line) ?? Int(line.speaker)
+                        LineView(id: line.id, speaker: speaker, name: live?.speakerNames[speaker], start: line.start, text: line.text,
+                                 marked: live?.isMarked(line) ?? false, actions: actions(live))
                     }
                     if let partial = live?.partial, !partial.isEmpty {
                         (Text(partial).foregroundColor(palette.textTertiary) + Text(" |").foregroundColor(palette.caret))
@@ -255,19 +268,34 @@ struct Waveform: View {
     }
 }
 
+/// What a speaker's label can do (the desktop's menu): rename the speaker, give this line to
+/// someone else, or say all their lines are someone else's.
+struct SpeakerActions {
+    var speakers: [Speaker]
+    var rename: (Speaker) -> Void
+    var reassign: (_ line: String, _ to: Int) -> Void
+    var merge: (_ from: Int, _ into: Int) -> Void
+}
+
 /// One line of the transcript: the speaker, the minute, the text; a marked one stands out.
 struct LineView: View {
     @Environment(\.murmur) private var palette
+    var id: String = ""
     var speaker: Int
     var name: String? = nil
     var start: Double
     var text: String
     var marked: Bool
+    var actions: SpeakerActions? = nil
 
     var body: some View {
         VStack(alignment: .leading, spacing: 5) {
             HStack(spacing: 8) {
-                SpeakerChip(speaker: speaker, name: name)
+                if let actions {
+                    SpeakerMenu(id: id, speaker: Speaker(id: speaker, name: name), actions: actions)
+                } else {
+                    SpeakerChip(speaker: speaker, name: name)
+                }
                 Text(clock(start)).font(.tabular(12)).foregroundStyle(palette.timestamp)
                 if marked { FlagChip(label: L("rec.important")) }
             }
@@ -282,6 +310,60 @@ struct LineView: View {
                 RoundedRectangle(cornerRadius: 14, style: .continuous).fill(palette.fillSubtle).padding(.horizontal, -12)
             }
         }
+    }
+}
+
+/// The speaker's label as a menu.
+struct SpeakerMenu: View {
+    var id: String
+    var speaker: Speaker
+    var actions: SpeakerActions
+
+    var body: some View {
+        let others = actions.speakers.filter { $0.id != speaker.id }
+        Menu {
+            Button(L("speakers.rename"), systemImage: "pencil") { actions.rename(speaker) }
+            if !others.isEmpty {
+                Menu(L("speakers.thisLine")) {
+                    ForEach(others) { other in
+                        Button(other.label) { actions.reassign(id, other.id) }
+                    }
+                }
+                Menu(L("speakers.allLines", speaker.label)) {
+                    ForEach(others) { other in
+                        Button(other.label) { actions.merge(speaker.id, other.id) }
+                    }
+                }
+            }
+        } label: {
+            HStack(spacing: 3) {
+                SpeakerChip(speaker: speaker.id, name: speaker.name)
+            }
+        }
+        .accessibilityLabel(speaker.label)
+    }
+}
+
+/// "Canvia el nom…" of a speaker: an alert with the name in a field.
+struct SpeakerNameAlert: ViewModifier {
+    @Binding var speaker: Speaker?
+    @State private var name = ""
+    var save: (Speaker, String) -> Void
+
+    func body(content: Content) -> some View {
+        content
+            .alert(L("speakers.nameTitle"), isPresented: Binding(get: { speaker != nil }, set: { if !$0 { speaker = nil } })) {
+                TextField(L("speakers.namePlaceholder"), text: $name).textInputAutocapitalization(.words)
+                Button(L("meeting.cancel"), role: .cancel) {}
+                Button(L("meeting.save")) { if let speaker { save(speaker, name) } }
+            }
+            .onChange(of: speaker) { _, s in name = s?.name ?? "" }
+    }
+}
+
+extension View {
+    func speakerNameAlert(_ speaker: Binding<Speaker?>, save: @escaping (Speaker, String) -> Void) -> some View {
+        modifier(SpeakerNameAlert(speaker: speaker, save: save))
     }
 }
 

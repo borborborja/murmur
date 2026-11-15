@@ -64,7 +64,8 @@ El QR demostra que el mòbil era davant de la pantalla: ningú altre de la xarxa
 ## Permisos i avisos del sistema
 
 - **iOS:** «Xarxa local» (`NSLocalNetworkUsageDescription`, `NSBonjourServices` amb `_murmur._tcp`), demanat en el moment d'emparellar, no abans.
-- **macOS i Windows:** el tallafoc pot preguntar el primer cop que l'ordinador escolta. Ho expliquem al pas del QR.
+- **macOS:** «Xarxa local» (`NSLocalNetworkUsageDescription` i `NSBonjourServices` a `Info.plist`, en tres idiomes), i el tallafoc pot preguntar el primer cop que l'ordinador escolta.
+- **Windows:** el tallafoc pot preguntar el primer cop que l'ordinador escolta.
 
 ## Estadístiques
 
@@ -79,6 +80,7 @@ Només dos esdeveniments nous, sense contingut ni identificadors (CLAUDE.md): `m
 ## Ordre de feina (part de l'ordinador)
 
 1. [x] `core/src/sync.rs`: el codi QR, el canal xifrat, els missatges i l'enviament de fitxers que es pot reprendre, amb tests (emparellar, reconnectar, rebutjar desconeguts, un fitxer malmès, missatges grans).
-2. [ ] `app/src-tauri`: les claus (clauer), el QR, Bonjour, el servidor Noise i la cua de passades finals per a les reunions que arriben.
-3. [ ] Configuració › Mòbil (interfície, textos en tres idiomes, `DESIGN.md`).
-4. [ ] Una eina de prova en Rust que fa de mòbil, per provar-ho tot sense Xcode.
+2. [x] `app/src-tauri/src/mobile.rs`: la clau al clauer, els mòbils a `phones.json`, el QR, Bonjour (`mdns-sd`), el servidor i on va cada reunió que arriba (l'àudio a `recordings/`, les captures a `screens/`, marcada amb `device` i en `processing`). L'app l'obre i hi passa la revisió de parlants i Whisper (`retranscribe_meeting` amb `max_speakers`), la puntuació i el resum.
+3. [x] Configuració › Mòbil (interfície, textos en tres idiomes, `DESIGN.md`). Només es veu en desenvolupament fins que hi hagi l'app del mòbil.
+4. [x] `examples/fake_phone.rs`, que fa de mòbil: `pair <codi>`, `send <fitxer.wav> [títol]` i `results`.
+5. [ ] Provar-ho de punta a punta amb l'app i, després, amb l'app d'iOS.

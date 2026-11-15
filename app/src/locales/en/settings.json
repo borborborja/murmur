@@ -11,7 +11,8 @@
     "transcription": "Transcription",
     "intelligence": "Intelligence",
     "share": "Sharing",
-    "claude": "Claude"
+    "claude": "Claude",
+    "mobile": "Phone"
   },
   "nextRecording": "Changes will apply to the next recording.",
   "general": {
@@ -320,5 +321,23 @@
     "ask4": "“Search my meetings for when we talked about the budget.”",
     "tools": "Claude does it with five Murmur tools: list, search and read meetings, transcribe a file and check on it. The first time, it asks your permission for each one. A long transcription takes a few minutes, and Claude checks how it's going.",
     "privacy": "Murmur sends nothing on its own: Claude only gets the text it asks the tools for, and handles it under your terms with Anthropic. Audio never leaves the Mac."
+  },
+  "mobile": {
+    "intro": "Connect Murmur for phone to this computer: meetings you record on it arrive here on their own for the final pass and the summary, and the result goes back to the phone.",
+    "group": "Connected Phones",
+    "none": "No phone connected yet.",
+    "lastSeen": "Synced {{when}}",
+    "pairedOn": "Connected {{when}}",
+    "unpair": "Unpair",
+    "unpairTitle": "Unpair “{{name}}”?",
+    "unpairMessage": "Meetings already synced stay on both. To connect it again you'll need a new code.",
+    "connect": "Connect a Phone…",
+    "qrLabel": "Code to connect the phone",
+    "scanTitle": "Scan this code with your phone",
+    "scanHint": "Open Murmur on your phone, go to Settings › Computer and point the camera here. It will connect to “{{computer}}”.",
+    "expires": "The code expires in {{time}}.",
+    "copyCode": "Copy Code",
+    "paired": "“{{name}}” is now connected to this computer.",
+    "privacy": "Your phone and this computer talk directly over your network, encrypted, through no server. Your voiceprint never leaves the device."
   }
 }

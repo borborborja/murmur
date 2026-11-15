@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ChevronDown, Link2, Plus, Search, Settings, Tag, Trash2, X } from "lucide-react";
+import { ChevronDown, Link2, Plus, Search, Settings, Smartphone, Tag, Trash2, X } from "lucide-react";
 import { Menu, MenuItem, PredefinedMenuItem, Submenu } from "@tauri-apps/api/menu";
 import { ContextMenu } from "radix-ui";
 import { useTranslation } from "react-i18next";
@@ -164,6 +164,7 @@ export function Sidebar({ meetings, selectedId, canCreate, importingId, search, 
                         {/* The selected row's bar echoes the logo. */}
                         {m.id === selectedId && <span className="absolute inset-y-1.5 left-0 w-[3px] rounded-[2px] bg-mm-sidebar-selection-bar" aria-hidden />}
                         <span className="flex-1 truncate">{m.title}</span>
+                        {m.device && <Smartphone className="size-3 shrink-0 text-text-secondary" aria-label={translate("app:fromPhone", { phone: m.device.name })} />}
                         {activeShares(m).length > 0 && <Link2 className="size-3 shrink-0 text-text-secondary" aria-label={translate("share:shared")} />}
                         {m.status === "recording" && m.id !== importingId ? (
                           <span className="flex items-center gap-[5px] text-[10px] font-bold tracking-[0.06em] text-mm-recording-label" aria-label={t("recording")}>

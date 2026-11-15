@@ -58,7 +58,12 @@ export type Meeting = {
   shares?: ShareLink[];
   /** Each time it was recorded again after stopping ("Continua"), in order (lib/parts.ts). */
   parts?: MeetingPart[];
+  /** The phone it was recorded on, if it came from one (mobile.rs). */
+  device?: MeetingDevice | null;
 };
+
+/** A paired phone, as a meeting remembers it: its key (hex) and its name. */
+export type MeetingDevice = { id: string; name: string };
 
 /** Recording again into a meeting: when it started (epoch ms) and the meeting time it picked up at (s). */
 export type MeetingPart = { startedAt: number; at: number };
@@ -101,7 +106,7 @@ export type Cover = {
 };
 
 /** What the sidebar shows; the full meeting is loaded when opened. */
-export type MeetingSummary = Pick<Meeting, "id" | "title" | "createdAt" | "duration" | "status" | "tags" | "shares">;
+export type MeetingSummary = Pick<Meeting, "id" | "title" | "createdAt" | "duration" | "status" | "tags" | "shares" | "device">;
 
 /** A full-text search result (db.rs `Hit`). Matches are wrapped in \u0002 … \u0003. */
 export type SearchHit = {

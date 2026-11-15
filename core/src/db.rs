@@ -31,7 +31,9 @@ CREATE TABLE IF NOT EXISTS meetings (
     language      TEXT,
     shares        TEXT,
     parts         TEXT,
-    translation   TEXT
+    translation   TEXT,
+    device        TEXT,
+    updated_at    REAL NOT NULL DEFAULT 0
 );
 
 CREATE TABLE IF NOT EXISTS utterances (
@@ -124,6 +126,8 @@ pub struct Summary {
     pub tags: Vec<String>,
     /// Its shared links: the sidebar marks the meetings with one that still works.
     pub shares: Value,
+    /// The phone it was recorded on (`{id, name}`), if it came from one.
+    pub device: Value,
 }
 
 /// Metadata fields the UI can change; absent fields are left alone.
@@ -249,7 +253,7 @@ impl Db {
 
     pub fn list(&self) -> Result<Vec<Summary>> {
         let mut stmt = self.conn.prepare(
-            "SELECT id, title, created_at, duration, status, shares FROM meetings ORDER BY created_at DESC",
+            "SELECT id, title, created_at, duration, status, shares, device FROM meetings ORDER BY created_at DESC",
         )?;
         let rows = stmt.query_map([], |r| {
             Ok(Summary {
@@ -263,6 +267,7 @@ impl Db {
                     .get::<_, Option<String>>(5)?
                     .and_then(|s| serde_json::from_str(&s).ok())
                     .unwrap_or(json!([])),
+                device: r.get::<_, Option<String>>(6)?.and_then(|s| serde_json::from_str(&s).ok()).unwrap_or(Value::Null),
             })
         })?;
         let mut list: Vec<Summary> = rows.collect::<rusqlite::Result<_>>()?;
@@ -385,7 +390,7 @@ impl Db {
             .conn
             .query_row(
                 "SELECT id, title, created_at, duration, status, speaker_names, sources, audio_path,
-                        notes_doc, legacy_notes, cover, guests, screens, language, shares, parts, translation
+                        notes_doc, legacy_notes, cover, guests, screens, language, shares, parts, translation, device
                  FROM meetings WHERE id = ?1",
                 [id],
                 |r| {
@@ -408,6 +413,7 @@ impl Db {
                         "shares": parse(r.get(14)?).unwrap_or(json!([])),
                         "parts": parse(r.get(15)?).unwrap_or(json!([])),
                         "translation": parse(r.get(16)?),
+                        "device": parse(r.get(17)?),
                     }))
                 },
             )
@@ -458,8 +464,9 @@ impl Db {
         };
         tx.execute(
             "INSERT INTO meetings (id, title, created_at, duration, status, speaker_names, sources,
-                                   audio_path, notes_doc, legacy_notes, cover, guests, screens, language, shares, parts, translation)
-             VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16, ?17)",
+                                   audio_path, notes_doc, legacy_notes, cover, guests, screens, language, shares, parts, translation,
+                                   device, updated_at)
+             VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16, ?17, ?18, ?19)",
             params![
                 id,
                 meeting
@@ -490,6 +497,8 @@ impl Db {
                 text("shares"),
                 text("parts"),
                 text("translation"),
+                text("device"),
+                now(),
             ],
         )?;
         let utterances: Vec<Utterance> =
@@ -620,8 +629,29 @@ impl Db {
             )?;
             index_notes(&tx, id, &notes.blocks)?;
         }
+        tx.execute("UPDATE meetings SET updated_at = ?2 WHERE id = ?1", params![id, now()])?;
         tx.commit()?;
         Ok(())
+    }
+
+    /// The finished meetings that came from the phone `device` (its key, in hex) and changed after
+    /// `since` (seconds since the epoch), with when they changed: what goes back to that phone.
+    pub fn changed_for_device(&self, device: &str, since: f64) -> Result<Vec<(Value, f64)>> {
+        let mut stmt = self.conn.prepare(
+            "SELECT id, updated_at FROM meetings
+             WHERE json_extract(device, '$.id') = ?1 AND updated_at > ?2 AND status = 'done'
+             ORDER BY updated_at",
+        )?;
+        let rows = stmt
+            .query_map(params![device, since], |r| Ok((r.get::<_, String>(0)?, r.get::<_, f64>(1)?)))?
+            .collect::<rusqlite::Result<Vec<_>>>()?;
+        let mut out = vec![];
+        for (id, at) in rows {
+            if let Some(m) = self.get(&id)? {
+                out.push((m, at));
+            }
+        }
+        Ok(out)
     }
 
     pub fn delete(&mut self, id: &str) -> Result<()> {
@@ -658,6 +688,11 @@ impl Db {
         })?;
         Ok(hits.collect::<rusqlite::Result<_>>()?)
     }
+}
+
+/// Seconds since the epoch.
+fn now() -> f64 {
+    std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map(|d| d.as_secs_f64()).unwrap_or(0.0)
 }
 
 /// Columns added after the first release, for databases created before them.
@@ -698,6 +733,12 @@ fn migrate(conn: &Connection) -> Result<()> {
     }
     if !has("meetings", "translation")? {
         conn.execute("ALTER TABLE meetings ADD COLUMN translation TEXT", [])?;
+    }
+    if !has("meetings", "device")? {
+        conn.execute("ALTER TABLE meetings ADD COLUMN device TEXT", [])?;
+    }
+    if !has("meetings", "updated_at")? {
+        conn.execute("ALTER TABLE meetings ADD COLUMN updated_at REAL NOT NULL DEFAULT 0", [])?;
     }
     Ok(())
 }
@@ -814,6 +855,26 @@ mod tests {
         assert_eq!(m["language"], "ca-es");
         assert_eq!(m["utterances"].as_array().unwrap().len(), 2);
         assert_eq!(db.list().unwrap().len(), 1);
+    }
+
+    #[test]
+    fn meetings_from_a_phone_go_back_to_it_when_they_change() {
+        let mut db = Db::in_memory().unwrap();
+        let mut from_phone = meeting();
+        from_phone["device"] = json!({"id": "abcd", "name": "iPhone de Quico"});
+        from_phone["status"] = json!("processing");
+        db.put(&from_phone).unwrap();
+        db.put(&json!({"id": "m2", "title": "Del Mac", "createdAt": 0.0, "status": "done"})).unwrap();
+        assert_eq!(db.get("m1").unwrap().unwrap()["device"]["name"], "iPhone de Quico");
+        // Still being processed: nothing to send back yet.
+        assert!(db.changed_for_device("abcd", 0.0).unwrap().is_empty());
+        from_phone["status"] = json!("done");
+        db.put(&from_phone).unwrap();
+        let changed = db.changed_for_device("abcd", 0.0).unwrap();
+        assert_eq!(changed.len(), 1);
+        assert_eq!(changed[0].0["id"], "m1");
+        assert!(db.changed_for_device("abcd", changed[0].1).unwrap().is_empty());
+        assert!(db.changed_for_device("other", 0.0).unwrap().is_empty());
     }
 
     #[test]

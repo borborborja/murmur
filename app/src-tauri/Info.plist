@@ -18,5 +18,11 @@
   <string>Murmur llegeix el calendari per avisar-te quan comença una reunió i posar-li el títol de l'esdeveniment. No modifica res i les dades no surten d'aquest Mac.</string>
   <key>NSCalendarsUsageDescription</key>
   <string>Murmur llegeix el calendari per avisar-te quan comença una reunió i posar-li el títol de l'esdeveniment. No modifica res i les dades no surten d'aquest Mac.</string>
+  <key>NSLocalNetworkUsageDescription</key>
+  <string>Murmur fa servir la xarxa local només per connectar-se amb el teu mòbil, si l'has connectat a Configuració › Mòbil. Les dades van xifrades i no passen per cap servidor.</string>
+  <key>NSBonjourServices</key>
+  <array>
+    <string>_murmur._tcp</string>
+  </array>
 </dict>
 </plist>

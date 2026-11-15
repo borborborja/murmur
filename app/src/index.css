@@ -20,6 +20,8 @@
     --color-mm-logo-background: var(--mm-logo-background);
     --color-mm-logo-bar-1: var(--mm-logo-bar-1);
     --color-mm-logo-bar-2: var(--mm-logo-bar-2);
+    --color-mm-qr-dark: var(--mm-qr-dark);
+    --color-mm-qr-light: var(--mm-qr-light);
     --color-mm-meter-off: var(--mm-meter-off);
     --color-mm-new-meeting: var(--mm-new-meeting);
     --color-mm-on-accent: var(--mm-on-accent);

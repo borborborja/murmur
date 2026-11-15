@@ -3,3 +3,4 @@
 "NSAudioCaptureUsageDescription" = "Murmur escolta l'àudio de l'altra banda de la trucada (Zoom, Meet, Teams…) per transcriure-la. Tot es processa en aquest Mac.";
 "NSCalendarsFullAccessUsageDescription" = "Murmur llegeix el calendari per avisar-te quan comença una reunió i posar-li el títol de l'esdeveniment. No modifica res i les dades no surten d'aquest Mac.";
 "NSCalendarsUsageDescription" = "Murmur llegeix el calendari per avisar-te quan comença una reunió i posar-li el títol de l'esdeveniment. No modifica res i les dades no surten d'aquest Mac.";
+"NSLocalNetworkUsageDescription" = "Murmur fa servir la xarxa local només per connectar-se amb el teu mòbil, si l'has connectat a Configuració › Mòbil. Les dades van xifrades i no passen per cap servidor.";

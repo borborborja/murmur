@@ -109,5 +109,7 @@
   "whisperCaOfferText": "The Barcelona Supercomputing Center's: in our tests, better than the current one for Central, Valencian and Balearic Catalan. It takes {{size}}.",
   "introNamed": "“{{speaker}}” is {{name}}",
   "introHint": "If there's more than one of you in the room, each can say “Murmur, I'm…” and Murmur will add the name.",
-  "undo": "Undo"
+  "undo": "Undo",
+  "mobileReceived": "“{{title}}” arrived from “{{phone}}”",
+  "fromPhone": "Recorded on “{{phone}}”"
 }

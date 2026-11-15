@@ -3,3 +3,4 @@
 "NSAudioCaptureUsageDescription" = "Murmur escucha el audio del otro lado de la llamada (Zoom, Meet, Teams…) para transcribirla. Todo se procesa en este Mac.";
 "NSCalendarsFullAccessUsageDescription" = "Murmur lee el calendario para avisarte cuando empieza una reunión y ponerle el título del evento. No modifica nada y los datos no salen de este Mac.";
 "NSCalendarsUsageDescription" = "Murmur lee el calendario para avisarte cuando empieza una reunión y ponerle el título del evento. No modifica nada y los datos no salen de este Mac.";
+"NSLocalNetworkUsageDescription" = "Murmur usa la red local solo para conectarse con tu móvil, si lo has conectado en Ajustes › Móvil. Los datos van cifrados y no pasan por ningún servidor.";

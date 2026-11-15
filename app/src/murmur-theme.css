@@ -38,6 +38,9 @@
   --mm-logo-bar-2: #D4FF3A;
   /* A hairline around the icon, so its dark square shows on a dark sidebar. */
   --mm-logo-ring: transparent;
+  /* The pairing QR (Settings › Mòbil): always dark on light, so any phone camera reads it. */
+  --mm-qr-dark: #000000;
+  --mm-qr-light: #FFFFFF;
   --mm-toast-background: #FFFFFF;
   --mm-toast-text: #111111;
   --mm-toast-secondary: #6B6B6B;
@@ -98,6 +101,9 @@
   --mm-logo-bar-2: #D4FF3A;
   /* A hairline around the icon, so its dark square shows on a dark sidebar. */
   --mm-logo-ring: #FFFFFF26;
+  /* The pairing QR (Settings › Mòbil): always dark on light, so any phone camera reads it. */
+  --mm-qr-dark: #000000;
+  --mm-qr-light: #FFFFFF;
   --mm-toast-background: #1E1E1E;
   --mm-toast-text: #F2F2F2;
   --mm-toast-secondary: #9A9A9A;
@@ -158,6 +164,9 @@
   --mm-logo-bar-2: #FFFFFF73;
   /* A hairline around the icon, so its dark square shows on a dark sidebar. */
   --mm-logo-ring: transparent;
+  /* The pairing QR (Settings › Mòbil): always dark on light, so any phone camera reads it. */
+  --mm-qr-dark: #000000;
+  --mm-qr-light: #FFFFFF;
   --mm-toast-background: #FFFFFF;
   --mm-toast-text: #111111;
   --mm-toast-secondary: #6B6B6B;
@@ -218,6 +227,9 @@
   --mm-logo-bar-2: #0A0A0A66;
   /* A hairline around the icon, so its dark square shows on a dark sidebar. */
   --mm-logo-ring: #FFFFFF26;
+  /* The pairing QR (Settings › Mòbil): always dark on light, so any phone camera reads it. */
+  --mm-qr-dark: #000000;
+  --mm-qr-light: #FFFFFF;
   --mm-toast-background: #1E1E1E;
   --mm-toast-text: #F2F2F2;
   --mm-toast-secondary: #9A9A9A;
@@ -278,6 +290,9 @@
   --mm-logo-bar-2: #E10600;
   /* A hairline around the icon, so its dark square shows on a dark sidebar. */
   --mm-logo-ring: transparent;
+  /* The pairing QR (Settings › Mòbil): always dark on light, so any phone camera reads it. */
+  --mm-qr-dark: #000000;
+  --mm-qr-light: #FFFFFF;
   --mm-toast-background: #FFFFFF;
   --mm-toast-text: #111111;
   --mm-toast-secondary: #6B6B6B;
@@ -338,6 +353,9 @@
   --mm-logo-bar-2: #FF3B28;
   /* A hairline around the icon, so its dark square shows on a dark sidebar. */
   --mm-logo-ring: #FFFFFF26;
+  /* The pairing QR (Settings › Mòbil): always dark on light, so any phone camera reads it. */
+  --mm-qr-dark: #000000;
+  --mm-qr-light: #FFFFFF;
   --mm-toast-background: #1E1E1E;
   --mm-toast-text: #F2F2F2;
   --mm-toast-secondary: #9A9A9A;

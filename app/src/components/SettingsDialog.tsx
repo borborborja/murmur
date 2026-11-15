@@ -3,7 +3,7 @@ import { getVersion } from "@tauri-apps/api/app";
 import { disable as disableAutostart, enable as enableAutostart, isEnabled as autostartEnabled } from "@tauri-apps/plugin-autostart";
 import { ask, open as openDialog } from "@tauri-apps/plugin-dialog";
 import { openUrl } from "@tauri-apps/plugin-opener";
-import { AudioLines, CalendarDays, Check, ChevronRight, CloudUpload, Contrast, Copy, Link2, Lock, Mic, Plug, SlidersHorizontal, Sparkles, X } from "lucide-react";
+import { AudioLines, CalendarDays, Check, ChevronRight, CloudUpload, Contrast, Copy, Link2, Lock, Mic, Plug, SlidersHorizontal, Smartphone, Sparkles, X } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
@@ -52,6 +52,7 @@ const TABS = [
   { id: "intelligence", icon: Sparkles },
   { id: "share", icon: Link2 },
   { id: "claude", icon: Plug },
+  { id: "mobile", icon: Smartphone },
 ] as const;
 
 
@@ -111,7 +112,8 @@ export function SettingsDialog({ open, onOpenChange, settings, onChange, recordi
           </button>
           <DialogDescription className="sr-only">{t("description")}</DialogDescription>
           <div className="mt-2 flex justify-center gap-1" role="tablist">
-            {TABS.filter(({ id }) => id !== "calendar" || capabilities.calendar).map(({ id, icon: Icon }) => (
+            {/* Mòbil: only in development until there's a phone app to pair (docs/MOBIL.md). */}
+            {TABS.filter(({ id }) => (id !== "calendar" || capabilities.calendar) && (id !== "mobile" || import.meta.env.DEV)).map(({ id, icon: Icon }) => (
               <button
                 key={id}
                 type="button"
@@ -137,6 +139,7 @@ export function SettingsDialog({ open, onOpenChange, settings, onChange, recordi
           {tab === "intelligence" && <IntelligenceTab settings={settings} onChange={change} meeting={meeting} onLlmLoaded={() => (llmLoaded.current = true)} />}
           {tab === "share" && <ShareTab />}
           {tab === "claude" && <ClaudeTab open={open} />}
+          {tab === "mobile" && <MobileTab open={open} />}
         </div>
       </DialogContent>
     </Dialog>
@@ -1310,6 +1313,129 @@ function ClaudeTab({ open }: { open: boolean }) {
       <p className="-mt-3 mb-5 flex gap-1.5 px-1 text-[11px] leading-snug text-muted-foreground">
         <Lock className="mt-px size-3 shrink-0" aria-hidden />
         <span>{t("claude.privacy")}</span>
+      </p>
+    </>
+  );
+}
+
+// --- Mòbil ---------------------------------------------------------------------------------
+
+/**
+ * Phones paired with this computer (mobile.rs, docs/EMPARELLAR.md): the list, "Connecta un mòbil"
+ * with the one-time QR, and unpairing. Nothing listens on the network until a phone is paired.
+ */
+function MobileTab({ open }: { open: boolean }) {
+  const { t } = useTranslation("settings");
+  const [status, setStatus] = useState<backend.MobileStatus | null>(null);
+  const [code, setCode] = useState<backend.PairingCode | null>(null);
+  const [left, setLeft] = useState(0);
+  const refresh = () => backend.mobileStatus().then(setStatus).catch(() => {});
+  useEffect(() => {
+    if (open && backend.isTauri()) void refresh();
+  }, [open]);
+  // A phone read the code: show it in the list and put the code away.
+  useEffect(() => {
+    if (!backend.isTauri()) return;
+    const unlisten = backend.onMobilePaired((phone) => {
+      setCode(null);
+      toast(t("mobile.paired", { name: phone.name }));
+      void refresh();
+    });
+    return () => void unlisten.then((f) => f());
+  }, []);
+  // The code's countdown; it goes away when it expires.
+  useEffect(() => {
+    if (!code) return;
+    const until = Date.now() + code.expiresIn * 1000;
+    const tick = () => {
+      const s = Math.max(0, Math.round((until - Date.now()) / 1000));
+      setLeft(s);
+      if (s === 0) setCode(null);
+    };
+    tick();
+    const timer = window.setInterval(tick, 1000);
+    return () => window.clearInterval(timer);
+  }, [code]);
+  // Closing the settings with a code on screen withdraws it.
+  useEffect(() => {
+    if (!open && code) {
+      setCode(null);
+      backend.mobileCancelPairing().catch(() => {});
+    }
+  }, [open]);
+
+  const connect = async () => {
+    try {
+      setCode(await backend.mobileStartPairing());
+    } catch (e) {
+      toast.error(String(e));
+    }
+  };
+  const cancel = () => {
+    setCode(null);
+    backend.mobileCancelPairing().catch(() => {});
+  };
+  const unpair = async (phone: backend.Phone) => {
+    const message = t("mobile.unpairMessage", { name: phone.name });
+    const confirmed = backend.isTauri()
+      ? await ask(message, { title: t("mobile.unpairTitle", { name: phone.name }), kind: "warning", okLabel: t("mobile.unpair"), cancelLabel: t("common:cancel") })
+      : false;
+    if (!confirmed) return;
+    await backend.mobileUnpair(phone.id).catch((e) => toast.error(String(e)));
+    void refresh();
+  };
+  const when = (s: number) => new Date(s * 1000).toLocaleString(locale(), { day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" });
+
+  return (
+    <>
+      <p className="mb-4 px-1 text-[12px] leading-snug text-muted-foreground">{t("mobile.intro")}</p>
+      <Group title={t("mobile.group")}>
+        {status?.phones.length ? (
+          status.phones.map((phone) => (
+            <Row key={phone.id} label={phone.name} hint={phone.lastSeen ? t("mobile.lastSeen", { when: when(phone.lastSeen) }) : t("mobile.pairedOn", { when: when(phone.pairedAt) })}>
+              <button type="button" className={cn(SMALL_BUTTON, "text-destructive")} onClick={() => void unpair(phone)}>
+                {t("mobile.unpair")}
+              </button>
+            </Row>
+          ))
+        ) : (
+          <div className="px-3 py-2.5 text-[12px] text-muted-foreground">{t("mobile.none")}</div>
+        )}
+        {code ? (
+          <div className="flex items-center gap-5 px-3 py-4">
+            <div
+              role="img"
+              aria-label={t("mobile.qrLabel")}
+              className="size-[168px] shrink-0 rounded-[10px] bg-mm-qr-light p-3 text-mm-qr-dark [&>svg]:size-full"
+              dangerouslySetInnerHTML={{ __html: code.svg }}
+            />
+            <div className="min-w-0 flex-1">
+              <div className="text-[13px] font-medium">{t("mobile.scanTitle")}</div>
+              <p className="mt-1 text-[12px] leading-snug text-muted-foreground">{t("mobile.scanHint", { computer: status?.computer ?? "" })}</p>
+              <p className="mt-2 text-[11px] tabular-nums text-muted-foreground">{t("mobile.expires", { time: `${Math.floor(left / 60)}:${String(left % 60).padStart(2, "0")}` })}</p>
+              <div className="mt-3 flex gap-2">
+                <button type="button" className={SMALL_BUTTON} onClick={cancel}>
+                  {t("common:cancel")}
+                </button>
+                {import.meta.env.DEV && (
+                  <button type="button" className={SMALL_BUTTON} onClick={() => navigator.clipboard.writeText(code.uri).then(() => toast(t("claude.copied")))}>
+                    {t("mobile.copyCode")}
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="px-3 py-2.5">
+            <button type="button" className={SMALL_BUTTON} onClick={() => void connect()}>
+              {t("mobile.connect")}
+            </button>
+          </div>
+        )}
+      </Group>
+      <p className="-mt-3 mb-5 flex gap-1.5 px-1 text-[11px] leading-snug text-muted-foreground">
+        <Lock className="mt-px size-3 shrink-0" aria-hidden />
+        <span>{t("mobile.privacy")}</span>
       </p>
     </>
   );

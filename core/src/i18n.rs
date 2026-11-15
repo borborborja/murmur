@@ -263,6 +263,11 @@ fn strings(key: &str) -> Option<[&'static str; 3]> {
             "Couldn't create the model context",
         ],
         // Cover written by Claude or OpenAI (cloud.rs).
+        "mobile_no_network" => [
+            "No es pot obrir la connexió amb el mòbil en aquest ordinador",
+            "No se puede abrir la conexión con el móvil en este ordenador",
+            "Can't open the connection for the phone on this computer",
+        ],
         "cloud_no_key" => [
             "Falta la clau d'API: connecta el compte a la configuració",
             "Falta la clave de API: conecta la cuenta en los ajustes",

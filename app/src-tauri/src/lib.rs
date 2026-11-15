@@ -12,6 +12,7 @@ pub mod share;
 pub mod llm;
 pub mod mcp;
 pub mod micwatch;
+pub mod mobile;
 pub mod permissions;
 pub mod retranscribe;
 pub mod shell;
@@ -778,16 +779,19 @@ struct RetranscribeChannel {
 
 /// "Torna a transcriure en…": Whisper listens to the saved recording again in another language,
 /// utterance by utterance, as the final pass does after recording. Same events ("final-pass"…).
+/// With `max_speakers`, the speaker check too: the final pass of a meeting recorded on a phone.
 #[tauri::command]
 async fn retranscribe_meeting(
     app: AppHandle,
     meeting_id: String,
     audio_path: String,
-    language: String,
+    language: Option<String>,
     channels: Vec<RetranscribeChannel>,
     guests: Vec<String>,
+    max_speakers: Option<usize>,
 ) -> Result<(), String> {
-    if !["ca", "es", "en"].contains(&language.as_str()) {
+    // Without a language, only the speaker check (a phone's meeting in two languages).
+    if language.as_deref().is_some_and(|l| !["ca", "es", "en"].contains(&l)) || (language.is_none() && max_speakers.is_none()) {
         return Err(tr!("whisper_one_language").into());
     }
     let ogg = recording_path(&audio_path)?;
@@ -816,7 +820,11 @@ async fn retranscribe_meeting(
             Ok(tapped)
         })();
         match tapped {
-            Ok(tapped) => final_pass(app, meeting_id, tapped, FinalPlan { speakers: None, language: Some(language), glossary, text_from: 0.0 }),
+            // A meeting from a phone also gets its speakers checked, as after a recording here.
+            Ok(tapped) => {
+                let speakers = max_speakers.map(|n| (engine::Channel::Mic, n));
+                final_pass(app, meeting_id, tapped, FinalPlan { speakers, language, glossary, text_from: 0.0 })
+            }
             Err(e) => {
                 let _ = app.emit("final-pass-done", FinalPassDone { meeting_id, error: Some(tr!("final_pass_error", error = format!("{e:#}"))) });
             }
@@ -1280,6 +1288,28 @@ fn with_db<T>(
     f(slot.as_mut().unwrap()).map_err(|e| format!("{e:#}"))
 }
 
+// --- Phones (mobile.rs, docs/EMPARELLAR.md) ----------------------------------------------
+
+#[tauri::command]
+fn mobile_status(app: AppHandle) -> mobile::Status {
+    mobile::status(&app)
+}
+
+#[tauri::command]
+async fn mobile_start_pairing(app: AppHandle) -> Result<mobile::Code, String> {
+    tauri::async_runtime::spawn_blocking(move || mobile::start_pairing(&app).map_err(|e| format!("{e:#}"))).await.map_err(|e| e.to_string())?
+}
+
+#[tauri::command]
+fn mobile_cancel_pairing(app: AppHandle) -> Result<(), String> {
+    mobile::cancel_pairing(&app).map_err(|e| format!("{e:#}"))
+}
+
+#[tauri::command]
+fn mobile_unpair(app: AppHandle, id: String) -> Result<(), String> {
+    mobile::unpair(&app, &id).map_err(|e| format!("{e:#}"))
+}
+
 #[tauri::command]
 async fn list_meetings(app: AppHandle) -> Result<Vec<db::Summary>, String> {
     with_db(&app, |db| db.list())
@@ -1708,12 +1738,14 @@ pub fn run() {
                 engine::set_app_models_dir(data.join("models"));
             }
             gate::init(app.handle().clone());
+            mobile::init(app.handle());
             shell::setup(app)?;
             Ok(())
         })
         .manage(AppState::default())
         .manage(Opened::from_args())
         .manage(shell::Shell::default())
+        .manage(mobile::Mobile::default())
         // Closing the window keeps Murmur in the menu bar (it still notices meetings).
         .on_window_event(|window, event| {
             if let tauri::WindowEvent::CloseRequested { api, .. } = event {
@@ -1724,6 +1756,10 @@ pub fn run() {
             }
         })
         .invoke_handler(tauri::generate_handler![
+            mobile_status,
+            mobile_start_pairing,
+            mobile_cancel_pairing,
+            mobile_unpair,
             set_ui_language,
             prepare,
             start_recording,

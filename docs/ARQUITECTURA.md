@@ -281,6 +281,14 @@ L'entrada del menú Compartir és una extensió d'app a part (`app/share-extensi
 
 Mesura amb `examples/lang_probe.rs` (decisió per fitxer) i `examples/import_probe.rs` (velocitat del motor).
 
+### Mòbils (`mobile.rs`, `core/src/sync.rs`)
+
+L'ordinador pot rebre les reunions gravades amb Murmur per a mòbil ([EMPARELLAR.md](EMPARELLAR.md)). Està apagat fins que s'hi emparella un mòbil: sense mòbils ni codi a la pantalla, no hi ha cap port obert.
+
+- **Protocol (`core/src/sync.rs`, compartit amb el mòbil):** TCP a la xarxa local amb Noise. Per emparellar, `Noise_IKpsk2` amb la clau de l'ordinador i un secret d'un sol ús, tots dos al QR (`murmur://pair?…`); després, `Noise_IK`, i l'ordinador només accepta els mòbils que té. Cada banda envia primer un `Hello` amb el seu nom: l'ordinador només recorda un mòbil nou quan rep el seu, perquè és el que demostra que tenia el secret. Els missatges van partits en trames de Noise; els fitxers, en trossos de 256 KB amb la suma SHA-256, i es reprenen si es talla.
+- **L'ordinador (`mobile.rs`):** la clau privada al clauer (`com.quicodomingo.murmur.mobile`), els mòbils (clau pública, nom, dates) a `phones.json`, el QR en SVG (`qrcode`), l'anunci `_murmur._tcp` amb Bonjour (`mdns-sd`, amb un nom aleatori) i un fil per connexió. Una reunió que arriba va a `incoming/<id>/` mentre es rep; després l'àudio passa a `recordings/`, les captures a `screens/<id>/`, i es desa amb `device` (`{id, name}`) i en `processing`. L'esdeveniment `mobile-meeting` fa que l'app l'afegeixi a la llista i hi passi la revisió de parlants i Whisper (`retranscribe_meeting` amb `max_speakers`), la puntuació i el resum. El mòbil en recull el resultat amb `GetResults` (`db.changed_for_device`, per `updated_at`), sense les rutes de l'ordinador.
+- **Prova sense mòbil:** `cargo run --example fake_phone -- pair '<codi>'`, `send <fitxer.wav> [títol]` i `results`.
+
 ### Connector per a Claude (`mcp.rs`)
 
 El mateix binari de l'app, cridat amb `--mcp` (`main.rs`), és un servidor MCP per stdio: `/Applications/Murmur.app/Contents/MacOS/transcriptor --mcp`. Així no cal instal·lar res més ni afegir cap binari al paquet.

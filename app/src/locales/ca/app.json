@@ -109,5 +109,7 @@
   "whisperCaOfferText": "El del Barcelona Supercomputing Center: en les nostres proves, millor que l'actual amb el central, el valencià i el balear. Ocupa {{size}}.",
   "introNamed": "«{{speaker}}» és {{name}}",
   "introHint": "Si sou més d'un a la sala, cadascú pot dir «Murmur, sóc…» i Murmur hi posarà el nom.",
-  "undo": "Desfés"
+  "undo": "Desfés",
+  "mobileReceived": "«{{title}}» ha arribat de «{{phone}}»",
+  "fromPhone": "Gravada a «{{phone}}»"
 }

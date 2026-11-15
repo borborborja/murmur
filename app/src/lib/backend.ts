@@ -255,10 +255,26 @@ export const shareUploadFile = (id: string, name: string, ttl: number | null, by
 export const retranscribeMeeting = (
   meetingId: string,
   audioPath: string,
-  language: Language,
+  language: Language | null,
   channels: { base: number; spans: [number, number][] }[],
   guests: string[],
-) => invoke<void>("retranscribe_meeting", { meetingId, audioPath, language, channels, guests });
+  maxSpeakers?: number,
+) => invoke<void>("retranscribe_meeting", { meetingId, audioPath, language, channels, guests, maxSpeakers: maxSpeakers ?? null });
+
+// --- Phones (mobile.rs, docs/EMPARELLAR.md) ---
+export type Phone = { id: string; name: string; pairedAt: number; lastSeen: number | null };
+export type MobileStatus = { computer: string; phones: Phone[]; pairing: boolean };
+export type PairingCode = { uri: string; svg: string; expiresIn: number };
+export const mobileStatus = () => invoke<MobileStatus>("mobile_status");
+export const mobileStartPairing = () => invoke<PairingCode>("mobile_start_pairing");
+export const mobileCancelPairing = () => invoke<void>("mobile_cancel_pairing");
+export const mobileUnpair = (id: string) => invoke<void>("mobile_unpair", { id });
+/** A phone paired with the code on screen. */
+export const onMobilePaired = (fn: (phone: { id: string; name: string }) => void) =>
+  listen<{ id: string; name: string }>("mobile-paired", (e) => fn(e.payload));
+/** A meeting recorded on a phone has arrived whole, waiting for its final pass. */
+export const onMobileMeeting = (fn: (e: { meetingId: string; phone: string }) => void) =>
+  listen<{ meetingId: string; phone: string }>("mobile-meeting", (e) => fn(e.payload));
 /** Cloudflare's token form, filled in with the permissions Murmur needs. */
 export const shareTokenUrl = () => invoke<string>("share_token_url");
 export type CfAccount = { id: string; name: string };

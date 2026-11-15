@@ -11,7 +11,8 @@
     "transcription": "Transcripció",
     "intelligence": "Intel·ligència",
     "share": "Compartir",
-    "claude": "Claude"
+    "claude": "Claude",
+    "mobile": "Mòbil"
   },
   "nextRecording": "Els canvis s'aplicaran a la propera gravació.",
   "general": {
@@ -320,5 +321,23 @@
     "ask4": "«Busca a les meves reunions quan vam parlar del pressupost.»",
     "tools": "Claude ho fa amb cinc eines de Murmur: llistar, cercar i llegir reunions, transcriure un fitxer i consultar-ne el resultat. La primera vegada et demanarà permís per fer servir cadascuna. Una transcripció llarga triga uns minuts, i Claude anirà preguntant com va.",
     "privacy": "Murmur no envia res pel seu compte: Claude només rep el text que demana a les eines, i el tracta segons les teves condicions amb Anthropic. L'àudio no surt mai del Mac."
+  },
+  "mobile": {
+    "intro": "Connecta Murmur per a mòbil amb aquest ordinador: les reunions que hi gravis hi arribaran soles per fer-ne la passada final i el resum, i el resultat tornarà al mòbil.",
+    "group": "Mòbils connectats",
+    "none": "Encara no hi ha cap mòbil connectat.",
+    "lastSeen": "Sincronitzat el {{when}}",
+    "pairedOn": "Connectat el {{when}}",
+    "unpair": "Desemparella",
+    "unpairTitle": "Vols desemparellar «{{name}}»?",
+    "unpairMessage": "Les reunions que ja s'han passat es queden a tots dos llocs. Per tornar-lo a connectar caldrà un codi nou.",
+    "connect": "Connecta un mòbil…",
+    "qrLabel": "Codi per connectar el mòbil",
+    "scanTitle": "Escaneja aquest codi amb el mòbil",
+    "scanHint": "Obre Murmur al mòbil, ves a Configuració › Ordinador i apunta la càmera aquí. S'hi connectarà «{{computer}}».",
+    "expires": "El codi caduca d'aquí a {{time}}.",
+    "copyCode": "Copia el codi",
+    "paired": "«{{name}}» s'ha connectat amb aquest ordinador.",
+    "privacy": "El mòbil i l'ordinador es parlen directament per la teva xarxa, xifrats, sense passar per cap servidor. L'empremta de la teva veu no surt mai de l'aparell."
   }
 }

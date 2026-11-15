@@ -398,6 +398,8 @@ export default function App() {
         dispatch({ type: "tick", duration: e.done });
       }),
       backend.onPostPaused((busy) => dispatch({ type: "postPaused", reason: busy.recording ? "recording" : busy.call ? "call" : null })),
+      backend.onMobileMeeting((e) => void receivedRef.current(e.meetingId, e.phone)),
+      backend.onMobilePaired(() => track("mobile_paired")),
     ];
     return () => unlisten.forEach((u) => void u.then((f) => f()));
   }, []);
@@ -895,6 +897,34 @@ export default function App() {
     } catch (e) {
       toast.error(String(e));
       dispatch({ type: "postDone", id: m.id });
+    }
+  };
+  /**
+   * A meeting recorded on a paired phone (mobile.rs) arrives: into the list, and the same work
+   * as after a recording here: the speaker check and Whisper (one language), then punctuation and
+   * the cover. The phone picks up the result next time it connects.
+   */
+  const receivedRef = useRef(async (_id: string, _phone: string) => {});
+  receivedRef.current = async (id, phone) => {
+    const m = await backend.getMeeting(id).catch(() => null);
+    if (!m) return;
+    dispatch({ type: "received", meeting: m });
+    toast(t("mobileReceived", { title: m.title, phone }));
+    track("mobile_synced", { minutes: minutesBucket(m.duration / 60) });
+    const language = m.language ?? settings.language;
+    const finalModel = finalPassModel(language);
+    const finalText = settings.finalPass && !!finalModel && modelInstalled(finalModel);
+    if (!m.audioPath || (!finalText && !settings.verifySpeakers)) {
+      dispatch({ type: "postDone", id });
+      return;
+    }
+    post.planRecording(id, { verifySpeakers: settings.verifySpeakers, finalText, language });
+    const spans = m.utterances.map((u) => [u.start, u.end] as [number, number]);
+    try {
+      await backend.retranscribeMeeting(id, m.audioPath, finalText ? language : null, [{ base: 0, spans }], m.guests ?? [], settings.verifySpeakers ? settings.maxSpeakers : undefined);
+    } catch (e) {
+      toast.error(String(e));
+      dispatch({ type: "postDone", id });
     }
   };
   /** "Exporta les captures…": every screenshot, in a new folder named after the meeting, in time order. */

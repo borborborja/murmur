@@ -61,6 +61,8 @@ export type PostProcess = {
 export type Action =
   | { type: "loaded"; summaries: MeetingSummary[]; open?: Record<string, Meeting> }
   | { type: "opened"; meeting: Meeting }
+  /** A meeting from a paired phone (mobile.rs): into the list, without taking the selection. */
+  | { type: "received"; meeting: Meeting }
   | { type: "delete"; id: string }
   | { type: "new"; meeting: Meeting }
   /** "Continua": the meeting records again, from `part.at` seconds. */
@@ -115,6 +117,7 @@ const summaryOf = (m: Meeting): MeetingSummary => ({
   status: m.status,
   tags: m.tags,
   shares: m.shares,
+  device: m.device,
 });
 
 /** Tag names ignore capitals: the first spelling of each one stays. */
@@ -175,6 +178,11 @@ export function reducer(state: State, action: Action): State {
       };
     case "opened":
       return { ...state, open: { ...state.open, [action.meeting.id]: action.meeting } };
+    case "received": {
+      if (state.summaries.some((s) => s.id === action.meeting.id)) return state;
+      const summaries = [...state.summaries, summaryOf(action.meeting)].sort((a, b) => b.createdAt - a.createdAt);
+      return { ...state, summaries, open: { ...state.open, [action.meeting.id]: action.meeting }, selectedId: state.selectedId ?? action.meeting.id };
+    }
     case "delete": {
       const summaries = state.summaries.filter((m) => m.id !== action.id);
       const { [action.id]: _removed, ...open } = state.open;

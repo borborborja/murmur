@@ -83,10 +83,29 @@ El mòbil és un **company de l'ordinador**, no una còpia de l'app: grava reuni
 
 ## Primer pas amb Xcode: una prova d'una tarda
 
-Amb les apps de demostració de sherpa-onnx (Android i iOS), carregar-hi el nostre Conformer int8 i mesurar al telèfon:
+No amb les demos de sherpa-onnx sinó amb el nostre motor: `mobile/ios/MurmurProbe/` és una app de proves en SwiftUI que fa servir `murmur-core` tal com és, compilat per a iOS (`ffi/`, un crate amb unes quantes funcions en C; sherpa-onnx hi va com a xcframework compartit, que el seu `build.rs` ja descarrega). El Conformer hi va en int8 (`LoadOptions` a `engine.rs`: 137 MB en lloc de 481).
 
-1. La velocitat (RTF) per frase.
-2. La qualitat en català, comparada amb el Mac (la mateixa gravació).
-3. La bateria i la temperatura en mitja hora de gravació.
+```bash
+cd mobile/ios/MurmurProbe
+./fetch-models.sh        # els models i la reunió de 3 minuts, de models/ i data/ (no es pugen)
+xcodegen && open MurmurProbe.xcodeproj
+```
 
-Si surt bé, el pas següent és la primera app SwiftUI (punt 4 de l'ordre de feina), amb el motor de `core/` cridat amb UniFFI.
+A Xcode, tria el teu equip a *Signing & Capabilities* i l'iPhone com a destinació. L'app té dues proves:
+
+1. **La reunió de 3 minuts**, tan de pressa com pot: la velocitat (RTF) i el text, que es pot enviar per comparar-lo amb el de l'ordinador.
+2. **Grava en directe:** el micròfon, amb un registre cada 30 s de la velocitat, la bateria i la temperatura. Segueix amb la pantalla bloquejada. Per a la prova de bateria, mitja hora.
+
+Es pot triar 1, 2 o 4 fils i si hi ha text provisional. Amb `-autobench` (i `-threads N`, `-nopartials`), en obrir-se passa la reunió de prova sola i n'escriu el resultat a la consola.
+
+**Al simulador** (l'M4 del Mac, no el telèfon), la reunió de 3 minuts:
+
+| Fils | Text provisional | Càlcul | RTF |
+|---|---|---|---|
+| 2 | no | 13,4 s | 0,074 |
+| 4 | no | 11,2 s | 0,062 |
+| 4 | sí | 82,3 s | 0,457 |
+
+El text provisional (tornar a transcriure els últims segons cada 0,6 s mentre algú parla) multiplica el cost per set. A l'iPhone, que és més lent, probablement caldrà fer-lo més de tant en tant, o més curt, o sense. És el primer que cal mesurar.
+
+**A l'iPhone:** pendent.

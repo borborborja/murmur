@@ -91,16 +91,35 @@ impl LiveModel {
     }
 }
 
+/// How the live models are loaded. The computer uses the full-precision Conformer on 4 threads;
+/// a phone, the int8 one (137 MB instead of 481) on fewer.
+#[derive(Debug, Clone, Copy)]
+pub struct LoadOptions {
+    pub int8: bool,
+    pub threads: i32,
+}
+
+impl Default for LoadOptions {
+    fn default() -> Self {
+        Self { int8: false, threads: 4 }
+    }
+}
+
 impl Models {
     pub fn load(dir: &Path, kind: LiveModel) -> Result<Self> {
+        Self::load_with(dir, kind, LoadOptions::default())
+    }
+
+    pub fn load_with(dir: &Path, kind: LiveModel, opts: LoadOptions) -> Result<Self> {
         let mut config = OfflineRecognizerConfig::default();
+        let file = |name: &str| if opts.int8 { format!("{name}.int8.onnx") } else { format!("{name}.onnx") };
         match kind {
             LiveModel::CatalanSpanish => {
                 let asr = dir.join("conformer-ca-es-sherpa");
                 config.model_config.transducer = OfflineTransducerModelConfig {
-                    encoder: Some(path_str(asr.join("encoder.onnx"))?),
-                    decoder: Some(path_str(asr.join("decoder.onnx"))?),
-                    joiner: Some(path_str(asr.join("joiner.onnx"))?),
+                    encoder: Some(path_str(asr.join(file("encoder")))?),
+                    decoder: Some(path_str(asr.join(file("decoder")))?),
+                    joiner: Some(path_str(asr.join(file("joiner")))?),
                 };
                 config.model_config.tokens = Some(path_str(asr.join("tokens.txt"))?);
                 config.model_config.model_type = Some("nemo_transducer".into());
@@ -113,7 +132,7 @@ impl Models {
                 config.model_config.tokens = Some(path_str(asr.join("tokens.txt"))?);
             }
         }
-        config.model_config.num_threads = 4;
+        config.model_config.num_threads = opts.threads;
         config.decoding_method = Some("greedy_search".into());
         let recognizer =
             OfflineRecognizer::create(&config).context(tr!("speech_model_load_failed"))?;

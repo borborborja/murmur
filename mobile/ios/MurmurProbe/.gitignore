@@ -1,0 +1,7 @@
+# The models and the test recording (fetch-models.sh), Rust's build and Xcode's
+Resources/models/
+ffi/target/
+ffi/Cargo.lock
+*.xcodeproj/
+build/
+DerivedData/

@@ -1,0 +1,24 @@
+[package]
+name = "murmur-probe"
+version = "0.1.0"
+description = "The afternoon test (docs/MOBIL.md): Murmur's engine on the iPhone, through a small C API"
+edition = "2024"
+license = "MIT"
+publish = false
+
+# Its own workspace: on iOS sherpa-onnx comes as a shared xcframework, and that feature must not
+# reach the computer's build (which links it statically).
+[workspace]
+
+[lib]
+crate-type = ["staticlib"]
+
+[dependencies]
+murmur-core = { path = "../../../../core" }
+sherpa-onnx = { version = "1.13.8", default-features = false, features = ["shared"] }
+serde_json = "1"
+anyhow = "1"
+
+[profile.release]
+opt-level = 3
+lto = "thin"

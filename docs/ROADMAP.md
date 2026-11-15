@@ -188,6 +188,8 @@ Entre reunions (bloc 5):
 - [ ] Murmur per a mòbil (iOS i Android): funciona sol amb la transcripció ràpida, i emparellat amb l'ordinador hi fa la passada final. Pla i mockups a [`docs/MOBIL.md`](MOBIL.md).
   - [x] El motor separat de l'app de l'ordinador (`core/`, `murmur-core`), per compartir-lo amb el mòbil.
   - [x] L'emparellament, la part de l'ordinador: Configuració › Mòbil, codi QR, Bonjour i protocol xifrat ([`docs/EMPARELLAR.md`](EMPARELLAR.md)).
+  - [x] El motor compilat per a iOS i una app de proves (`mobile/ios/MurmurProbe`), provada al simulador.
+  - [ ] La prova d'una tarda a l'iPhone: velocitat amb i sense text provisional, qualitat comparada amb l'ordinador, i bateria i temperatura en mitja hora.
   - [x] Provar l'emparellament de punta a punta amb `fake_phone` i l'app: emparellar, enviar una reunió de 3 minuts, passada final (Whisper i dos parlants trobats) i recollir-ne el resultat.
   - [ ] La prova d'una tarda a l'iPhone (cal Xcode): velocitat, qualitat i bateria del Conformer.
   - [ ] Primera app en SwiftUI: gravar i text en directe, per TestFlight.

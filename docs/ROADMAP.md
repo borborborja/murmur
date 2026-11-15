@@ -39,6 +39,9 @@ En aturar la gravació, reprocessar l'àudio desat:
 - [x] **Idioma del resum** a la portada: un menú al costat de «Torna a generar» el torna a escriure en català, castellà o anglès.
 - [x] **Torna a escoltar amb Whisper** es pot apagar (Configuració › Transcripció › En acabar la gravació), i els dos Whisper hi són sempre a la vista, cadascun amb per a què serveix.
 - [x] **Glossari:** quantes vegades s'ha corregit cada paraula, al costat de cadascuna.
+- [x] **«Murmur, sóc la Marta»:** qui es presenta així posa el nom al seu parlant, ajustat als convidats del calendari, als noms ja posats i al glossari (`lib/intro.ts`); avís amb Desfés, i el nom torna a aplicar-se després de la verificació de parlants. «Murmur» és al glossari de manera interna.
+- [ ] Mesurar-ho amb dues o tres gravacions de debò: quantes presentacions cauen al parlant correcte, de seguida i després de la verificació.
+- [ ] La teva veu desada (opcional): un pas a l'onboarding per llegir una frase, i Murmur et reconeix sempre com a «Tu» (`known_speakers`). Mockup pendent.
 - [x] **Estadístiques d'ús anònimes** amb Aptabase (`lib/analytics.ts`), que es poden desactivar.
 - [x] Posar la clau d'Aptabase a `APTABASE_KEY` (lib.rs): sense, l'app no envia res.
 - [ ] Glossari: «com se sent» (les formes en què la transcripció escriu malament una paraula, per corregir-les encara que siguin lluny) i suggeriments a partir dels noms corregits a mà i dels convidats.

@@ -344,3 +344,11 @@ Variables per experimentar: `TRANSCRIPTOR_EMBEDDING` (directe), `TRANSCRIPTOR_DI
 - El connector afegeix a cada esdeveniment la versió de l'app, el sistema operatiu i el seu idioma, i un identificador de sessió que viu en memòria i caduca. No fa servir cap identificador del dispositiu ni desa res al disc. No hi ha informes d'errors automàtics.
 - `track()` no fa res si l'usuari ho ha desactivat (`Settings.analytics`, activat per defecte: casella a l'onboarding i interruptor a Configuració › General). Els valors de cert o fals van com a «yes» o «no».
 - Esdeveniments: `app_opened` (com està configurat i quantes reunions, en franges), `recording_started`, `recording_continued`, `recording_finished` i `file_transcribed` (idioma, fonts, durada i nombre de frases en franges), `file_opened`, `retranscribed`, `translated`, `summary_generated`, `exported` (format) i `shared` (què s'hi inclou, caducitat, contrasenya). Mai títols, text, noms, notes ni àudio.
+
+## Presentacions: «Murmur, sóc la Marta» (`lib/intro.ts`)
+
+- Cada frase acabada del directe passa per `introducedName`: si comença per «Murmur» (amb qualsevol signe darrere) i segueix amb una manera de dir «sóc» en català, castellà o anglès («sóc», «em dic», «jo sóc», «soy», «me llamo», «I'm», «my name is»…), en treu el nom: fins a tres paraules, sense l'article («la», «en», «l'») i fins a la primera coma o «i/y/and/que». Sense «Murmur» davant no compta: «sóc la Marta» es diu per moltes raons.
+- «Murmur» és al glossari de manera interna (`glossary::BUILT_IN`, no surt a la llista), perquè el directe l'escrigui bé encara que el senti com «mur mur».
+- `matchName` ajusta el nom als convidats del calendari, als noms ja posats i al glossari: el nom sencer, o el primer nom si només n'hi ha un que s'hi assembli (una lletra de diferència a partir de 4). Si no, el nom tal com s'ha sentit, amb majúscules.
+- L'acció `introduce` del store posa el nom al parlant d'aquella frase i la fixa (`speakerLocked`); si un altre parlant ja té el nom, els ajunta. Després de la verificació de parlants es tornen a aplicar totes les presentacions de la reunió, perquè el nom segueixi la persona i no el número. Un avís diu «"Parlant 2" és la Marta», amb Desfés si no s'han ajuntat dos parlants.
+- No es desa cap veu: la presentació només serveix dins d'aquella reunió.

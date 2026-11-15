@@ -4,7 +4,7 @@ import type { JSONContent } from "@tiptap/core";
 
 import * as backend from "./backend";
 import { coverLanguage, coverOutdated, meetingBasis, renamedSpeakers, renameInCover } from "./cover";
-import { defaultSpeakerNames, speakerName } from "./format";
+import { defaultSpeakerNames, speakerIds, speakerName } from "./format";
 import { notesFromDoc } from "./notes";
 import {
   SYSTEM_SPEAKER_BASE,
@@ -80,6 +80,8 @@ export type Action =
   | { type: "rename"; id: string; speaker: number; name: string; version: number }
   /** Every line of `from` belongs to `to`: one person the speaker detection split in two. */
   | { type: "merge"; id: string; from: number; to: number; version: number }
+  /** "Murmur, sóc la Marta" (lib/intro.ts): the speaker of that line is `name`. */
+  | { type: "introduce"; id: string; utteranceId: string; name: string }
   | { type: "reassign"; id: string; utteranceId: string; speaker: number; version: number }
   | { type: "edit"; id: string; utteranceId: string; text: string }
   | { type: "notes"; id: string; doc: JSONContent }
@@ -309,14 +311,9 @@ export function reducer(state: State, action: Action): State {
     case "title":
       return updateMeeting(state, action.id, (m) => ({ ...m, title: action.title }));
     case "rename":
-      return updateMeeting(state, action.id, (m) => {
-        const next = { ...m, speakerNames: { ...m.speakerNames, [currentSpeaker(m, action.speaker, action.version)]: action.name } };
-        if (!m.cover) return next;
-        // The cover takes the new name too; if it was up to date, it still is.
-        const cover = renameInCover(m.cover, renamedSpeakers(m, next));
-        const basis = m.cover.basis && !coverOutdated(m) ? meetingBasis(next, coverLanguage(m.cover)) : m.cover.basis;
-        return { ...next, cover: { ...cover, basis } };
-      });
+      return updateMeeting(state, action.id, (m) => renameSpeaker(m, currentSpeaker(m, action.speaker, action.version), action.name));
+    case "introduce":
+      return updateMeeting(state, action.id, (m) => introduce(m, action.utteranceId, action.name));
     case "merge":
       return updateMeeting(state, action.id, (m) => mergeSpeakers(m, currentSpeaker(m, action.from, action.version), currentSpeaker(m, action.to, action.version)));
     case "reassign":
@@ -422,6 +419,29 @@ export function mergeSpeakers(m: Meeting, from: number, to: number): Meeting {
   const cover = renameInCover(m.cover, olds.filter((old) => old && old !== now).map((old) => [old, now] as [string, string]));
   const basis = m.cover.basis && !coverOutdated(m) ? meetingBasis(next, coverLanguage(m.cover)) : m.cover.basis;
   return { ...next, cover: { ...cover, basis } };
+}
+
+function renameSpeaker(m: Meeting, speaker: number, name: string): Meeting {
+  const next = { ...m, speakerNames: { ...m.speakerNames, [speaker]: name } };
+  if (!m.cover) return next;
+  // The cover takes the new name too; if it was up to date, it still is.
+  const cover = renameInCover(m.cover, renamedSpeakers(m, next));
+  const basis = m.cover.basis && !coverOutdated(m) ? meetingBasis(next, coverLanguage(m.cover)) : m.cover.basis;
+  return { ...next, cover: { ...cover, basis } };
+}
+
+/**
+ * The speaker of the line `utteranceId` is `name`: the line is kept with that speaker from now on
+ * (`speakerLocked`, so the final pass doesn't move it), and if another speaker already has the
+ * name they're the same person. Again after the final pass, so the name follows the person.
+ */
+export function introduce(m: Meeting, utteranceId: string, name: string): Meeting {
+  const line = m.utterances.find((u) => u.id === utteranceId);
+  if (!line) return m;
+  const locked = line.speakerLocked ? m : { ...m, utterances: m.utterances.map((u) => (u.id === utteranceId ? { ...u, speakerLocked: true } : u)) };
+  if (speakerName(locked, line.speaker) === name) return locked;
+  const same = speakerIds(locked).find((id) => id !== line.speaker && speakerName(locked, id).toLocaleLowerCase() === name.toLocaleLowerCase());
+  return same !== undefined ? mergeSpeakers(locked, line.speaker, same) : renameSpeaker(locked, line.speaker, name);
 }
 
 function currentSpeaker(m: Meeting, speaker: number, version: number): number {

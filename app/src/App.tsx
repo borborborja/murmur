@@ -49,6 +49,7 @@ import { ensurePermissions } from "@/lib/permissions";
 import { usePostProcess } from "@/lib/postprocess";
 import { MarkdownSwitch, RoomMenu, StartOptions, type StartChoice } from "@/components/StartOptions";
 import { countBucket, minutesBucket, setAnalyticsAllowed, track } from "@/lib/analytics";
+import { introducedName, matchName } from "@/lib/intro";
 import { reveal } from "@/lib/reveal";
 import { finalPassModel } from "@/lib/finalpass";
 import { CONTINUE_MS } from "@/lib/parts";
@@ -58,7 +59,7 @@ import { activeShares, expired, revokeShare } from "@/lib/share";
 import { notesDoc } from "@/lib/notes";
 import { capabilities, hasMod, isMac, shortcut } from "@/lib/platform";
 import { useMeetings } from "@/lib/store";
-import { SYSTEM_SPEAKER_BASE, type Language, type Meeting, type ModelId, type SearchHit } from "@/lib/types";
+import { SYSTEM_SPEAKER_BASE, type Language, type Meeting, type ModelId, type SearchHit, type Utterance } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { markSeen, pendingReleases, releasesBetween, type WhatsNewRelease } from "@/lib/whatsnew";
 
@@ -237,6 +238,27 @@ export default function App() {
   // For the engine's listeners, set up once.
   const recordingRef = useRef(recording);
   recordingRef.current = recording;
+
+  // "Murmur, sóc la Marta" (lib/intro.ts): the speaker of that line gets the name. The ones heard,
+  // by meeting, apply again after the final pass, so the name follows the person.
+  const intros = useRef(new Map<string, { utteranceId: string; name: string }[]>());
+  const glossaryTerms = useRef<string[]>([]);
+  const introduceRef = useRef<(u: Utterance) => void>(() => {});
+  introduceRef.current = (u) => {
+    const heard = introducedName(u.text);
+    const m = recordingRef.current;
+    if (!heard || !m) return;
+    const name = matchName(heard, [...(m.guests ?? []), ...Object.values(m.speakerNames), ...glossaryTerms.current]);
+    const before = speakerName(m, u.speaker);
+    intros.current.set(m.id, [...(intros.current.get(m.id) ?? []), { utteranceId: u.id, name }]);
+    dispatch({ type: "introduce", id: m.id, utteranceId: u.id, name });
+    track("speaker_introduced", { guest: (m.guests ?? []).includes(name) });
+    if (before === name) return;
+    // Another speaker with that name: the two are joined, which can't be undone from here.
+    const joined = speakerIds(m).some((id) => id !== u.speaker && speakerName(m, id).toLocaleLowerCase() === name.toLocaleLowerCase());
+    const undo = () => dispatch({ type: "rename", id: m.id, speaker: u.speaker, name: m.speakerNames[u.speaker] ?? "", version: m.speakersVersion ?? 0 });
+    toast(t("introNamed", { speaker: before, name }), joined ? undefined : { action: { label: t("undo"), onClick: undo } });
+  };
   /** The meeting stopped last and when: "Continua" stays on its toolbar for a while (CONTINUE_MS). */
   const [stoppedAt, setStoppedAt] = useState<{ id: string; at: number } | null>(null);
   useEffect(() => {
@@ -291,11 +313,11 @@ export default function App() {
     const unlisten = backend.subscribe({
       onEvent: (e) => {
         if (e.type === "partial") dispatch({ type: "partial", channel: e.channel, text: e.text });
-        else
-          dispatch({
-            type: "final",
-            utterance: { id: crypto.randomUUID(), start: e.start, end: e.end, speaker: e.speaker, text: e.text },
-          });
+        else {
+          const utterance = { id: crypto.randomUUID(), start: e.start, end: e.end, speaker: e.speaker, text: e.text };
+          dispatch({ type: "final", utterance });
+          introduceRef.current(utterance);
+        }
       },
       onLevel: setLevel,
       onDone: () => {
@@ -315,6 +337,7 @@ export default function App() {
       onFinalPass: (e) => post.rustStageStarted(e.meetingId, e.stage, e.estimateSeconds),
       onFinalPassSpeakers: (e) => {
         dispatch({ type: "speakersVerified", id: e.meetingId, base: e.base, assignments: e.assignments });
+        for (const intro of intros.current.get(e.meetingId) ?? []) dispatch({ type: "introduce", id: e.meetingId, ...intro });
         // The module-level t: this listener outlives a language change.
         toast(translate("app:speakersVerified"));
       },
@@ -510,6 +533,7 @@ export default function App() {
     const finalModel = finalPassModel(language);
     const finalText = settings.finalPass && !!finalModel && modelInstalled(finalModel);
     post.planRecording(m.id, { verifySpeakers: settings.verifySpeakers, finalText, language });
+    backend.getGlossary().then((g) => (glossaryTerms.current = g)).catch(() => {});
     track("recording_started", { language, mic: sources.mic, system: sources.system, room: roomSpeakers, whisper: finalText, summary: settings.summarize ? settings.coverEngine : "off" });
     startedAt.current = Date.now();
     startOffset.current = 0;
@@ -1567,6 +1591,7 @@ function Welcome({
         </button>
         <StartOptions value={startChoice} onChange={onStartChoice} englishReady={englishReady} className="mt-2" />
         <p className="mt-3 text-[12px] text-text-secondary">{t("consentReminder")}</p>
+        {startChoice.roomSpeakers && <p className="mt-1 max-w-xs text-[12px] text-text-secondary">{t("introHint")}</p>}
         <button
           type="button"
           onClick={onOpenAudio}

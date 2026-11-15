@@ -106,5 +106,8 @@
   "translateNeedsModel": "Needs a language model: Gemma downloaded, or Claude or ChatGPT connected in Settings › Intelligence.",
   "moreActions": "More actions",
   "whisperCaOffer": "There's a new Whisper for Catalan",
-  "whisperCaOfferText": "The Barcelona Supercomputing Center's: in our tests, better than the current one for Central, Valencian and Balearic Catalan. It takes {{size}}."
+  "whisperCaOfferText": "The Barcelona Supercomputing Center's: in our tests, better than the current one for Central, Valencian and Balearic Catalan. It takes {{size}}.",
+  "introNamed": "“{{speaker}}” is {{name}}",
+  "introHint": "If there's more than one of you in the room, each can say “Murmur, I'm…” and Murmur will add the name.",
+  "undo": "Undo"
 }

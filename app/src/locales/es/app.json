@@ -106,5 +106,8 @@
   "translateNeedsModel": "Hace falta un modelo de lenguaje: Gemma descargado, o Claude o ChatGPT conectados en Configuración › Inteligencia.",
   "moreActions": "Más acciones",
   "whisperCaOffer": "Hay un Whisper nuevo para el catalán",
-  "whisperCaOfferText": "El del Barcelona Supercomputing Center: en nuestras pruebas, mejor que el actual con el central, el valenciano y el balear. Ocupa {{size}}."
+  "whisperCaOfferText": "El del Barcelona Supercomputing Center: en nuestras pruebas, mejor que el actual con el central, el valenciano y el balear. Ocupa {{size}}.",
+  "introNamed": "«{{speaker}}» es {{name}}",
+  "introHint": "Si sois más de uno en la sala, cada uno puede decir «Murmur, soy…» y Murmur pondrá el nombre.",
+  "undo": "Deshacer"
 }

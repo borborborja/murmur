@@ -29,7 +29,11 @@ struct Term<'a> {
     key: Vec<char>,
 }
 
-/// The glossary for one meeting: the user's, plus the calendar event's guests, whole ("Guillem
+/// Words always in the glossary, without showing in the list: "Murmur", so "Murmur, sóc la
+/// Marta" reads right however the live engine hears it ("mur mur", "múrmur"; lib/intro.ts).
+pub const BUILT_IN: &[&str] = &["Murmur"];
+
+/// The glossary for one meeting: the user's, the built-in words, plus the calendar event's guests, whole ("Guillem
 /// Puig") and by first name ("Guillem"), as people call each other. Not the surnames, which are
 /// often everyday words (Puig, Rius, Serra), nor first names under 4 letters (Pau, Mar). A guest
 /// without capitals is the user part of an e-mail ("gpuig"), not a name: left out.
@@ -40,6 +44,9 @@ pub fn with_guests(glossary: &[String], guests: &[String]) -> Vec<String> {
             terms.push(term.to_string());
         }
     };
+    for term in BUILT_IN {
+        push(term);
+    }
     for guest in guests.iter().map(|g| g.trim()) {
         if !guest.chars().any(char::is_uppercase) || guest.chars().any(|c| !(c.is_alphabetic() || " -'’.".contains(c))) {
             continue;
@@ -237,7 +244,8 @@ mod tests {
     fn adds_the_guests_names() {
         let guests = ["Guillem Puig", "M. Àngels Rius", "gpuig", "Ana de la Torre", "softcatala.org"].map(String::from);
         let terms = with_guests(&["Softcatalà".into(), "guillem".into()], &guests);
-        assert_eq!(terms, ["Softcatalà", "guillem", "Guillem Puig", "M. Àngels Rius", "Àngels", "Ana de la Torre"]);
+        assert_eq!(terms, ["Softcatalà", "guillem", "Murmur", "Guillem Puig", "M. Àngels Rius", "Àngels", "Ana de la Torre"]);
+        assert_eq!(correct("mur mur sóc la marta", &with_guests(&[], &[])), "Murmur sóc la marta");
         assert_eq!(correct("li ho deia la maria àngels", &with_guests(&[], &guests)), "li ho deia la maria Àngels");
     }
 

@@ -87,7 +87,7 @@ export function SettingsDialog({ open, onOpenChange, settings, onChange, recordi
   }, [open]);
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="gap-0 overflow-hidden p-0 sm:max-w-[700px]" showCloseButton={false}>
+      <DialogContent className="gap-0 overflow-hidden p-0 sm:max-w-[820px]" showCloseButton={false}>
         <div className="relative border-b border-border px-4 pb-2 pt-3">
           <DialogTitle className="text-center text-[13px] font-semibold">{t("title")}</DialogTitle>
           <span
@@ -111,7 +111,11 @@ export function SettingsDialog({ open, onOpenChange, settings, onChange, recordi
             <X className="size-4" />
           </button>
           <DialogDescription className="sr-only">{t("description")}</DialogDescription>
-          <div className="mt-2 flex justify-center gap-1" role="tablist">
+        </div>
+
+        <div className="flex h-[min(70vh,580px)]">
+          {/* The sections in a column, as in the system's settings: they all fit, however many. */}
+          <nav className="w-[184px] shrink-0 overflow-y-auto border-r border-border bg-mm-sidebar p-2" role="tablist" aria-orientation="vertical">
             {/* Mòbil: only in development until there's a phone app to pair (docs/MOBIL.md). */}
             {TABS.filter(({ id }) => (id !== "calendar" || capabilities.calendar) && (id !== "mobile" || import.meta.env.DEV)).map(({ id, icon: Icon }) => (
               <button
@@ -120,16 +124,18 @@ export function SettingsDialog({ open, onOpenChange, settings, onChange, recordi
                 role="tab"
                 aria-selected={tab === id}
                 onClick={() => setTab(id)}
-                className={cn("flex w-[80px] flex-col items-center gap-1 rounded-md py-1.5 text-[11px] text-muted-foreground", tab === id && "bg-mm-tab-selected text-foreground")}
+                className={cn(
+                  "flex h-8 w-full items-center gap-2.5 rounded-md px-2.5 text-left text-[13px] text-muted-foreground hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-ring",
+                  tab === id && "bg-mm-sidebar-selection font-medium text-foreground",
+                )}
               >
-                <Icon className="size-5" strokeWidth={1.5} />
-                {t(`tabs.${id}`)}
+                <Icon className="size-4 shrink-0" strokeWidth={1.75} aria-hidden />
+                <span className="truncate">{t(`tabs.${id}`)}</span>
               </button>
             ))}
-          </div>
-        </div>
+          </nav>
 
-        <div className="h-[min(62vh,520px)] overflow-y-auto bg-mm-settings-background px-8 py-5">
+        <div className="min-w-0 flex-1 overflow-y-auto bg-mm-settings-background px-7 py-5" role="tabpanel">
           {recording && ["audio", "transcription", "intelligence"].includes(tab) && <p className="mb-3 text-[12px] text-muted-foreground">{t("nextRecording")}</p>}
           {tab === "general" && <GeneralTab settings={settings} onChange={change} onGoTo={setTab} onCheckUpdates={onCheckUpdates} onShowWhatsNew={onShowWhatsNew} />}
           {tab === "appearance" && <AppearanceTab settings={settings} onChange={change} />}
@@ -140,6 +146,7 @@ export function SettingsDialog({ open, onOpenChange, settings, onChange, recordi
           {tab === "share" && <ShareTab />}
           {tab === "claude" && <ClaudeTab open={open} />}
           {tab === "mobile" && <MobileTab open={open} />}
+        </div>
         </div>
       </DialogContent>
     </Dialog>

@@ -6,6 +6,24 @@
   "dontShow": "No volver a mostrar",
   "ok": "Entendido",
   "releases": {
+    "0.14.0": [
+      {
+        "title": "Guarda las reuniones en Notion",
+        "text": "Conecta Murmur con Notion desde el navegador, sin crear ninguna clave, y elige en qué página van las reuniones. Se guardan desde Exportar o solas al terminar, y solo se envía el texto.",
+        "link": "export",
+        "linkLabel": "Conectar con Notion"
+      },
+      {
+        "title": "Y en Obsidian",
+        "text": "Si usas Obsidian, Murmur guarda en él cada reunión como una nota, con propiedades para filtrar, las tareas como casillas y las capturas. A mano desde Exportar o sola al terminar.",
+        "link": "export",
+        "linkLabel": "Configuración › Exportar"
+      },
+      {
+        "title": "Una configuración más ordenada",
+        "text": "Las secciones de la configuración están ahora en una barra lateral, y el Markdown se ha movido a la nueva sección Exportar, con Notion y Obsidian."
+      }
+    ],
     "0.13.0": [
       {
         "title": "Preséntate a Murmur",

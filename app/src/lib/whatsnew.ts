@@ -7,6 +7,7 @@ import i18n, { t } from "./i18n";
  * A version with no notes shows nothing.
  */
 export const RELEASES: { version: string; date: string }[] = [
+  { version: "0.14.0", date: "2026-11-15" },
   { version: "0.13.0", date: "2026-11-15" },
   { version: "0.12.1", date: "2026-11-15" },
   { version: "0.12.0", date: "2026-11-15" },
@@ -27,7 +28,7 @@ export const RELEASES: { version: string; date: string }[] = [
 ];
 
 /** Where a note's link goes: a tab of the settings. */
-export type WhatsNewLink = "general" | "appearance" | "calendar" | "audio" | "transcription" | "intelligence" | "share" | "claude";
+export type WhatsNewLink = "general" | "appearance" | "calendar" | "audio" | "transcription" | "intelligence" | "export" | "share" | "claude";
 /**
  * One note. `image` (and `imageDark`, for the dark mode) is optional, for a big one: a file in
  * `public/whatsnew/`, about 880×400 px, shown above the note.

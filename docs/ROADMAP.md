@@ -36,7 +36,8 @@ En aturar la gravació, reprocessar l'àudio desat:
 - [x] **L'aurora** en acabar (`lib/reveal.ts`): el text de Whisper i el resum apareixen amb una llum que baixa, i el lloc del resum brilla mentre s'escriu.
 - [x] **Tradueix la transcripció** al català, al castellà o a l'anglès amb el model dels resums (Gemma, Claude o ChatGPT), sense tocar l'original: un segmentat Original / traducció a la transcripció (`lib/translate.ts`, columna `translation`).
 - [x] Exportar a Obsidian: les caixes fortes trobades a la llista d'Obsidian, propietats, tasques, captures a «attachments», persones com a enllaços, desar-hi sola en acabar i «Obre a Obsidian». Configuració › Exportar (amb el Markdown, que era a Transcripció).
-- [ ] Exportar a Notion amb «Connecta amb Notion» (OAuth amb PKCE contra el servidor MCP de Notion, sense servidor propi; provat el 15/11/2026), i triar on es desa.
+- [x] Exportar a Notion amb «Connecta amb Notion» (OAuth amb PKCE contra el servidor MCP de Notion, sense servidor propi), triar la pàgina on es desa, desar-hi sola en acabar i «Obre a Notion». Les transcripcions llargues van a subpàgines.
+- [ ] Notion: desar les reunions com a files d'una base de dades, o com a notes de reunió de Notion, quan se n'hagi mirat el format amb `tools/list`.
 - [ ] La traducció a les exportacions (Word, Markdown, PDF) i als enllaços compartits.
 - [x] **Idioma del resum** a la portada: un menú al costat de «Torna a generar» el torna a escriure en català, castellà o anglès.
 - [x] **Torna a escoltar amb Whisper** es pot apagar (Configuració › Transcripció › En acabar la gravació), i els dos Whisper hi són sempre a la vista, cadascun amb per a què serveix.

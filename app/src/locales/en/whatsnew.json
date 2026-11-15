@@ -6,6 +6,24 @@
   "dontShow": "Don't show this again",
   "ok": "Got It",
   "releases": {
+    "0.14.0": [
+      {
+        "title": "Save meetings to Notion",
+        "text": "Connect Murmur to Notion from the browser, with no key to create, and pick the page your meetings go under. They're saved from Export or on their own when they end, and only the text is sent.",
+        "link": "export",
+        "linkLabel": "Connect to Notion"
+      },
+      {
+        "title": "And to Obsidian",
+        "text": "If you use Obsidian, Murmur saves each meeting there as a note, with properties to filter by, tasks as checkboxes and the screenshots. By hand from Export or on its own when it ends.",
+        "link": "export",
+        "linkLabel": "Settings › Export"
+      },
+      {
+        "title": "Tidier settings",
+        "text": "The settings sections now sit in a sidebar, and Markdown has moved to the new Export section, alongside Notion and Obsidian."
+      }
+    ],
     "0.13.0": [
       {
         "title": "Introduce yourself to Murmur",

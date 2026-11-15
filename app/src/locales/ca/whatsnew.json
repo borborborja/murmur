@@ -6,6 +6,24 @@
   "dontShow": "No ho tornis a mostrar",
   "ok": "Entesos",
   "releases": {
+    "0.14.0": [
+      {
+        "title": "Desa les reunions a Notion",
+        "text": "Connecta Murmur amb Notion des del navegador, sense crear cap clau, i tria a quina pàgina van les reunions. S'hi desen des d'Exporta o soles en acabar, i només s'hi envia el text.",
+        "link": "export",
+        "linkLabel": "Connecta amb Notion"
+      },
+      {
+        "title": "I a Obsidian",
+        "text": "Si fas servir Obsidian, Murmur hi desa cada reunió com una nota, amb propietats per filtrar, les tasques com a caselles i les captures. A mà des d'Exporta o sola en acabar.",
+        "link": "export",
+        "linkLabel": "Configuració › Exportar"
+      },
+      {
+        "title": "Una configuració més endreçada",
+        "text": "Les seccions de la configuració són ara en una barra lateral, i el Markdown s'ha mogut a la nova secció Exportar, amb Notion i Obsidian."
+      }
+    ],
     "0.13.0": [
       {
         "title": "Presenta't a Murmur",

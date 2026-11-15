@@ -104,7 +104,7 @@ node tools/landing-captures/shoot.mjs data/captures-landing
 node tools/landing-captures/shoot.mjs data/captures-landing ca-03   # només les que contenen «ca-03»
 ```
 
-Les reunions d'exemple són a `tools/landing-captures/seed.mjs`, en els tres idiomes.
+Les reunions d'exemple són a `tools/landing-captures/seed.mjs`, en els tres idiomes. Obsidian, Notion i la gravació de la veu, que al navegador no hi són, se simulen dins el mateix script (`open(lang, { mock: true })`), i la pestanya Mòbil, que només surt en desenvolupament, s'amaga.
 
 | Fitxer | Idiomes | Què hi surt | On encaixa |
 |---|---|---|---|
@@ -120,6 +120,13 @@ Les reunions d'exemple són a `tools/landing-captures/seed.mjs`, en els tres idi
 | `10-cerca` | ca | La cerca a totes les reunions, amb els resultats ressaltats | Funcionalitats petites |
 | `11-configuracio-*` | ca | Les pestanyes General, Aparença, Calendari, Transcripció, Intel·ligència i Compartir | Si cal ensenyar la configuració (millor no a la capçalera) |
 | `12-benvinguda` | ca | La primera pantalla en obrir Murmur | Instal·lació |
+| `15-exportar-notion-obsidian` | ca, es, en | El menú Exporta amb Notion i Obsidian | Compartir i exportar |
+| `16-desat-notion` | ca, es, en | L'avís «Desada a Notion» amb «Obre a Notion» | Compartir i exportar, tuit |
+| `17-desat-obsidian` | ca, es, en | L'avís «Desada a Obsidian» amb «Obre a Obsidian» | Compartir i exportar, tuit |
+| `18-configuracio-exportar` | ca, es, en | Configuració › Exportar: Obsidian i Notion connectat | Compartir i exportar |
+| `19-notion-tria` | ca, es, en | Triar a quina pàgina de Notion van les reunions | Compartir i exportar |
+| `20-la-teva-veu` | ca, es, en | «Fes que Murmur et reconegui»: llegint la frase, amb les paraules ja dites apagades | Parlants |
+| `21-presenta-te` | ca, es, en | En directe: «Murmur, sóc la Laia» i l'avís «Parlant 3» és Laia | Parlants |
 
 També hi ha les captures més antigues de `data/captures-blog/` i les maquetes de disseny de `docs/design/screens/` (clar i fosc l'un al costat de l'altre, amb una interfície anterior).
 

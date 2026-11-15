@@ -8,7 +8,8 @@
     "thisWeek": "Esta semana",
     "earlier": "Antes",
     "revised": "revisada en el ordenador",
-    "search": "Buscar"
+    "search": "Buscar",
+    "delete": "Eliminar"
   },
   "dock": {
     "meetings": "Reuniones",
@@ -65,5 +66,11 @@
   },
   "infoPlist": {
     "NSMicrophoneUsageDescription": "Murmur escucha el micrófono para transcribir la reunión. Todo se queda en el teléfono."
+  },
+  "start": {
+    "languageTitle": "Idioma de la reunión",
+    "roomTitle": "En el micrófono",
+    "onlyMe": "Solo yo",
+    "moreInRoom": "Más gente en la sala"
   }
 }

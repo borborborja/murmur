@@ -290,7 +290,7 @@ RustBuffer uniffi_murmur_mobile_fn_method_murmur_push(uint64_t ptr, RustBuffer s
 #endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_MURMUR_MOBILE_FN_METHOD_MURMUR_START
 #define UNIFFI_FFIDEF_UNIFFI_MURMUR_MOBILE_FN_METHOD_MURMUR_START
-RustBuffer uniffi_murmur_mobile_fn_method_murmur_start(uint64_t ptr, RustBuffer title, RustBuffer language, float partial_every, RustCallStatus *_Nonnull out_status
+RustBuffer uniffi_murmur_mobile_fn_method_murmur_start(uint64_t ptr, RustBuffer title, RustBuffer language, int8_t more_in_room, float partial_every, RustCallStatus *_Nonnull out_status
 );
 #endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_MURMUR_MOBILE_FN_METHOD_MURMUR_STOP

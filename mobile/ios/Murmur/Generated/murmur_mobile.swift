@@ -614,10 +614,11 @@ public protocol MurmurProtocol: AnyObject, Sendable {
     
     /**
      * Starts recording a meeting: `title` as the phone shows it until the computer names it,
-     * `language` ("ca", "es", "ca-es", "en"), and how often the provisional text is redone (0: never).
+     * `language` ("ca", "es", "ca-es", "en"), whether there are more people in the room (or
+     * it's only the user: one speaker), and how often the provisional text is redone (0: never).
      * Returns the meeting's id.
      */
-    func start(title: String, language: String, partialEvery: Float) throws  -> String
+    func start(title: String, language: String, moreInRoom: Bool, partialEvery: Float) throws  -> String
     
     /**
      * Stops and saves the meeting. `extra` is a JSON object the app adds to it: its notes
@@ -764,16 +765,18 @@ open func push(samples: [Float])throws  -> LiveUpdate  {
     
     /**
      * Starts recording a meeting: `title` as the phone shows it until the computer names it,
-     * `language` ("ca", "es", "ca-es", "en"), and how often the provisional text is redone (0: never).
+     * `language` ("ca", "es", "ca-es", "en"), whether there are more people in the room (or
+     * it's only the user: one speaker), and how often the provisional text is redone (0: never).
      * Returns the meeting's id.
      */
-open func start(title: String, language: String, partialEvery: Float)throws  -> String  {
+open func start(title: String, language: String, moreInRoom: Bool, partialEvery: Float)throws  -> String  {
     return try  FfiConverterString.lift(try rustCallWithError(FfiConverterTypeMurmurError_lift) {
         uniffiCallStatus in
     uniffi_murmur_mobile_fn_method_murmur_start(
             self.uniffiCloneHandle(),
         FfiConverterString.lower(title),
         FfiConverterString.lower(language),
+        FfiConverterBool.lower(moreInRoom),
         FfiConverterFloat.lower(partialEvery),uniffiCallStatus
     )
 })
@@ -1306,7 +1309,7 @@ private let initializationResult: InitializationResult = {
     if (uniffi_murmur_mobile_checksum_method_murmur_push() != 881) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_murmur_mobile_checksum_method_murmur_start() != 1855) {
+    if (uniffi_murmur_mobile_checksum_method_murmur_start() != 65183) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_murmur_mobile_checksum_method_murmur_stop() != 8302) {

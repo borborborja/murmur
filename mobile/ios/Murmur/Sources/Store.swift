@@ -93,8 +93,9 @@ final class Store: ObservableObject {
         let time = Date().formatted(date: .omitted, time: .shortened)
         let title = L("rec.defaultTitle", time)
         let language = language, every = Float(partialEvery)
+        let room = UserDefaults.standard.object(forKey: "moreInRoom") as? Bool ?? true
         do {
-            let id = try await onQueue { try engine.start(title: title, language: language, partialEvery: every) }
+            let id = try await onQueue { try engine.start(title: title, language: language, moreInRoom: room, partialEvery: every) }
             live = LiveMeeting(id: id, title: title)
             paused.isOn = false
             let gate = paused

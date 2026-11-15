@@ -130,29 +130,49 @@ struct HomeView: View {
             if store.meetings.isEmpty && store.live == nil {
                 EmptyHome()
             } else {
-                ScrollView {
-                    LazyVStack(alignment: .leading, spacing: 10) {
-                        if let live = store.live {
-                            section(L("home.today"))
-                            LiveCard(live: live).onTapGesture { open(.recording) }
-                        }
-                        ForEach(groups, id: \.0) { title, rows in
-                            if !(store.live != nil && title == L("home.today")) { section(title) }
-                            ForEach(rows) { row in
-                                MeetingCard(row: row).onTapGesture { open(.meeting(row.id)) }
-                            }
+                // A List, for the system's swipe to delete; it looks like the cards of the design.
+                List {
+                    if let live = store.live {
+                        section(L("home.today"))
+                        row(LiveCard(live: live)) { open(.recording) }
+                    }
+                    ForEach(groups, id: \.0) { title, rows in
+                        if !(store.live != nil && title == L("home.today")) { section(title) }
+                        ForEach(rows) { meeting in
+                            row(MeetingCard(row: meeting)) { open(.meeting(meeting.id)) }
+                                .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                                    Button(L("home.delete"), systemImage: "trash", role: .destructive) { toDelete = meeting }
+                                }
                         }
                     }
-                    .padding(.horizontal, 16).padding(.bottom, 120)
+                    Color.clear.frame(height: 110).listRowBackground(Color.clear).listRowSeparator(.hidden)
                 }
+                .listStyle(.plain)
+                .scrollContentBackground(.hidden)
             }
         }
         .foregroundStyle(palette.textPrimary)
+        .confirmationDialog(L("meeting.deleteConfirm"), isPresented: Binding(get: { toDelete != nil }, set: { if !$0 { toDelete = nil } }), titleVisibility: .visible, presenting: toDelete) { meeting in
+            Button(L("meeting.delete"), role: .destructive) { store.delete(meeting.id) }
+        }
+    }
+
+    @State private var toDelete: MeetingRow?
+
+    private func row(_ card: some View, open: @escaping () -> Void) -> some View {
+        Button(action: open) { card }
+            .buttonStyle(.plain)
+            .listRowInsets(EdgeInsets(top: 5, leading: 16, bottom: 5, trailing: 16))
+            .listRowSeparator(.hidden)
+            .listRowBackground(Color.clear)
     }
 
     private func section(_ title: String) -> some View {
         Text(title).font(.system(size: 13, weight: .semibold)).foregroundStyle(palette.textSecondary)
-            .padding(.leading, 8).padding(.top, 14)
+            .padding(.leading, 8).padding(.top, 10)
+            .listRowInsets(EdgeInsets(top: 0, leading: 16, bottom: 0, trailing: 16))
+            .listRowSeparator(.hidden)
+            .listRowBackground(Color.clear)
     }
 
     /// Avui, Ahir, Aquesta setmana, Abans: as the desktop's sidebar.
@@ -175,23 +195,64 @@ struct EmptyHome: View {
     @Environment(\.colorScheme) private var scheme
 
     var body: some View {
-        ZStack(alignment: .bottom) {
-            RadialGradient(colors: [palette.accent.opacity(scheme == .dark ? 0.16 : 0.34), .clear], center: .bottom, startRadius: 0, endRadius: 260)
-                .frame(height: 420).offset(y: 120).allowsHitTesting(false)
-            VStack(spacing: 10) {
-                LogoTile(size: 84).padding(.bottom, 16)
-                Text(L("home.emptyTitle")).font(.system(size: 28, weight: .bold)).tracking(-0.5)
-                Text(L("home.emptyText")).font(.system(size: 17)).foregroundStyle(palette.textSecondary)
-                Text(L("home.consent")).font(.system(size: 13)).foregroundStyle(palette.textTertiary)
-                Spacer()
-                Text(languageName(store.language)).font(.system(size: 13)).foregroundStyle(palette.textSecondary)
-                    .padding(.bottom, 90)
-            }
-            .multilineTextAlignment(.center)
-            .padding(.horizontal, 36).padding(.top, 70)
+        VStack(spacing: 10) {
+            LogoTile(size: 84).padding(.bottom, 16)
+            Text(L("home.emptyTitle")).font(.system(size: 28, weight: .bold)).tracking(-0.5)
+            Text(L("home.emptyText")).font(.system(size: 17)).foregroundStyle(palette.textSecondary)
+            Text(L("home.consent")).font(.system(size: 13)).foregroundStyle(palette.textTertiary)
+            Spacer()
+            StartOptions().padding(.bottom, 92)
         }
+        .multilineTextAlignment(.center)
+        .padding(.horizontal, 36).padding(.top, 70)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .ignoresSafeArea(edges: .bottom)
+        // The acid light from below: here is where you record.
+        .background(alignment: .bottom) {
+            Ellipse()
+                .fill(RadialGradient(colors: [palette.accent.opacity(scheme == .dark ? 0.16 : 0.34), palette.accent.opacity(0)], center: .center, startRadius: 0, endRadius: 230))
+                .frame(width: 520, height: 420)
+                .offset(y: 170)
+                .allowsHitTesting(false)
+                .ignoresSafeArea()
+        }
+    }
+}
+
+/// Under the record button, as on the desktop: the meeting's language and whether there are more
+/// people in the room. What's chosen here is also the default (Configuració).
+struct StartOptions: View {
+    @Environment(\.murmur) private var palette
+    @AppStorage("language") private var language = "ca-es"
+    @AppStorage("moreInRoom") private var moreInRoom = true
+
+    var body: some View {
+        HStack(spacing: 8) {
+            Menu {
+                Picker(L("start.languageTitle"), selection: $language) {
+                    Text(L("language.caEs")).tag("ca-es")
+                    Text(L("language.ca")).tag("ca")
+                    Text(L("language.es")).tag("es")
+                }
+            } label: {
+                HStack(spacing: 4) { Text(languageName(language)); Image(systemName: "chevron.down").font(.system(size: 10, weight: .semibold)) }
+            }
+            Text("·")
+            Menu {
+                Picker(L("start.roomTitle"), selection: $moreInRoom) {
+                    Text(L("start.onlyMe")).tag(false)
+                    Text(L("start.moreInRoom")).tag(true)
+                }
+            } label: {
+                HStack(spacing: 4) {
+                    Image(systemName: moreInRoom ? "person.2" : "person").font(.system(size: 12))
+                    Text(moreInRoom ? L("start.moreInRoom") : L("start.onlyMe"))
+                    Image(systemName: "chevron.down").font(.system(size: 10, weight: .semibold))
+                }
+            }
+        }
+        .font(.system(size: 13))
+        .foregroundStyle(palette.textSecondary)
+        .tint(palette.textSecondary)
     }
 }
 

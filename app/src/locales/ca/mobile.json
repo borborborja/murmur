@@ -8,7 +8,8 @@
     "thisWeek": "Aquesta setmana",
     "earlier": "Abans",
     "revised": "revisada a l'ordinador",
-    "search": "Cerca"
+    "search": "Cerca",
+    "delete": "Elimina"
   },
   "dock": {
     "meetings": "Reunions",
@@ -65,5 +66,11 @@
   },
   "infoPlist": {
     "NSMicrophoneUsageDescription": "Murmur escolta el micròfon per transcriure la reunió. Tot es queda al telèfon."
+  },
+  "start": {
+    "languageTitle": "Idioma de la reunió",
+    "roomTitle": "Al micròfon",
+    "onlyMe": "Només jo",
+    "moreInRoom": "Més gent a la sala"
   }
 }

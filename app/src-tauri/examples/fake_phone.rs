@@ -67,10 +67,11 @@ fn main() -> Result<()> {
             rec.finish()?;
             let seconds = samples.len() as f64 / 16_000.0;
             // The live text, roughly: one utterance every 10 s, all from "Tu".
-            let utterances: Vec<_> = (0..(seconds / 10.0) as usize)
-                .map(|i| json!({ "id": format!("u{i}"), "start": i as f64 * 10.0, "end": i as f64 * 10.0 + 9.0, "speaker": 0, "text": format!("Frase {} del directe.", i + 1) }))
-                .collect();
             let id = format!("fake-{}", std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH)?.as_millis());
+            // Line ids are unique across meetings (the database keys them so).
+            let utterances: Vec<_> = (0..(seconds / 10.0) as usize)
+                .map(|i| json!({ "id": format!("{id}-{i}"), "start": i as f64 * 10.0, "end": i as f64 * 10.0 + 9.0, "speaker": 0, "text": format!("Frase {} del directe.", i + 1) }))
+                .collect();
             let created = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH)?.as_millis() as f64;
             let meeting = json!({
                 "id": id, "title": title, "createdAt": created, "duration": seconds, "status": "done",

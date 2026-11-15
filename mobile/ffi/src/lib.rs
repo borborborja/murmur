@@ -152,15 +152,16 @@ impl Murmur {
     }
 
     /// Starts recording a meeting: `title` as the phone shows it until the computer names it,
-    /// `language` ("ca", "es", "ca-es", "en"), and how often the provisional text is redone (0: never).
+    /// `language` ("ca", "es", "ca-es", "en"), whether there are more people in the room (or
+    /// it's only the user: one speaker), and how often the provisional text is redone (0: never).
     /// Returns the meeting's id.
-    pub fn start(&self, title: String, language: String, partial_every: f32) -> Result<String> {
+    pub fn start(&self, title: String, language: String, more_in_room: bool, partial_every: f32) -> Result<String> {
         let models = self.models()?;
         let created = now_ms();
         let id = format!("phone-{}", created as u64);
         let audio = self.data_dir.join("recordings").join(format!("{id}.ogg"));
         let recorder = Recorder::create(&audio, 1)?;
-        let mut pipeline = Pipeline::new(models, true, false, MAX_SPEAKERS, THRESHOLD, Some(recorder), vec![])?;
+        let mut pipeline = Pipeline::new(models, true, false, if more_in_room { MAX_SPEAKERS } else { 1 }, THRESHOLD, Some(recorder), vec![])?;
         pipeline.set_partials(partial_every > 0.0);
         if partial_every > 0.0 {
             pipeline.set_partial_every(partial_every);
@@ -190,9 +191,10 @@ impl Murmur {
         let live = lock(&self.live).take().ok_or_else(|| MurmurError::Failed("not recording".into()))?;
         let Live { pipeline, mut meeting, samples, mut lines } = live;
         let (events, _) = pipeline.finish()?;
+        let prefix = meeting["id"].as_str().unwrap_or_default().to_owned();
         for e in events {
             if let Event::Final { id, start, end, speaker, text, .. } = e {
-                lines.push(json!({ "id": format!("u{id}"), "start": start, "end": end, "speaker": speaker, "text": text }));
+                lines.push(json!({ "id": line_id(&prefix, id), "start": start, "end": end, "speaker": speaker, "text": text }));
             }
         }
         meeting["utterances"] = Value::Array(lines);
@@ -225,13 +227,20 @@ impl Murmur {
     }
 }
 
+/// A line's id. The database keys lines by id across every meeting (the desktop uses UUIDs), so
+/// the meeting's id goes in front: "u3" alone would overwrite line 3 of another meeting.
+fn line_id(meeting: &str, n: u32) -> String {
+    format!("{meeting}-{n}")
+}
+
 fn update(live: &mut Live, events: Vec<Event>, level: f32) -> LiveUpdate {
+    let prefix = live.meeting["id"].as_str().unwrap_or_default().to_owned();
     let mut finals = vec![];
     let mut partial = None;
     for e in events {
         match e {
             Event::Final { id, start, end, speaker, text, .. } => {
-                let line = Line { id: format!("u{id}"), start: start as f64, end: end as f64, speaker: speaker as i64, text };
+                let line = Line { id: line_id(&prefix, id), start: start as f64, end: end as f64, speaker: speaker as i64, text };
                 live.lines.push(json!({ "id": line.id, "start": line.start, "end": line.end, "speaker": line.speaker, "text": line.text }));
                 finals.push(line);
             }

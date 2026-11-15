@@ -5,6 +5,7 @@ struct SettingsView: View {
     @Environment(\.murmur) private var palette
     @AppStorage("language") private var language = "ca-es"
     @AppStorage("partialEvery") private var partialEvery = 1.5
+    @AppStorage("moreInRoom") private var moreInRoom = true
 
     var body: some View {
         List {
@@ -19,6 +20,10 @@ struct SettingsView: View {
                     Text(L("language.caEs")).tag("ca-es")
                     Text(L("language.ca")).tag("ca")
                     Text(L("language.es")).tag("es")
+                }
+                Picker(L("start.roomTitle"), selection: $moreInRoom) {
+                    Text(L("start.onlyMe")).tag(false)
+                    Text(L("start.moreInRoom")).tag(true)
                 }
                 Picker(selection: $partialEvery) {
                     Text(L("settings.partialsOff")).tag(0.0)

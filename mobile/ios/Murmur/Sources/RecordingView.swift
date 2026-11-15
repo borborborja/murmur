@@ -32,14 +32,26 @@ struct RecordingView: View {
             Segmented(options: [(MeetingTab.transcript, L("rec.transcript")), (.notes, notesLabel(live))], selection: $tab)
                 .padding(.horizontal, 16).padding(.top, 14)
 
-            ZStack(alignment: .bottom) {
+            Group {
                 if tab == .transcript { transcript(live) } else { notes(live) }
-                LinearGradient(colors: [palette.background.opacity(0), palette.background], startPoint: .top, endPoint: .bottom)
-                    .frame(height: 60).allowsHitTesting(false)
+            }
+            // The text fades out at the bottom through a mask, not a band of the background colour:
+            // the voice's light behind it shows through.
+            .mask {
+                VStack(spacing: 0) {
+                    Color.black
+                    LinearGradient(colors: [.black, .black.opacity(0)], startPoint: .top, endPoint: .bottom).frame(height: 44)
+                }
             }
             controls(live)
         }
-        .background(palette.background.ignoresSafeArea())
+        .background {
+            ZStack(alignment: .bottom) {
+                palette.background
+                VoiceGlow(meter: store.meter, paused: live?.paused ?? true)
+            }
+            .ignoresSafeArea()
+        }
         .foregroundStyle(palette.textPrimary)
         .toolbar(.hidden, for: .navigationBar)
         // `-autostop <seconds>` (development): stops by itself, to try the end without touching the screen.

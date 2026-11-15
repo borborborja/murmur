@@ -54,7 +54,14 @@ struct RootView: View {
 
     private func record() {
         Task {
-            if await store.start() { path.append(.recording) }
+            // The light rises and fills up as the microphone opens, then the recording screen comes in.
+            withAnimation(.easeOut(duration: 0.35)) { store.surging = true }
+            UIImpactFeedbackGenerator(style: .soft).impactOccurred()
+            async let started = store.start()
+            try? await Task.sleep(for: .milliseconds(320))
+            if await started { path.append(.recording) }
+            try? await Task.sleep(for: .milliseconds(400))
+            store.surging = false
         }
     }
 }
@@ -223,17 +230,44 @@ struct AcidGlow: View {
     @Environment(\.murmur) private var palette
     @Environment(\.colorScheme) private var scheme
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @EnvironmentObject private var store: Store
 
     var body: some View {
         TimelineView(.animation(minimumInterval: 1 / 30, paused: reduceMotion)) { timeline in
             // 0 → 1 → 0 over a breath, eased at both ends.
             let breath = reduceMotion ? 0.5 : (1 - cos(timeline.date.timeIntervalSinceReferenceDate * 2 * .pi / 6)) / 2
+            // On ＋ the light fills up (the microphone opening).
+            let surge = store.surging
             Ellipse()
-                .fill(RadialGradient(colors: [palette.accent.opacity((scheme == .dark ? 0.16 : 0.34) * (0.75 + 0.25 * breath)), palette.accent.opacity(0)],
+                .fill(RadialGradient(colors: [palette.accent.opacity((scheme == .dark ? 0.16 : 0.34) * (surge ? 1.8 : 0.75 + 0.25 * breath)), palette.accent.opacity(0)],
                                      center: .center, startRadius: 0, endRadius: 230))
                 .frame(width: 520, height: 420)
-                .scaleEffect(0.94 + 0.1 * breath, anchor: .bottom)
+                .scaleEffect(surge ? 1.6 : 0.94 + 0.1 * breath, anchor: .bottom)
                 .offset(y: 170)
+        }
+        .allowsHitTesting(false)
+    }
+}
+
+/// While recording: a faint acid light behind the controls that rises and falls with the voice,
+/// so a glance says the microphone hears. With Reduce Motion it stays still.
+struct VoiceGlow: View {
+    @Environment(\.murmur) private var palette
+    @Environment(\.colorScheme) private var scheme
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    var meter: Meter
+    var paused: Bool
+
+    var body: some View {
+        TimelineView(.periodic(from: .now, by: 0.1)) { _ in
+            let voice = paused || reduceMotion ? 0 : CGFloat(min(1, (Double(meter.level) / 0.22).squareRoot()))
+            Ellipse()
+                .fill(RadialGradient(colors: [palette.accent.opacity((scheme == .dark ? 0.08 : 0.16) + (scheme == .dark ? 0.12 : 0.22) * voice), palette.accent.opacity(0)],
+                                     center: .center, startRadius: 0, endRadius: 220))
+                .frame(width: 520, height: 360)
+                .scaleEffect(0.9 + 0.25 * voice, anchor: .bottom)
+                .offset(y: 190)
+                .animation(.easeOut(duration: 0.35), value: voice)
         }
         .allowsHitTesting(false)
     }

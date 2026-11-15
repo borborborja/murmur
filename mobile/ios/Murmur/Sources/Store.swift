@@ -103,6 +103,8 @@ final class Store: ObservableObject {
     @Published var meetings: [MeetingRow] = []
     @Published var live: LiveMeeting?
     @Published var error: String?
+    /// The ＋ was just pressed: the acid light fills up while the microphone opens.
+    @Published var surging = false
 
     let engine: Murmur?
     private let queue = DispatchQueue(label: "murmur.engine", qos: .userInitiated)

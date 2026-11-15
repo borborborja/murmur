@@ -108,4 +108,18 @@ Es pot triar 1, 2 o 4 fils i si hi ha text provisional. Amb `-autobench` (i `-th
 
 El text provisional (tornar a transcriure els últims segons cada 0,6 s mentre algú parla) multiplica el cost per set. A l'iPhone, que és més lent, probablement caldrà fer-lo més de tant en tant, o més curt, o sense. És el primer que cal mesurar.
 
-**A l'iPhone:** pendent.
+**A l'iPhone 14 Pro** (A16, 2 nuclis ràpids i 4 d'eficiència, iOS 27), la mateixa reunió:
+
+| Fils | Text provisional | Càlcul | RTF |
+|---|---|---|---|
+| 2 | no | 9,2 s | 0,051 |
+| 4 | no | 9,3 s | 0,052 |
+| 2 | sí | 83,3 s | 0,463 |
+| 4 | sí | molt més lent: no acaba | |
+
+- **La velocitat sobra sense text provisional:** 20 vegades el temps real, més de pressa que l'int8 a l'M4. Amb 4 fils no guanya res, i amb el text provisional hi perd molt: la feina va als nuclis d'eficiència. A l'iPhone, 2 fils.
+- **El text provisional hi cap, però just:** 0,46 vol dir que el mòbil passa la meitat del temps transcrivint mentre graves. Caldrà veure-ho a la prova de bateria i, segurament, fer-lo més de tant en tant (cada 1,2 s en lloc de 0,6) o més curt.
+- **El text és el mateix que al simulador**, paraula per paraula, i els parlants també.
+- **L'int8 contra el model sencer** (`cargo run --release --example int8_compare -- ../../data/reunio-3min.wav`, sense text provisional): el 5% de les paraules canvien (27 de 553), sobretot marques i paraules difícils, en totes dues direccions («bookomers» / «bugomers», «lync» / «link»), i els parlants són idèntics. Emparellat, l'ordinador ho refà igualment amb Whisper.
+
+**Pendent:** la bateria i la temperatura en mitja hora en directe.

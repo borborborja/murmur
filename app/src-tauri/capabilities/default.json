@@ -10,6 +10,14 @@
   "permissions": [
     "core:default",
     "opener:default",
+    {
+      "identifier": "opener:allow-open-url",
+      "allow": [
+        {
+          "url": "obsidian://*"
+        }
+      ]
+    },
     "core:window:allow-start-dragging",
     "core:window:allow-set-theme",
     "dialog:allow-save",

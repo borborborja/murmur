@@ -3,7 +3,7 @@ import { getVersion } from "@tauri-apps/api/app";
 import { join } from "@tauri-apps/api/path";
 import { ask, open as openDialog, save } from "@tauri-apps/plugin-dialog";
 import { revealItemInDir } from "@tauri-apps/plugin-opener";
-import { Camera, Copy, FileAudio, MoreHorizontal, FileDown, FileText, FolderOpen, Globe, Images, Languages, Link2, Maximize2, Mic, PanelLeft, PanelRight, Share, Trash2 } from "lucide-react";
+import { Camera, Copy, FileAudio, MoreHorizontal, FileDown, FileText, FolderOpen, Gem, Globe, Images, Languages, Link2, Maximize2, Mic, PanelLeft, PanelRight, Share, Trash2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
@@ -63,6 +63,7 @@ import { SYSTEM_SPEAKER_BASE, type Language, type Meeting, type ModelId, type Se
 import { cn } from "@/lib/utils";
 import { copyText } from "@/lib/clipboard";
 import { MarkerBackground, useMarker } from "@/lib/motion";
+import { openInObsidian, saveToObsidian } from "@/lib/obsidian";
 import { markSeen, pendingReleases, releasesBetween, type WhatsNewRelease } from "@/lib/whatsnew";
 
 const ONBOARDED_KEY = "murmur.onboarded.v1";
@@ -172,6 +173,13 @@ export default function App() {
   const models = useModels();
   const cloud = useCloud();
   const calendarSync = useCalendarSync();
+  // Obsidian (lib/obsidian.ts): shown in Exporta if it's installed or a vault was chosen.
+  const [hasObsidian, setHasObsidian] = useState(false);
+  useEffect(() => {
+    if (backend.isTauri()) backend.obsidianVaults().then((v) => setHasObsidian(v.length > 0)).catch(() => {});
+  }, []);
+  /** Meetings made in this session (recorded, continued, from the phone) that go to the vault when done. */
+  const obsidianPending = useRef(new Set<string>());
   const openCalendarSettings = () => {
     setSettingsTab("calendar");
     setShowSettings(true);
@@ -539,6 +547,7 @@ export default function App() {
     const m = newMeeting(sources, language, event?.title.trim(), event ? guestNames(event) : undefined);
     dispatch({ type: "new", meeting: m });
     setMarkdown((list) => ({ ...list, [m.id]: settings.saveMarkdown && !!settings.markdownDir }));
+    obsidianPending.current.add(m.id);
     // Whisper only for a single language (told "Catalan", it would turn Spanish into Catalan).
     const finalModel = finalPassModel(language);
     const finalText = settings.finalPass && !!finalModel && modelInstalled(finalModel);
@@ -618,6 +627,7 @@ export default function App() {
     track("recording_continued", { language, whisper: finalText });
     dispatch({ type: "resumed", id: m.id, part: { startedAt: Date.now(), at: m.duration } });
     setMarkdown((list) => ({ ...list, [m.id]: settings.saveMarkdown && !!settings.markdownDir }));
+    obsidianPending.current.add(m.id);
     startedAt.current = Date.now();
     startOffset.current = m.duration;
     try {
@@ -695,6 +705,7 @@ export default function App() {
     dispatch({ type: "new", meeting: m });
     setImporting({ id: m.id, done: 0, total: 0 });
     setMarkdown((list) => ({ ...list, [m.id]: settings.saveMarkdown && !!settings.markdownDir }));
+    obsidianPending.current.add(m.id);
     const finalModel = finalPassModel(language);
     const finalText = settings.finalPass && !!finalModel && modelInstalled(finalModel);
     post.planRecording(m.id, { verifySpeakers: settings.verifySpeakers, finalText, language });
@@ -752,6 +763,28 @@ export default function App() {
         .catch((e) => toast.error(t("markdownFailed", { error: String(e) })));
     }
   }, [markdown, state.open, state.finalPass, settings.markdownDir, settings.markdownContent, t]);
+
+  /** To the Obsidian vault: the note, its screenshots, and a toast to open it there. */
+  const toObsidian = (m: Meeting, quiet = false) => {
+    if (!settings.obsidianVault) {
+      toast(t("obsidianChooseVault"), { action: { label: t("settings"), onClick: () => (setSettingsTab("export"), setShowSettings(true)) } });
+      return;
+    }
+    track("exported", { format: "obsidian" });
+    saveToObsidian(m, { vault: settings.obsidianVault, folder: settings.obsidianFolder, people: settings.obsidianPeople })
+      .then((path) => toast(t("obsidianSaved"), { action: { label: t("openInObsidian"), onClick: () => void openInObsidian(path).catch((e) => toast.error(String(e))) }, duration: quiet ? 4000 : undefined }))
+      .catch((e) => toast.error(String(e)));
+  };
+  // "Desa-hi cada reunió en acabar": once the final pass and the summary are done.
+  useEffect(() => {
+    if (!settings.obsidianAuto || !settings.obsidianVault) return;
+    for (const id of [...obsidianPending.current]) {
+      const m = state.open[id];
+      if (!m || m.status !== "done" || state.finalPass[id]) continue;
+      obsidianPending.current.delete(id);
+      if (m.utterances.length) toObsidian(m, true);
+    }
+  }, [state.open, state.finalPass, settings.obsidianAuto, settings.obsidianVault]);
 
   const stop = useCallback(async () => {
     setBusy(true);
@@ -922,6 +955,7 @@ export default function App() {
     const m = await backend.getMeeting(id).catch(() => null);
     if (!m) return;
     dispatch({ type: "received", meeting: m });
+    obsidianPending.current.add(id);
     toast(t("mobileReceived", { title: m.title, phone }));
     track("mobile_synced", { minutes: minutesBucket(m.duration / 60) });
     const language = m.language ?? settings.language;
@@ -1413,6 +1447,11 @@ export default function App() {
                           </DropdownMenuSub>
                         );
                       })}
+                      {(hasObsidian || !!settings.obsidianVault) && (
+                        <DropdownMenuItem onSelect={() => toObsidian(meeting)}>
+                          <Gem className="size-3.5" /> {t("exportObsidian")}
+                        </DropdownMenuItem>
+                      )}
                       {!!meeting.screens?.length && (
                         <DropdownMenuItem onSelect={() => exportScreens(meeting)}>
                           <Images className="size-3.5" /> {t("exportScreens", { count: meeting.screens.length })}

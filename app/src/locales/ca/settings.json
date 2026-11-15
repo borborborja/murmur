@@ -10,6 +10,7 @@
     "audio": "Àudio",
     "transcription": "Transcripció",
     "intelligence": "Intel·ligència",
+    "export": "Exportar",
     "share": "Compartir",
     "claude": "Claude",
     "mobile": "Mòbil"
@@ -340,5 +341,21 @@
     "paired": "«{{name}}» s'ha connectat amb aquest ordinador.",
     "privacy": "El mòbil i l'ordinador es parlen directament per la teva xarxa, xifrats, sense passar per cap servidor. L'empremta de la teva veu no surt mai de l'aparell.",
     "copyFailed": "No s'ha pogut copiar el codi."
+  },
+  "export": {
+    "intro": "On van les reunions, a més de Murmur: fitxers Markdown en una carpeta i la teva caixa forta d'Obsidian. Cadascun pot rebre cada reunió sol, quan s'acaba.",
+    "vault": "Caixa forta",
+    "noVault": "Encara no n'has triat cap.",
+    "chooseVault": "Tria…",
+    "otherFolder": "Una altra carpeta…",
+    "vaultDialog": "Tria la carpeta de la caixa forta d'Obsidian",
+    "folder": "Carpeta",
+    "folderHint": "Dins la caixa forta. Les captures van a «attachments», al costat.",
+    "folderRoot": "L'arrel de la caixa forta",
+    "obsidianAuto": "Desa-hi cada reunió en acabar",
+    "obsidianAutoHint": "Quan s'acaba la passada final i el resum. També es pot fer a mà des d'Exporta.",
+    "people": "Persones com a enllaços",
+    "peopleHint": "Escriu els noms com a [[Marta]]: Obsidian fa una pàgina per persona amb totes les seves reunions.",
+    "privacy": "Tot es desa en aquest ordinador. Res no surt cap a internet."
   }
 }

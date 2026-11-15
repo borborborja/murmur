@@ -111,5 +111,9 @@
   "introHint": "Si sou més d'un a la sala, cadascú pot dir «Murmur, sóc…» i Murmur hi posarà el nom.",
   "undo": "Desfés",
   "mobileReceived": "«{{title}}» ha arribat de «{{phone}}»",
-  "fromPhone": "Gravada a «{{phone}}»"
+  "fromPhone": "Gravada a «{{phone}}»",
+  "exportObsidian": "Obsidian",
+  "obsidianSaved": "Desada a Obsidian",
+  "openInObsidian": "Obre a Obsidian",
+  "obsidianChooseVault": "Tria la caixa forta d'Obsidian a Configuració › Exportar."
 }

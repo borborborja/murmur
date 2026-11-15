@@ -10,6 +10,7 @@
     "audio": "Audio",
     "transcription": "Transcription",
     "intelligence": "Intelligence",
+    "export": "Export",
     "share": "Sharing",
     "claude": "Claude",
     "mobile": "Phone"
@@ -340,5 +341,21 @@
     "paired": "“{{name}}” is now connected to this computer.",
     "privacy": "Your phone and this computer talk directly over your network, encrypted, through no server. Your voiceprint never leaves the device.",
     "copyFailed": "Couldn't copy the code."
+  },
+  "export": {
+    "intro": "Where meetings go besides Murmur: Markdown files in a folder and your Obsidian vault. Each can take every meeting on its own when it ends.",
+    "vault": "Vault",
+    "noVault": "None chosen yet.",
+    "chooseVault": "Choose…",
+    "otherFolder": "Another Folder…",
+    "vaultDialog": "Choose your Obsidian vault's folder",
+    "folder": "Folder",
+    "folderHint": "Inside the vault. Screenshots go to “attachments”, next to it.",
+    "folderRoot": "The vault's root",
+    "obsidianAuto": "Save Each Meeting When It Ends",
+    "obsidianAutoHint": "Once the final pass and the summary are done. You can also do it from Export.",
+    "people": "People as Links",
+    "peopleHint": "Writes names as [[Marta]]: Obsidian makes a page per person with all their meetings.",
+    "privacy": "Everything is saved on this computer. Nothing goes to the internet."
   }
 }

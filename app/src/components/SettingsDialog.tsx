@@ -3,7 +3,7 @@ import { getVersion } from "@tauri-apps/api/app";
 import { disable as disableAutostart, enable as enableAutostart, isEnabled as autostartEnabled } from "@tauri-apps/plugin-autostart";
 import { ask, open as openDialog } from "@tauri-apps/plugin-dialog";
 import { openUrl } from "@tauri-apps/plugin-opener";
-import { AudioLines, CalendarDays, Check, ChevronRight, CloudUpload, Contrast, Copy, Link2, Lock, Mic, Plug, SlidersHorizontal, Smartphone, Sparkles, X } from "lucide-react";
+import { AudioLines, CalendarDays, Check, ChevronRight, CloudUpload, Contrast, Copy, FileOutput, Link2, Lock, Mic, Plug, SlidersHorizontal, Smartphone, Sparkles, X } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
@@ -52,6 +52,7 @@ const TABS = [
   { id: "audio", icon: Mic },
   { id: "transcription", icon: AudioLines },
   { id: "intelligence", icon: Sparkles },
+  { id: "export", icon: FileOutput },
   { id: "share", icon: Link2 },
   { id: "claude", icon: Plug },
   { id: "mobile", icon: Smartphone },
@@ -151,6 +152,7 @@ export function SettingsDialog({ open, onOpenChange, settings, onChange, recordi
           {tab === "audio" && <AudioTab open={open} settings={settings} onChange={change} recording={recording} />}
           {tab === "transcription" && <TranscriptionTab settings={settings} onChange={change} recording={recording} />}
           {tab === "intelligence" && <IntelligenceTab settings={settings} onChange={change} meeting={meeting} onLlmLoaded={() => (llmLoaded.current = true)} />}
+          {tab === "export" && <ExportTab settings={settings} onChange={change} />}
           {tab === "share" && <ShareTab />}
           {tab === "claude" && <ClaudeTab open={open} />}
           {tab === "mobile" && <MobileTab open={open} />}
@@ -781,12 +783,6 @@ function TranscriptionTab({ settings, onChange, recording }: { settings: Setting
     const needed: ModelId[] = [...(value === "en" ? (["english"] as const) : []), ...(final ? [final] : []), ...(value === "ca" ? (["punctuation"] as const) : [])];
     for (const id of needed) enableWithModel(models, id, true, () => {});
   };
-  const chooseMarkdownFolder = async () => {
-    const dir = await openDialog({ directory: true, defaultPath: settings.markdownDir ?? undefined, title: t("transcription.markdownFolderDialog") });
-    if (typeof dir !== "string") return false;
-    onChange({ markdownDir: dir });
-    return true;
-  };
   return (
     <>
       <Group title={t("transcription.languageGroup")}>
@@ -877,41 +873,6 @@ function TranscriptionTab({ settings, onChange, recording }: { settings: Setting
           <Switch checked={settings.punctuate} onCheckedChange={(on) => enableWithModel(models, "punctuation", on, () => onChange({ punctuate: on }))} />
         </Row>
         <ModelRow id="punctuation" name={t("transcription.punctuationModel")} enabled={settings.punctuate} onDisable={() => onChange({ punctuate: false })} />
-      </Group>
-      <Group title={t("transcription.markdownGroup")}>
-        <Row label={t("transcription.saveMarkdown")} hint={t("transcription.saveMarkdownHint")}>
-          <Switch
-            checked={settings.saveMarkdown && !!settings.markdownDir}
-            onCheckedChange={async (on) => {
-              if (on && !settings.markdownDir && !(await chooseMarkdownFolder())) return;
-              onChange({ saveMarkdown: on });
-            }}
-          />
-        </Row>
-        <div className="px-3 py-2.5">
-          <div className="text-[13px]" id="markdown-content-label">
-            {t("transcription.markdownContent")}
-          </div>
-          <div className="mt-2 flex">
-            <Segmented
-              value={settings.markdownContent}
-              options={(["all", "summary", "transcript"] as const).map((value) => ({ value, label: t(`transcription.markdownContents.${value}`) }))}
-              onChange={(markdownContent) => onChange({ markdownContent })}
-              labelledBy="markdown-content-label"
-            />
-          </div>
-          <div className="mt-1.5 break-words text-[11px] leading-snug text-muted-foreground">{t("transcription.markdownContentHint")}</div>
-        </div>
-        <Row label={t("transcription.markdownFolder")} hint={settings.markdownDir ?? t("transcription.markdownNoFolder")}>
-          <button
-            type="button"
-            onClick={chooseMarkdownFolder}
-            disabled={!backend.isTauri()}
-            className="h-6 shrink-0 rounded-md border border-input bg-background px-2.5 text-[13px] hover:bg-muted disabled:opacity-50"
-          >
-            {t("audio.choose")}
-          </button>
-        </Row>
       </Group>
     </>
   );
@@ -1195,6 +1156,121 @@ function CloudRow({ provider, settings, onChange }: { provider: CloudProvider; s
           ))}
         </select>
       </Row>
+    </>
+  );
+}
+
+// --- Exportar ------------------------------------------------------------------------------
+
+/**
+ * Where meetings go besides Murmur: Markdown files in a folder, and an Obsidian vault (found from
+ * Obsidian's own list, lib/obsidian.ts). Each can take every meeting on its own when it's done.
+ */
+function ExportTab({ settings, onChange }: { settings: Settings; onChange: Props["onChange"] }) {
+  const { t } = useTranslation("settings");
+  const [vaults, setVaults] = useState<backend.ObsidianVault[] | null>(null);
+  useEffect(() => {
+    if (backend.isTauri()) backend.obsidianVaults().then(setVaults).catch(() => setVaults([]));
+    else setVaults([]);
+  }, []);
+  const chooseMarkdownFolder = async () => {
+    const dir = await openDialog({ directory: true, defaultPath: settings.markdownDir ?? undefined, title: t("transcription.markdownFolderDialog") });
+    if (typeof dir !== "string") return false;
+    onChange({ markdownDir: dir });
+    return true;
+  };
+  const chooseVaultFolder = async () => {
+    const dir = await openDialog({ directory: true, defaultPath: settings.obsidianVault ?? undefined, title: t("export.vaultDialog") });
+    if (typeof dir !== "string") return false;
+    onChange({ obsidianVault: dir });
+    return true;
+  };
+  const vaultName = (path: string) => vaults?.find((v) => v.path === path)?.name ?? path.split(/[\\/]/).filter(Boolean).pop() ?? path;
+  // Obsidian shows only if it's installed (it has a list of vaults) or a vault was chosen by hand.
+  const obsidian = !!vaults?.length || !!settings.obsidianVault;
+  return (
+    <>
+      <p className="mb-4 px-1 text-[12px] leading-snug text-muted-foreground">{t("export.intro")}</p>
+      <Group title={t("transcription.markdownGroup")}>
+        <Row label={t("transcription.saveMarkdown")} hint={t("transcription.saveMarkdownHint")}>
+          <Switch
+            checked={settings.saveMarkdown && !!settings.markdownDir}
+            onCheckedChange={async (on) => {
+              if (on && !settings.markdownDir && !(await chooseMarkdownFolder())) return;
+              onChange({ saveMarkdown: on });
+            }}
+          />
+        </Row>
+        <div className="px-3 py-2.5">
+          <div className="text-[13px]" id="markdown-content-label">
+            {t("transcription.markdownContent")}
+          </div>
+          <div className="mt-2 flex">
+            <Segmented
+              value={settings.markdownContent}
+              options={(["all", "summary", "transcript"] as const).map((value) => ({ value, label: t(`transcription.markdownContents.${value}`) }))}
+              onChange={(markdownContent) => onChange({ markdownContent })}
+              labelledBy="markdown-content-label"
+            />
+          </div>
+          <div className="mt-1.5 break-words text-[11px] leading-snug text-muted-foreground">{t("transcription.markdownContentHint")}</div>
+        </div>
+        <Row label={t("transcription.markdownFolder")} hint={settings.markdownDir ?? t("transcription.markdownNoFolder")}>
+          <button
+            type="button"
+            onClick={chooseMarkdownFolder}
+            disabled={!backend.isTauri()}
+            className="h-6 shrink-0 rounded-md border border-input bg-background px-2.5 text-[13px] hover:bg-muted disabled:opacity-50"
+          >
+            {t("audio.choose")}
+          </button>
+        </Row>
+      </Group>
+      {obsidian && (
+        <Group title="Obsidian">
+          <Row label={t("export.vault")} hint={settings.obsidianVault ?? t("export.noVault")}>
+            <select
+              aria-label={t("export.vault")}
+              value={settings.obsidianVault ?? ""}
+              onChange={(e) => {
+                const v = e.target.value;
+                if (v === "__other") void chooseVaultFolder();
+                else onChange({ obsidianVault: v || null });
+              }}
+              className="h-6 max-w-[200px] shrink-0 truncate rounded-md border border-input bg-background px-1.5 text-[13px]"
+            >
+              <option value="">{t("export.chooseVault")}</option>
+              {vaults?.map((v) => (
+                <option key={v.path} value={v.path}>
+                  {v.name}
+                </option>
+              ))}
+              {settings.obsidianVault && !vaults?.some((v) => v.path === settings.obsidianVault) && <option value={settings.obsidianVault}>{vaultName(settings.obsidianVault)}</option>}
+              <option value="__other">{t("export.otherFolder")}</option>
+            </select>
+          </Row>
+          <Row label={t("export.folder")} hint={t("export.folderHint")}>
+            <input
+              type="text"
+              aria-label={t("export.folder")}
+              value={settings.obsidianFolder}
+              placeholder={t("export.folderRoot")}
+              onChange={(e) => onChange({ obsidianFolder: e.target.value })}
+              className="h-6 w-[160px] shrink-0 rounded-md border border-input bg-background px-2 text-[13px]"
+            />
+          </Row>
+          <Row label={t("export.obsidianAuto")} hint={t("export.obsidianAutoHint")}>
+            <Switch checked={settings.obsidianAuto && !!settings.obsidianVault} disabled={!settings.obsidianVault} onCheckedChange={(on) => onChange({ obsidianAuto: on })} aria-label={t("export.obsidianAuto")} />
+          </Row>
+          <Row label={t("export.people")} hint={t("export.peopleHint")}>
+            <Switch checked={settings.obsidianPeople} onCheckedChange={(on) => onChange({ obsidianPeople: on })} aria-label={t("export.people")} />
+          </Row>
+        </Group>
+      )}
+      <p className="-mt-3 mb-5 flex gap-1.5 px-1 text-[11px] leading-snug text-muted-foreground">
+        <Lock className="mt-px size-3 shrink-0" aria-hidden />
+        <span>{t("export.privacy")}</span>
+      </p>
     </>
   );
 }

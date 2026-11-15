@@ -10,6 +10,7 @@
     "audio": "Audio",
     "transcription": "Transcripción",
     "intelligence": "Inteligencia",
+    "export": "Exportar",
     "share": "Compartir",
     "claude": "Claude",
     "mobile": "Móvil"
@@ -340,5 +341,21 @@
     "paired": "«{{name}}» se ha conectado con este ordenador.",
     "privacy": "El móvil y el ordenador se hablan directamente por tu red, cifrados, sin pasar por ningún servidor. La huella de tu voz nunca sale del aparato.",
     "copyFailed": "No se ha podido copiar el código."
+  },
+  "export": {
+    "intro": "Adónde van las reuniones, además de Murmur: archivos Markdown en una carpeta y tu bóveda de Obsidian. Cada uno puede recibir cada reunión solo, cuando termina.",
+    "vault": "Bóveda",
+    "noVault": "Todavía no has elegido ninguna.",
+    "chooseVault": "Elegir…",
+    "otherFolder": "Otra carpeta…",
+    "vaultDialog": "Elige la carpeta de la bóveda de Obsidian",
+    "folder": "Carpeta",
+    "folderHint": "Dentro de la bóveda. Las capturas van a «attachments», al lado.",
+    "folderRoot": "La raíz de la bóveda",
+    "obsidianAuto": "Guardar cada reunión al terminar",
+    "obsidianAutoHint": "Cuando termina la pasada final y el resumen. También se puede hacer a mano desde Exportar.",
+    "people": "Personas como enlaces",
+    "peopleHint": "Escribe los nombres como [[Marta]]: Obsidian crea una página por persona con todas sus reuniones.",
+    "privacy": "Todo se guarda en este ordenador. Nada sale a internet."
   }
 }

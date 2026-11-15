@@ -261,6 +261,10 @@ export const retranscribeMeeting = (
   maxSpeakers?: number,
 ) => invoke<void>("retranscribe_meeting", { meetingId, audioPath, language, channels, guests, maxSpeakers: maxSpeakers ?? null });
 
+/** Obsidian's vaults on this computer (obsidian.rs), the open one first. */
+export type ObsidianVault = { name: string; path: string; open: boolean };
+export const obsidianVaults = () => invoke<ObsidianVault[]>("obsidian_vaults");
+
 // --- Phones (mobile.rs, docs/EMPARELLAR.md) ---
 export type Phone = { id: string; name: string; pairedAt: number; lastSeen: number | null };
 export type MobileStatus = { computer: string; phones: Phone[]; pairing: boolean };

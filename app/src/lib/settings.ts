@@ -47,6 +47,14 @@ export type Settings = {
   markdownDir: string | null;
   /** What those files hold: the summary and notes, the transcript, or everything. */
   markdownContent: ExportContent;
+  /** Obsidian (lib/obsidian.ts): the vault's folder; null = not chosen. */
+  obsidianVault: string | null;
+  /** A folder inside the vault for the meetings; empty = its root. */
+  obsidianFolder: string;
+  /** Each meeting goes to the vault when it's done. */
+  obsidianAuto: boolean;
+  /** Speakers as [[links]]: a page per person. */
+  obsidianPeople: boolean;
   /** Who writes the cover: the local model, or Claude or OpenAI with the user's key (lib/cloud.ts). */
   coverEngine: "local" | CloudProvider;
   /** The model chosen for each provider; missing = its default (lib/cloud.ts). */
@@ -114,6 +122,10 @@ export const DEFAULT_SETTINGS: Settings = {
   textZoom: 1,
   markdownDir: null,
   markdownContent: "all",
+  obsidianVault: null,
+  obsidianFolder: "Murmur",
+  obsidianAuto: false,
+  obsidianPeople: false,
   coverEngine: "local",
   cloudModels: {},
   shareExpiry: "7d",

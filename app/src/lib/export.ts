@@ -25,7 +25,7 @@ const parts = (meeting: Meeting, content: ExportContent) => {
 const filter = (format: ExportFormat): { name: string; extensions: string[] } =>
   format === "md" ? { name: "Markdown", extensions: ["md"] } : { name: t("export:wordDocument"), extensions: ["docx"] };
 
-const safeName = (title: string) => title.replace(/[/\\?%*:|"<>]/g, "-").trim() || "Murmur";
+export const safeName = (title: string) => title.replace(/[/\\?%*:|"<>]/g, "-").trim() || "Murmur";
 
 /** Asks where to save, then writes the file. Returns false if the user cancelled. */
 export async function exportMeeting(meeting: Meeting, format: ExportFormat, content: ExportContent = "all"): Promise<boolean> {
@@ -57,9 +57,14 @@ export async function exportMeeting(meeting: Meeting, format: ExportFormat, cont
  * "all" writes two: "<day> <title> - Summary.md" (summary and notes) and "... - Transcript.md".
  * Without one, a single file with everything. Returns the paths written.
  */
+/** "2026-10-27": file names that sort by date. */
+export const dayStamp = (ms: number) => {
+  const d = new Date(ms);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+};
+
 export async function saveMarkdown(meeting: Meeting, dir: string, content: ExportContent = "all"): Promise<string[]> {
-  const d = new Date(meeting.createdAt);
-  const day = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  const day = dayStamp(meeting.createdAt);
   const base = `${dir.replace(/[\\/]+$/, "")}/${day} ${safeName(meeting.title)}`;
   const include = parts(meeting, content);
   const files: [string, ExportContent][] = !meeting.cover
@@ -74,10 +79,15 @@ export async function saveMarkdown(meeting: Meeting, dir: string, content: Expor
 
 // --- Markdown ------------------------------------------------------------------------------
 
-/** The summary (the cover, with the speakers' current names), the notes and the transcript. */
-export function toMarkdown(meeting: Meeting, content: ExportContent = "all"): string {
+/**
+ * The summary (the cover, with the speakers' current names), the notes and the transcript.
+ * `person` writes a speaker's name (Obsidian: as a `[[link]]`); `title: false` leaves the title
+ * out (Obsidian shows the file's name as the title).
+ */
+export function toMarkdown(meeting: Meeting, content: ExportContent = "all", opts: { person?: (name: string) => string; title?: boolean } = {}): string {
   const include = parts(meeting, content);
-  const lines = [`# ${meeting.title}`, "", meetingWhen(meeting), ""];
+  const person = opts.person ?? ((name: string) => name);
+  const lines = [...(opts.title === false ? [] : [`# ${meeting.title}`, ""]), meetingWhen(meeting), ""];
   const c = include.summary && meeting.cover && renameInCover(meeting.cover, namedSpeakers(meeting));
   if (c) {
     lines.push(`## ${t("app:viewCover")}`, "");
@@ -105,7 +115,7 @@ export function toMarkdown(meeting: Meeting, content: ExportContent = "all"): st
   const breaks = pauses(meeting);
   for (const u of meeting.utterances) {
     while (breaks.length && u.start >= breaks[0].at - 0.01) lines.push(`*${pauseLabel(breaks.shift()!)}*`, "");
-    lines.push(`**[${clock(u.start)}] ${speakerName(meeting, u.speaker)}:** ${u.text}`, "");
+    lines.push(`**[${clock(u.start)}] ${person(speakerName(meeting, u.speaker))}:** ${u.text}`, "");
   }
   return lines.join("\n").replace(/\n{3,}/g, "\n\n");
 }

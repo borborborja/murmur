@@ -281,6 +281,10 @@ L'entrada del menú Compartir és una extensió d'app a part (`app/share-extensi
 
 Mesura amb `examples/lang_probe.rs` (decisió per fitxer) i `examples/import_probe.rs` (velocitat del motor).
 
+### Obsidian (`lib/obsidian.ts`, `obsidian.rs`)
+
+Una caixa forta d'Obsidian és una carpeta de Markdown. `obsidian.rs` llegeix la llista de caixes fortes d'Obsidian (`obsidian.json` a la carpeta de configuració del sistema, i la de Flatpak a Linux), només per oferir-les pel nom; mai hi escriu. `saveToObsidian` hi escriu «<carpeta>/2026-11-15 Títol.md»: propietats YAML a dalt (data, durada, participants, etiquetes, idioma, d'on ve), el Markdown de sempre sense el títol (Obsidian mostra el nom del fitxer) i amb les persones com a `[[enllaços]]` si es vol, i les captures copiades a «attachments/» i inserides amb `![[…]]`. «Obre a Obsidian» fa servir `obsidian://open?path=…` (permès a `capabilities/default.json`). Les reunions fetes en aquesta sessió s'hi desen soles quan acaben, si està activat. `write_export` crea la carpeta si no hi és.
+
 ### Mòbils (`mobile.rs`, `core/src/sync.rs`)
 
 L'ordinador pot rebre les reunions gravades amb Murmur per a mòbil ([EMPARELLAR.md](EMPARELLAR.md)). Està apagat fins que s'hi emparella un mòbil: sense mòbils ni codi a la pantalla, no hi ha cap port obert.

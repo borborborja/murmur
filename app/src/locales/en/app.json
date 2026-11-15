@@ -111,5 +111,9 @@
   "introHint": "If there's more than one of you in the room, each can say “Murmur, I'm…” and Murmur will add the name.",
   "undo": "Undo",
   "mobileReceived": "“{{title}}” arrived from “{{phone}}”",
-  "fromPhone": "Recorded on “{{phone}}”"
+  "fromPhone": "Recorded on “{{phone}}”",
+  "exportObsidian": "Obsidian",
+  "obsidianSaved": "Saved to Obsidian",
+  "openInObsidian": "Open in Obsidian",
+  "obsidianChooseVault": "Choose your Obsidian vault in Settings › Export."
 }

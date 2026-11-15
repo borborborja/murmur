@@ -13,6 +13,7 @@ pub mod llm;
 pub mod mcp;
 pub mod micwatch;
 pub mod mobile;
+pub mod obsidian;
 pub mod permissions;
 pub mod retranscribe;
 pub mod shell;
@@ -1288,6 +1289,12 @@ fn with_db<T>(
     f(slot.as_mut().unwrap()).map_err(|e| format!("{e:#}"))
 }
 
+/// Settings › Exportar: the Obsidian vaults this person has (obsidian.rs).
+#[tauri::command]
+fn obsidian_vaults() -> Vec<obsidian::Vault> {
+    obsidian::vaults()
+}
+
 // --- Phones (mobile.rs, docs/EMPARELLAR.md) ----------------------------------------------
 
 #[tauri::command]
@@ -1639,6 +1646,10 @@ async fn list_microphones() -> Vec<String> {
 /// Writes an export to a path the user picked in the save dialog.
 #[tauri::command]
 async fn write_export(path: String, contents: Vec<u8>) -> Result<(), String> {
+    // Into a vault's subfolder (Obsidian) the folder may not exist yet.
+    if let Some(dir) = std::path::Path::new(&path).parent() {
+        std::fs::create_dir_all(dir).map_err(|e| tr!("file_save_failed", error = e))?;
+    }
     std::fs::write(&path, contents).map_err(|e| tr!("file_save_failed", error = e))
 }
 
@@ -1757,6 +1768,7 @@ pub fn run() {
         })
         .invoke_handler(tauri::generate_handler![
             mobile_status,
+            obsidian_vaults,
             mobile_start_pairing,
             mobile_cancel_pairing,
             mobile_unpair,

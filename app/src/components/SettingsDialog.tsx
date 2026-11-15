@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { getVersion } from "@tauri-apps/api/app";
 import { disable as disableAutostart, enable as enableAutostart, isEnabled as autostartEnabled } from "@tauri-apps/plugin-autostart";
 import { ask, open as openDialog } from "@tauri-apps/plugin-dialog";
@@ -77,6 +77,18 @@ export function SettingsDialog({ open, onOpenChange, settings, onChange, recordi
   useEffect(() => {
     if (open && initialTab) setTab(initialTab);
   }, [open, initialTab]);
+  // Where the selection's background sits: measured from the chosen row; it only animates once
+  // it's been placed (opening the window shouldn't slide it in from the top).
+  const navRef = useRef<HTMLElement>(null);
+  const [marker, setMarker] = useState<{ top: number; height: number; animate: boolean } | null>(null);
+  useLayoutEffect(() => {
+    if (!open) {
+      setMarker(null);
+      return;
+    }
+    const row = navRef.current?.querySelector<HTMLElement>(`[data-tab="${tab}"]`);
+    if (row) setMarker((m) => ({ top: row.offsetTop, height: row.offsetHeight, animate: !!m }));
+  }, [open, tab]);
   // Trying prompts keeps the language model loaded; free its memory when the window closes.
   const llmLoaded = useRef(false);
   useEffect(() => {
@@ -115,18 +127,27 @@ export function SettingsDialog({ open, onOpenChange, settings, onChange, recordi
 
         <div className="flex h-[min(70vh,580px)]">
           {/* The sections in a column, as in the system's settings: they all fit, however many. */}
-          <nav className="w-[184px] shrink-0 overflow-y-auto border-r border-border bg-mm-sidebar p-2" role="tablist" aria-orientation="vertical">
+          <nav ref={navRef} className="relative w-[184px] shrink-0 overflow-y-auto border-r border-border bg-mm-sidebar p-2" role="tablist" aria-orientation="vertical">
+            {/* The selection's background slides to the section chosen (not on opening; motion-reduce: jumps). */}
+            {marker && (
+              <span
+                aria-hidden
+                className={cn("pointer-events-none absolute inset-x-2 top-0 rounded-md bg-mm-sidebar-selection motion-reduce:transition-none", marker.animate && "transition-transform duration-200 ease-out")}
+                style={{ height: marker.height, transform: `translateY(${marker.top}px)` }}
+              />
+            )}
             {/* Mòbil: only in development until there's a phone app to pair (docs/MOBIL.md). */}
             {TABS.filter(({ id }) => (id !== "calendar" || capabilities.calendar) && (id !== "mobile" || import.meta.env.DEV)).map(({ id, icon: Icon }) => (
               <button
                 key={id}
                 type="button"
                 role="tab"
+                data-tab={id}
                 aria-selected={tab === id}
                 onClick={() => setTab(id)}
                 className={cn(
-                  "flex h-8 w-full items-center gap-2.5 rounded-md px-2.5 text-left text-[13px] text-muted-foreground hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-ring",
-                  tab === id && "bg-mm-sidebar-selection font-medium text-foreground",
+                  "relative flex h-8 w-full items-center gap-2.5 rounded-md px-2.5 text-left text-[13px] text-muted-foreground transition-colors duration-200 hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-ring",
+                  tab === id && "font-medium text-foreground",
                 )}
               >
                 <Icon className="size-4 shrink-0" strokeWidth={1.75} aria-hidden />

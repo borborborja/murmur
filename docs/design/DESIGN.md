@@ -104,7 +104,7 @@ Set pestanyes, en aquest ordre, cadascuna respon una pregunta: **General** (com 
 - Interruptors: actiu `toggleOn` amb botó `toggleKnob`; inactiu `toggleOff` amb botó blanc.
 
 ### Quant a
-Icona de 104 pt, logotip, versió, una frase que explica que tot es processa en aquest Mac (en aquest ordinador, a Windows i Linux: `pc.json`), tres etiquetes (Les reunions no surten del Mac · Sense núvol ni comptes · Català i castellà, les llengües que transcriu el model), un paràgraf de 12 pt en `textSecondary` que explica les estadístiques d'ús anònimes, la taula **Models i eines de codi obert** (funció, model, autor, enllaç a la llicència) i el peu "Fet a Barcelona per Quico Domingo", amb «Les versions per a Windows i Linux, gràcies a Xavi Vinaixa (@xaviviro)» a sota i el botó cap a quicodomingo.com. Els camps entre claudàtors de la maqueta s'han d'omplir amb els models reals.
+Icona de 104 pt, logotip, versió, una frase que explica que tot es processa en aquest Mac (en aquest ordinador, a Windows i Linux: `pc.json`), tres etiquetes (Les reunions no surten del Mac · Sense núvol ni comptes · Català i castellà, les llengües que transcriu el model), un paràgraf de 12 pt en `textSecondary` que explica les estadístiques d'ús anònimes, la taula **Models i eines de codi obert** (funció, model, autor, enllaç a la llicència) i el peu "Fet a Barcelona per Quico Domingo", amb «Les versions per a Windows i Linux, gràcies a Xavi Vinaixa (xaviviro.com)», amb l'enllaç a la seva web, a sota i el botó cap a quicodomingo.com. Els camps entre claudàtors de la maqueta s'han d'omplir amb els models reals.
 
 ### Icona de la barra de menús
 `NSStatusItem` de 18 pt. Tres estats (fitxers a `icons/menubar/`):

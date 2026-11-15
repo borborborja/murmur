@@ -186,8 +186,8 @@ export function AboutDialog({ open: visible, onOpenChange }: { open: boolean; on
             <div className="text-[13px]">{t("madeBy")}</div>
             <div className="text-[12px] text-muted-foreground">
               {t("pcBy")} (
-              <ExternalLink url="https://x.com/xaviviro" className="text-mm-link hover:underline">
-                @xaviviro
+              <ExternalLink url="https://xaviviro.com" className="text-mm-link hover:underline">
+                xaviviro.com
               </ExternalLink>
               )
             </div>

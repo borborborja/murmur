@@ -10,9 +10,9 @@ struct MurmurWidgets: WidgetBundle {
     }
 }
 
-/// The recording on the lock screen and in the Dynamic Island (docs/mockups/mobil.html, screen 7):
-/// the time, the level, the last thing said, and Marca, Pausa, Atura. A dark card, like the
-/// desktop's recording pill, in both modes.
+/// The recording on the lock screen and in the Dynamic Island (docs/mockups/mobil.html, screen 7).
+/// A dark card, like the desktop's recording pill, in both modes. iOS gives a Live Activity about
+/// 160 pt of height: the time and the voice share one row, the last line one line.
 struct RecordingLiveActivity: Widget {
     var body: some WidgetConfiguration {
         ActivityConfiguration(for: RecordingAttributes.self) { context in
@@ -22,28 +22,44 @@ struct RecordingLiveActivity: Widget {
         } dynamicIsland: { context in
             DynamicIsland {
                 DynamicIslandExpandedRegion(.leading) {
-                    LogoTile(size: 34).murmurTheme(.acid).environment(\.colorScheme, .dark).padding(.leading, 4)
+                    EchoMark(state: context.state, size: 34).padding(.leading, 6)
                 }
                 DynamicIslandExpandedRegion(.center) {
                     Text(context.attributes.title).font(.system(size: 15, weight: .semibold)).lineLimit(1)
                 }
                 DynamicIslandExpandedRegion(.trailing) {
-                    RecordingTimer(state: context.state).font(.mono(17, weight: .medium)).padding(.trailing, 4)
+                    RecordingTimer(state: context.state).font(.mono(17, weight: .medium)).padding(.trailing, 6)
                 }
                 DynamicIslandExpandedRegion(.bottom) {
-                    VStack(alignment: .leading, spacing: 10) {
-                        LastLine(state: context.state).lineLimit(2)
+                    VStack(alignment: .leading, spacing: 8) {
+                        LastLine(state: context.state).lineLimit(1)
                         RecordingButtons(paused: context.state.pausedAt != nil, confirming: context.state.confirmingStop)
                     }
                 }
             } compactLeading: {
-                Circle().fill(MurmurPalette.acidDark.recordingDot).frame(width: 9, height: 9)
+                // Murmur in the island: its mark, whose echo moves with the voice.
+                EchoMark(state: context.state, size: 24)
             } compactTrailing: {
-                RecordingTimer(state: context.state).font(.mono(14, weight: .semibold)).frame(maxWidth: 52)
+                RecordingTimer(state: context.state).font(.mono(14, weight: .semibold))
+                    .foregroundStyle(MurmurPalette.acidDark.recordingLevel).frame(maxWidth: 52)
             } minimal: {
-                Circle().fill(MurmurPalette.acidDark.recordingDot).frame(width: 9, height: 9)
+                EchoMark(state: context.state, size: 22)
             }
+            .keylineTint(MurmurPalette.acidDark.recordingLevel)
         }
+    }
+}
+
+/// The Eco mark with its echo following the voice: close to the "m" in silence, out where the
+/// logo has it when someone speaks. Its move is animated between updates.
+struct EchoMark: View {
+    var state: RecordingAttributes.ContentState
+    var size: CGFloat
+    var body: some View {
+        let echo = state.pausedAt != nil ? 0.3 : 0.45 + 0.75 * min(1, state.voice)
+        LogoMark(size: size, echo: echo)
+            .murmurTheme(.acid).environment(\.colorScheme, .dark)
+            .animation(.spring(duration: 0.7, bounce: 0.35), value: echo)
     }
 }
 
@@ -59,16 +75,33 @@ struct RecordingTimer: View {
     }
 }
 
-struct LastLine: View {
-    @Environment(\.murmur) private var palette
+/// The voice of the last seconds in acid bars, eased between updates.
+struct VoiceBars: View {
     var state: RecordingAttributes.ContentState
     var body: some View {
+        let levels = state.levels.count >= 5 ? Array(state.levels.suffix(5)) : Array(repeating: 0.3, count: 5)
+        HStack(spacing: 4) {
+            ForEach(Array(levels.enumerated()), id: \.offset) { _, level in
+                Capsule()
+                    .fill(MurmurPalette.acidDark.recordingLevel.opacity(state.pausedAt == nil ? 1 : 0.35))
+                    .frame(width: 5, height: 6 + 22 * min(1, level))
+            }
+        }
+        .frame(height: 28)
+        .animation(.spring(duration: 0.6, bounce: 0.3), value: levels)
+    }
+}
+
+struct LastLine: View {
+    var state: RecordingAttributes.ContentState
+    var body: some View {
+        let dark = MurmurPalette.acidDark
         if state.lastLine.isEmpty {
-            Text(L("rec.listening")).font(.system(size: 15)).foregroundStyle(MurmurPalette.acidDark.textSecondary)
+            Text(L("rec.listening")).font(.system(size: 14)).foregroundStyle(dark.textSecondary)
         } else {
-            (Text(state.speaker.map { "\($0) · " } ?? "").fontWeight(.semibold).foregroundColor(MurmurPalette.acidDark.textPrimary)
-                + Text("…" + state.lastLine).foregroundColor(MurmurPalette.acidDark.textSecondary))
-                .font(.system(size: 15))
+            (Text(state.speaker.map { "\($0) · " } ?? "").fontWeight(.semibold).foregroundColor(dark.textPrimary)
+                + Text("…" + state.lastLine).foregroundColor(dark.textSecondary))
+                .font(.system(size: 14))
         }
     }
 }
@@ -81,23 +114,25 @@ struct RecordingButtons: View {
         let dark = MurmurPalette.acidDark
         HStack(spacing: 8) {
             Button(intent: MarkMomentIntent()) {
-                Label(L("rec.mark"), systemImage: "flag").frame(maxWidth: .infinity, minHeight: 40)
+                Label(L("rec.mark"), systemImage: "flag").frame(maxWidth: .infinity, minHeight: 34)
             }
             .tint(dark.textPrimary.opacity(0.14))
             Button(intent: TogglePauseIntent()) {
-                Label(paused ? L("rec.resume") : L("rec.pause"), systemImage: paused ? "record.circle" : "pause.fill").frame(maxWidth: .infinity, minHeight: 40)
+                Label(paused ? L("rec.resume") : L("rec.pause"), systemImage: paused ? "record.circle" : "pause.fill").frame(maxWidth: .infinity, minHeight: 34)
             }
             .tint(dark.textPrimary.opacity(0.14))
             Button(intent: StopRecordingIntent()) {
                 Label(confirming ? L("rec.stopConfirm") : L("rec.stop"), systemImage: "stop.fill")
-                    .frame(maxWidth: .infinity, minHeight: 40)
+                    .frame(maxWidth: .infinity, minHeight: 34)
                     .lineLimit(1).minimumScaleFactor(0.7)
             }
-            .tint(confirming ? dark.recordingDot : dark.recordingDot.opacity(0.75))
+            // The dark red with white (5.6:1), as in the app.
+            .tint(MurmurPalette.acidLight.recordingLabel)
         }
         .buttonStyle(.borderedProminent)
         .buttonBorderShape(.capsule)
-        .font(.system(size: 15, weight: .semibold))
+        .font(.system(size: 14, weight: .semibold))
+        .labelStyle(.titleAndIcon)
         .foregroundStyle(dark.onRecordingPill)
     }
 }
@@ -107,30 +142,25 @@ struct LockScreenRecording: View {
     var context: ActivityViewContext<RecordingAttributes>
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack(spacing: 10) {
-                LogoTile(size: 30)
-                VStack(alignment: .leading, spacing: 1) {
-                    Text(context.attributes.title).font(.system(size: 15, weight: .semibold)).foregroundStyle(palette.textPrimary)
+        VStack(alignment: .leading, spacing: 9) {
+            HStack(alignment: .center, spacing: 10) {
+                EchoMark(state: context.state, size: 30)
+                    .frame(width: 34, height: 34)
+                    .background(palette.logoBackground, in: RoundedRectangle(cornerRadius: 9, style: .continuous))
+                VStack(alignment: .leading, spacing: 0) {
+                    Text(context.attributes.title).font(.system(size: 14, weight: .semibold)).foregroundStyle(palette.textPrimary).lineLimit(1)
                     Text("\(context.state.pausedAt == nil ? L("rec.recording") : L("rec.pause")) · \(context.attributes.language)")
-                        .font(.system(size: 13)).foregroundStyle(palette.textSecondary)
+                        .font(.system(size: 12)).foregroundStyle(palette.textSecondary).lineLimit(1)
                 }
-                Spacer()
+                Spacer(minLength: 6)
+                VoiceBars(state: context.state)
+                RecordingTimer(state: context.state).font(.mono(26, weight: .medium)).foregroundStyle(palette.textPrimary)
+                    .frame(minWidth: 70, alignment: .trailing)
             }
-            HStack(alignment: .center) {
-                RecordingTimer(state: context.state).font(.mono(40, weight: .medium)).foregroundStyle(palette.textPrimary)
-                Spacer()
-                // Still bars in the acid, as in the desktop's pill (a Live Activity can't follow the voice).
-                HStack(spacing: 4) {
-                    ForEach([12, 22, 16, 26, 10] as [CGFloat], id: \.self) { h in
-                        Capsule().fill(palette.recordingLevel.opacity(context.state.pausedAt == nil ? 1 : 0.35)).frame(width: 5, height: h)
-                    }
-                }
-            }
-            LastLine(state: context.state).lineLimit(2)
+            LastLine(state: context.state).lineLimit(1)
             RecordingButtons(paused: context.state.pausedAt != nil, confirming: context.state.confirmingStop)
         }
-        .padding(16)
+        .padding(.horizontal, 14).padding(.vertical, 12)
     }
 }
 

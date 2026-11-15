@@ -23,6 +23,7 @@ targets:
       - Generated/murmur_mobile.swift
       - path: Resources/Localizable.xcstrings
       - path: Resources/InfoPlist.xcstrings
+      - path: Resources/Assets.xcassets
       - path: Resources/models
         type: folder
         buildPhase: resources
@@ -41,6 +42,8 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: com.quicodomingo.murmur.ios
         PRODUCT_NAME: Murmur
         INFOPLIST_FILE: Sources/Info.plist
+        # Resources/icon.svg, rendered by make-icon.sh.
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         SWIFT_OBJC_BRIDGING_HEADER: Sources/Murmur-Bridging-Header.h
         # The static library by its path: the crate also makes a .dylib (for Android), which -l
         # would prefer, and which the phone can't load.

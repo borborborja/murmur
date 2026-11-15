@@ -15,6 +15,11 @@ struct RecordingAttributes: ActivityAttributes {
         var speaker: String?
         /// Atura was tapped once: the button says "Toca per aturar" until a second tap (or 4 s).
         var confirmingStop = false
+        /// The voice over the last seconds (0…1), oldest first: the bars, and how far the mark's
+        /// echo stands from the "m" (the last one). Updated about once a second.
+        var levels: [Double] = []
+
+        var voice: Double { levels.last ?? 0 }
 
         var seconds: Double { pausedAt ?? Date().timeIntervalSince(startedAt) }
     }

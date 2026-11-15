@@ -1,0 +1,13 @@
+<!-- The iPhone app icon: the desktop's Eco mark (docs/design/icons/logo/murmur-mark.svg, the acid
+     theme's colours) on a full-bleed square, as iOS wants it (it rounds the corners itself).
+     tools: mobile/ios/Murmur/make-icon.sh renders it to AppIcon.png. -->
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 140 140">
+  <rect width="140" height="140" fill="#0B0B0B"/>
+  <!-- The mark with its echo spans x 51.5–155.5 and y 58.5–148.5: centred on its own box, at the
+       desktop icon's proportion (about half the width). -->
+  <g transform="translate(70 70) scale(0.7) translate(-103.5 -103.5)" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M60 140 V100 a18 18 0 0 1 36 0 V140 M96 100 a18 18 0 0 1 36 0 V140" transform="translate(15 -15)" stroke="#D4FF3A" stroke-width="17"/>
+    <path d="M60 140 V100 a18 18 0 0 1 36 0 V140 M96 100 a18 18 0 0 1 36 0 V140" stroke="#0B0B0B" stroke-width="27"/>
+    <path d="M60 140 V100 a18 18 0 0 1 36 0 V140 M96 100 a18 18 0 0 1 36 0 V140" stroke="#F5F5F5" stroke-width="17"/>
+  </g>
+</svg>

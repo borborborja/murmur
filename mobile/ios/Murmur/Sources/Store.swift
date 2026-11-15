@@ -165,13 +165,33 @@ final class Store: ObservableObject {
             pausedAt: live?.paused == true ? seconds : nil,
             lastLine: String((last?.text ?? "").suffix(140)),
             speaker: last.map { L("rec.speaker", "\($0.speaker + 1)") },
-            confirmingStop: stopArmed)
+            confirmingStop: stopArmed,
+            levels: recentLevels())
     }
+
+    /// The voice of the last 2.5 s in five half seconds (0…1), for the bars and the mark's echo.
+    private func recentLevels() -> [Double] {
+        let (now, samples) = meter.snapshot()
+        return (0..<5).reversed().map { k in
+            let from = now - Double(k + 1) * 0.5, to = now - Double(k) * 0.5
+            let level = samples.filter { $0.t >= from && $0.t < to }.map(\.level).max() ?? 0
+            return min(1, (Double(level) / 0.22).squareRoot())
+        }
+    }
+
+    /// Updates the Live Activity about once a second, for the voice; the time it counts itself.
+    private var activityTimer: Timer?
 
     private func startActivity(title: String) {
         guard ActivityAuthorizationInfo().areActivitiesEnabled else { return }
         let attributes = RecordingAttributes(title: title, language: languageName(language))
         activity = try? Activity.request(attributes: attributes, content: .init(state: activityState, staleDate: nil))
+        activityTimer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in
+            Task { @MainActor in
+                guard let self, self.live?.paused == false else { return }
+                self.updateActivity()
+            }
+        }
     }
 
     private func updateActivity() {
@@ -181,6 +201,8 @@ final class Store: ObservableObject {
     }
 
     private func endActivity() {
+        activityTimer?.invalidate()
+        activityTimer = nil
         guard let activity else { return }
         self.activity = nil
         let state = activityState

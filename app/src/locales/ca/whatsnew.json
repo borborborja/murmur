@@ -1,11 +1,29 @@
 {
-  "title": "Novetats de Murmur {{version}}",
-  "released": "Versió del {{date}}. Això és el que hi ha de nou.",
+  "heading": "Novetats de Murmur",
   "alsoIn": "També a la versió {{version}} · {{date}}",
+  "skipped_one": "I una versió més que t'has saltat: {{versions}}",
+  "skipped_other": "I {{count}} versions més que t'has saltat: {{versions}}",
   "dontShow": "No ho tornis a mostrar",
-  "dontShowHint": "Es pot tornar a activar a Configuració › General.",
   "ok": "Entesos",
   "releases": {
+    "0.13.0": [
+      {
+        "title": "Presenta't a Murmur",
+        "text": "Digues «Murmur, sóc la Marta» durant una reunió i aquell parlant passarà a dir-se Marta. Va bé quan sou diverses persones al mateix micròfon. Funciona en català, castellà i anglès."
+      },
+      {
+        "title": "Murmur et reconeix la veu",
+        "text": "Llegeix una frase en veu alta i, a partir d'aleshores, Murmur et marcarà com a «Tu» des de la primera paraula, en totes les reunions. L'empremta es queda a l'ordinador i la pots esborrar quan vulguis.",
+        "link": "transcription",
+        "linkLabel": "Desa la teva veu"
+      },
+      {
+        "title": "Estadístiques anònimes",
+        "text": "Per saber què cal millorar, Murmur envia dades d'ús anònimes, com ara quantes reunions fas i quant duren, en franges. No s'hi envia mai res del que es diu, ni títols, ni noms. Les pots desactivar a Configuració › General.",
+        "link": "general",
+        "linkLabel": "Configuració › General"
+      }
+    ],
     "0.12.1": [
       {
         "title": "Els dos Whisper, sempre a la vista",

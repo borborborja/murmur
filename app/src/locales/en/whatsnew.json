@@ -1,11 +1,29 @@
 {
-  "title": "What's New in Murmur {{version}}",
-  "released": "Released {{date}}. Here's what's new.",
+  "heading": "What's New in Murmur",
   "alsoIn": "Also in version {{version}} · {{date}}",
+  "skipped_one": "Plus one more version you skipped: {{versions}}",
+  "skipped_other": "Plus {{count}} more versions you skipped: {{versions}}",
   "dontShow": "Don't show this again",
-  "dontShowHint": "You can turn it back on in Settings › General.",
   "ok": "Got It",
   "releases": {
+    "0.13.0": [
+      {
+        "title": "Introduce yourself to Murmur",
+        "text": "Say “Murmur, I'm Marta” during a meeting and that speaker becomes Marta. Handy when several people share one microphone. Works in Catalan, Spanish and English."
+      },
+      {
+        "title": "Murmur knows your voice",
+        "text": "Read one sentence aloud and from then on Murmur labels you as “You” from the very first word, in every meeting. The voiceprint stays on your computer and you can delete it any time.",
+        "link": "transcription",
+        "linkLabel": "Save your voice"
+      },
+      {
+        "title": "Anonymous statistics",
+        "text": "To learn what to improve, Murmur sends anonymous usage data, such as how many meetings you have and how long they last, in ranges. Nothing that's said is ever sent, nor titles or names. You can turn them off in Settings › General.",
+        "link": "general",
+        "linkLabel": "Settings › General"
+      }
+    ],
     "0.12.1": [
       {
         "title": "Both Whispers, always in view",

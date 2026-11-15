@@ -144,7 +144,7 @@ struct RecordingCard: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            Waveform(levels: live?.levels ?? [], seconds: live?.seconds ?? 0)
+            Waveform(meter: store.meter, paused: live?.paused == true || live == nil)
                 .frame(height: 134)
             HStack(alignment: .bottom) {
                 VStack(alignment: .leading, spacing: 4) {
@@ -153,7 +153,10 @@ struct RecordingCard: View {
                         Text((live?.paused == true ? L("rec.pause") : L("rec.recording")).uppercased())
                             .font(.mono(11)).tracking(0.9).foregroundStyle(palette.textSecondary)
                     }
-                    Text(longClock(live?.seconds ?? 0)).font(.mono(40, weight: .medium)).tracking(-0.8)
+                    // The microphone's clock, not the engine's: it never stalls behind the transcription.
+                    TimelineView(.periodic(from: .now, by: 0.1)) { _ in
+                        Text(longClock(store.meter.seconds)).font(.mono(40, weight: .medium)).tracking(-0.8)
+                    }
                 }
                 Spacer()
                 Text(languageName(store.language)).font(.system(size: 13)).foregroundStyle(palette.textSecondary)
@@ -167,38 +170,48 @@ struct RecordingCard: View {
 }
 
 /// What has been heard, a bar per half second up to the red line (now), dotted after it, over a
-/// ruler with the time every 5 seconds: the ruler and the bars share one scale.
+/// ruler with the time every 5 seconds: the ruler and the bars share one scale. It's drawn every
+/// frame from the microphone's clock, so it glides instead of jumping when the data arrives.
 struct Waveform: View {
     @Environment(\.murmur) private var palette
-    var levels: [Float]
-    var seconds: Double
+    var meter: Meter
+    var paused: Bool
 
-    /// Pieces of audio come every ~100 ms: five make a bar.
-    private static let perBar = 5
     private static let barSeconds = 0.5
     private static let step: CGFloat = 4
     private static let rulerHeight: CGFloat = 30
 
     var body: some View {
-        Canvas { ctx, size in
+        TimelineView(.animation(minimumInterval: nil, paused: paused)) { _ in
+            let (seconds, samples) = meter.snapshot()
+            Canvas { ctx, size in
+                draw(&ctx, size: size, seconds: seconds, samples: samples)
+            }
+        }
+    }
+
+    private func draw(_ ctx: inout GraphicsContext, size: CGSize, seconds: Double, samples: [Meter.Sample]) {
             let waveHeight = size.height - Self.rulerHeight
             let mid = waveHeight / 2 + 6
             let now = (size.width * 0.62).rounded()
-            // The bars, newest at the red line.
-            let bars = stride(from: 0, to: levels.count, by: Self.perBar).map { levels[$0..<min(levels.count, $0 + Self.perBar)].max() ?? 0 }
-            for (k, level) in bars.reversed().enumerated() {
-                let x = now - Self.step * CGFloat(k + 1)
-                if x < 10 { break }
+            let pxPerSecond = Self.step / Self.barSeconds
+            // The bars: the loudest piece of each half second, placed by its time, so they slide.
+            var bars: [Int: Float] = [:]
+            for s in samples { bars[Int(s.t / Self.barSeconds), default: 0] = max(bars[Int(s.t / Self.barSeconds)] ?? 0, s.level) }
+            for (index, level) in bars {
+                let x = now - CGFloat(seconds - Double(index + 1) * Self.barSeconds) * pxPerSecond
+                guard x > 10, x <= now - 2 else { continue }
                 let v = CGFloat(min(1, (Double(level) / 0.22).squareRoot()))
                 let h = max(2, v * 56)
                 ctx.fill(Path(roundedRect: CGRect(x: x, y: mid - h / 2, width: 2, height: h), cornerRadius: 1), with: .color(palette.textTertiary.opacity(0.8)))
             }
-            for x in stride(from: now + Self.step, to: size.width - 10, by: Self.step) {
+            // The dots ahead also slide, so the whole strip moves as one.
+            let shift = CGFloat(seconds.truncatingRemainder(dividingBy: Self.barSeconds)) * pxPerSecond
+            for x in stride(from: now + Self.step - shift, to: size.width - 10, by: Self.step) where x > now + 2 {
                 ctx.fill(Path(CGRect(x: x, y: mid - 1, width: 2, height: 2)), with: .color(palette.separator))
             }
             // The ruler: a line, and the time every 5 s where it falls.
             ctx.fill(Path(CGRect(x: 0, y: waveHeight, width: size.width, height: 1)), with: .color(palette.separator))
-            let pxPerSecond = Self.step / Self.barSeconds
             let first = (seconds - Double(now) / pxPerSecond) / 5
             for mark in stride(from: max(0, first.rounded(.up) * 5), through: seconds + Double(size.width - now) / pxPerSecond, by: 5) {
                 let x = now + CGFloat(mark - seconds) * pxPerSecond
@@ -208,7 +221,6 @@ struct Waveform: View {
                          at: CGPoint(x: x, y: waveHeight + Self.rulerHeight / 2))
             }
             ctx.fill(Path(roundedRect: CGRect(x: now, y: 12, width: 2, height: waveHeight - 12), cornerRadius: 1), with: .color(palette.recordingDot))
-        }
     }
 }
 

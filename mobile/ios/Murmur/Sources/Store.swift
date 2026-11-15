@@ -26,8 +26,6 @@ struct LiveMeeting {
     var seconds: Double = 0
     var lines: [Line] = []
     var partial = ""
-    /// The level of each piece of audio (~100 ms), for the waveform.
-    var levels: [Float] = []
     var notes: [NoteItem] = []
     var paused = false
 
@@ -48,6 +46,57 @@ final class Gate: @unchecked Sendable {
     }
 }
 
+/// The recording's own clock and sound level, kept on the microphone's side. The waveform, the
+/// timer and the level bars follow them every frame, without waiting for the engine, which can be
+/// busy for half a second redoing the provisional text.
+final class Meter: @unchecked Sendable {
+    struct Sample { let t: Double; let level: Float }
+    private let lock = NSLock()
+    private var samples: [Sample] = []
+    /// Seconds recorded before the current run (pauses stop the clock).
+    private var recorded = 0.0
+    private var runStart: CFTimeInterval?
+    private var last: Float = 0
+
+    func reset() {
+        lock.lock(); defer { lock.unlock() }
+        samples = []; recorded = 0; last = 0
+        runStart = CACurrentMediaTime()
+    }
+
+    func pause() {
+        lock.lock(); defer { lock.unlock() }
+        if let start = runStart { recorded += CACurrentMediaTime() - start; runStart = nil }
+        last = 0
+    }
+
+    func resume() {
+        lock.lock(); defer { lock.unlock() }
+        if runStart == nil { runStart = CACurrentMediaTime() }
+    }
+
+    private var now: Double { recorded + (runStart.map { CACurrentMediaTime() - $0 } ?? 0) }
+
+    /// Seconds recorded, by the wall clock, without the pauses.
+    var seconds: Double { lock.lock(); defer { lock.unlock() }; return now }
+    var level: Float { lock.lock(); defer { lock.unlock() }; return last }
+
+    /// A piece of audio from the microphone (its rms).
+    func add(_ audio: [Float]) {
+        guard !audio.isEmpty else { return }
+        let rms = (audio.reduce(0) { $0 + $1 * $1 } / Float(audio.count)).squareRoot()
+        lock.lock(); defer { lock.unlock() }
+        samples.append(Sample(t: now, level: rms))
+        last = rms
+        if samples.count > 1500 { samples.removeFirst(300) }
+    }
+
+    func snapshot() -> (seconds: Double, samples: [Sample]) {
+        lock.lock(); defer { lock.unlock() }
+        return (now, samples)
+    }
+}
+
 /// The app's state: the meetings on this phone and the recording, over murmur-mobile (Rust).
 @MainActor
 final class Store: ObservableObject {
@@ -59,6 +108,7 @@ final class Store: ObservableObject {
     private let queue = DispatchQueue(label: "murmur.engine", qos: .userInitiated)
     private let microphone = Microphone()
     private let paused = Gate()
+    let meter = Meter()
 
     init() {
         let models = (Bundle.main.resourcePath ?? "") + "/models"
@@ -98,9 +148,11 @@ final class Store: ObservableObject {
             let id = try await onQueue { try engine.start(title: title, language: language, moreInRoom: room, partialEvery: every) }
             live = LiveMeeting(id: id, title: title)
             paused.isOn = false
-            let gate = paused
+            meter.reset()
+            let gate = paused, meter = meter
             try microphone.start { [weak self] samples in
                 guard !gate.isOn else { return }
+                meter.add(samples)
                 self?.queue.async {
                     guard let update = try? engine.push(samples: samples) else { return }
                     Task { @MainActor in self?.apply(update) }
@@ -118,6 +170,7 @@ final class Store: ObservableObject {
         guard live != nil else { return }
         live?.paused.toggle()
         paused.isOn = live?.paused ?? false
+        if paused.isOn { meter.pause() } else { meter.resume() }
     }
 
     func mark() {
@@ -166,8 +219,6 @@ final class Store: ObservableObject {
         if !u.finals.isEmpty { live?.partial = "" }
         if let p = u.partial { live?.partial = p }
         live?.seconds = u.seconds
-        live?.levels.append(u.level)
-        if (live?.levels.count ?? 0) > 1200 { live?.levels.removeFirst(200) }
     }
 
     private func onQueue<T>(_ work: @escaping () throws -> T) async throws -> T {

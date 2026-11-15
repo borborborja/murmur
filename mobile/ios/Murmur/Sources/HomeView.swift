@@ -73,9 +73,11 @@ struct Dock: View {
             side("list.bullet", L("dock.meetings"), on: tab == .meetings) { tab = .meetings }
             if let live = store.live {
                 Button(action: openRecording) {
-                    HStack(spacing: 10) {
-                        LevelBars(level: live.paused ? 0 : (live.levels.last ?? 0))
-                        Text(clock(live.seconds)).font(.mono(17, weight: .semibold))
+                    TimelineView(.periodic(from: .now, by: 0.1)) { _ in
+                        HStack(spacing: 10) {
+                            LevelBars(level: live.paused ? 0 : store.meter.level)
+                            Text(clock(store.meter.seconds)).font(.mono(17, weight: .semibold))
+                        }
                     }
                     .frame(minWidth: 120, minHeight: 56).padding(.horizontal, 18)
                     .background(palette.recordingPill, in: Capsule())
@@ -267,17 +269,22 @@ func languageName(_ code: String) -> String {
 
 struct LiveCard: View {
     @Environment(\.murmur) private var palette
+    @EnvironmentObject private var store: Store
     var live: LiveMeeting
     var body: some View {
         HStack(alignment: .top, spacing: 13) {
-            Circle().fill(palette.recordingPill).frame(width: 40, height: 40)
-                .overlay(LevelBars(level: live.levels.last ?? 0, count: 3, height: 15))
+            TimelineView(.periodic(from: .now, by: 0.1)) { _ in
+                Circle().fill(palette.recordingPill).frame(width: 40, height: 40)
+                    .overlay(LevelBars(level: live.paused ? 0 : store.meter.level, count: 3, height: 15))
+            }
             VStack(alignment: .leading, spacing: 4) {
                 HStack {
                     Text(live.title).font(.system(size: 17, weight: .semibold)).lineLimit(1)
                     Spacer()
-                    HStack(spacing: 6) { RecordingDot(); Text(clock(live.seconds)).font(.mono(13, weight: .bold)) }
-                        .foregroundStyle(palette.recordingLabel)
+                    TimelineView(.periodic(from: .now, by: 0.5)) { _ in
+                        HStack(spacing: 6) { RecordingDot(); Text(clock(store.meter.seconds)).font(.mono(13, weight: .bold)) }
+                            .foregroundStyle(palette.recordingLabel)
+                    }
                 }
                 Text(live.lastLine.isEmpty ? L("rec.listening") : "…" + live.lastLine)
                     .font(.system(size: 15)).lineLimit(1)

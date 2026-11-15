@@ -768,10 +768,11 @@ fn prune_tags(tx: &Transaction) -> Result<()> {
 
 fn upsert_utterance(tx: &Transaction, meeting_id: &str, u: &Utterance) -> Result<()> {
     tx.execute(
-        "INSERT INTO utterances (id, meeting_id, start, end, speaker, text, edited)
-         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)
+        "INSERT INTO utterances (id, meeting_id, start, end, speaker, text, edited, speaker_locked)
+         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)
          ON CONFLICT(id) DO UPDATE SET start = excluded.start, end = excluded.end,
-             speaker = excluded.speaker, text = excluded.text, edited = excluded.edited",
+             speaker = excluded.speaker, text = excluded.text, edited = excluded.edited,
+             speaker_locked = excluded.speaker_locked",
         params![
             u.id,
             meeting_id,
@@ -779,7 +780,8 @@ fn upsert_utterance(tx: &Transaction, meeting_id: &str, u: &Utterance) -> Result
             u.end,
             u.speaker,
             u.text,
-            u.edited as i64
+            u.edited as i64,
+            u.speaker_locked as i64
         ],
     )?;
     Ok(())
@@ -996,6 +998,12 @@ mod tests {
         assert_eq!(db.search("plugin", 10).unwrap()[0].kind, "note");
         assert!(
             db.get("m1").unwrap().unwrap()["utterances"][0]["edited"]
+                .as_bool()
+                .unwrap()
+        );
+        // A speaker set by hand is kept, so the final pass leaves it alone.
+        assert!(
+            db.get("m1").unwrap().unwrap()["utterances"][0]["speakerLocked"]
                 .as_bool()
                 .unwrap()
         );

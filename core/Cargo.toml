@@ -30,6 +30,10 @@ ureq = { version = "2", features = ["json"] }
 sha2 = "0.10"
 semver = "1"
 libc = "0.2"
+# Pairing with the phone (sync.rs): Noise, the keys and the QR.
+snow = "0.9"
+x25519-dalek = { version = "2", features = ["static_secrets"] }
+base64 = "0.22"
 
 [target.'cfg(windows)'.dependencies]
 windows-sys = { version = "0.60", features = ["Win32_Foundation", "Win32_Storage_FileSystem"] }

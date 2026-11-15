@@ -15,4 +15,5 @@ pub mod playback;
 pub mod punctuate;
 pub mod recorder;
 pub mod storage;
+pub mod sync;
 pub mod voice;

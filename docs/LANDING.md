@@ -1,25 +1,25 @@
 # Landing de descàrrega
 
-Tot el que cal per fer la pàgina de descàrrega de Murmur: el missatge, els textos de cada secció en català, castellà i anglès, les captures que tenim i les que falten. Les dades surten del README i de la versió 0.11.2; si canvia alguna funcionalitat, s'actualitza aquí també.
+Tot el que cal per fer la pàgina de descàrrega de Murmur: el missatge, els textos de cada secció en català, castellà i anglès, les captures que tenim i les que falten. Les dades surten del README i de la versió 0.14.0 (les novetats des de la primera versió, i el post del blog, són a [NOVETATS-0.14.md](NOVETATS-0.14.md)); si canvia alguna funcionalitat, s'actualitza aquí també.
 
 ## Dades bàsiques
 
 | | |
 |---|---|
 | Nom | Murmur (sempre amb majúscula al text; el logotip és «murmur» en minúscula) |
-| Plataforma | Mac amb Apple Silicon (M1 o posterior), macOS 14.2 o posterior |
+| Plataforma | Mac amb Apple Silicon (M1 o posterior) i macOS 14.2 o posterior; Windows 10 i 11 i Linux de 64 bits, amb un processador amb AVX2 (Intel des del 2013, AMD des del 2015). Ben aviat, iPhone, iPad i Android |
 | Preu | Gratuïta. Codi obert amb llicència MIT |
-| Descàrrega | https://github.com/quicodomingo/murmur-releases/releases/latest (el `.dmg` porta la versió al nom, així que l'enllaç estable és el de la pàgina, no el del fitxer) |
+| Descàrrega | https://github.com/quicodomingo/murmur-releases/releases/latest (els fitxers porten la versió al nom, així que l'enllaç estable és el de la pàgina, no el del fitxer): el `.dmg` del Mac, `Murmur_<versió>_x64-setup.exe` per a Windows, i el `.deb` i el `.rpm` per a Linux |
 | Codi | https://github.com/quicodomingo/murmur |
-| Signatura | Signada i notaritzada per Apple. S'actualitza sola |
-| Idiomes de les reunions | Català, castellà, català i castellà barrejats, anglès |
+| Signatura | Al Mac, signada i notaritzada per Apple. A Windows, l'instal·lador encara no està signat (SmartScreen avisa el primer cop). S'actualitza sola a tot arreu |
+| Idiomes de les reunions | Català (central, valencià i balear), castellà, català i castellà barrejats, anglès |
 | Idiomes de la interfície | Català, castellà, anglès |
 | Icona | `docs/murmur-icon-acid-1024.png` (i les variants de `docs/design/`) |
 | Colors i tipografia | [`docs/design/DESIGN.md`](design/DESIGN.md). L'àcid (#D4FF3A) mai és text ni línia sobre fons clar |
 
 ## El missatge
 
-Una idea central: **transcriu les reunions al teu Mac, en català, sense enviar res enlloc.** Tres arguments la sostenen, per aquest ordre:
+Una idea central: **transcriu les reunions al teu ordinador, en català, sense enviar res enlloc.** Tres arguments la sostenen, per aquest ordre:
 
 1. **Privat de debò.** L'àudio no surt mai de l'ordinador. Sense compte i sense subscripció.
 2. **Fet per al català.** Entén el català, el castellà i les dues llengües barrejades dins la mateixa frase, que és on fallen els altres.
@@ -31,11 +31,11 @@ Una idea central: **transcriu les reunions al teu Mac, en català, sense enviar 
 
 | | Català | Castellà | Anglès |
 |---|---|---|---|
-| Titular | Les teves reunions, transcrites al teu Mac. | Tus reuniones, transcritas en tu Mac. | Your meetings, transcribed on your Mac. |
+| Titular | Les teves reunions, transcrites al teu ordinador. | Tus reuniones, transcritas en tu ordenador. | Your meetings, transcribed on your computer. |
 | Subtítol | En català, castellà i anglès, en directe i amb qui diu què. Res surt de l'ordinador. | En catalán, castellano e inglés, en directo y con quién dice qué. Nada sale del ordenador. | In Catalan, Spanish and English, live, with who said what. Nothing leaves your computer. |
-| Botó | Descarrega per a Mac | Descargar para Mac | Download for Mac |
-| Sota el botó | Gratuïta · Apple Silicon · macOS 14.2 o posterior | Gratis · Apple Silicon · macOS 14.2 o posterior | Free · Apple Silicon · macOS 14.2 or later |
-| Enllaç sota el botó | També per a Windows i Linux | También para Windows y Linux | Also for Windows and Linux |
+| Botó (segons el sistema de qui visita) | Descarrega per a Mac / per a Windows / per a Linux | Descargar para Mac / para Windows / para Linux | Download for Mac / for Windows / for Linux |
+| Sota el botó | Gratuïta · Mac, Windows i Linux | Gratis · Mac, Windows y Linux | Free · Mac, Windows and Linux |
+| Enllaç sota el botó | Altres sistemes | Otros sistemas | Other platforms |
 
 Captura: `01-reunio` (o `02-reunio-fosc` si la pàgina és fosca).
 
@@ -57,23 +57,27 @@ Captures: `01-reunio` per als passos 1 i 2, `03-resum` o `05-resum-sencer` per a
 
 ### 4. Funcionalitats
 
-Cinc blocs. Cadascun amb un títol i una o dues frases; el detall és al README.
+Vuit blocs. Cadascun amb un títol i una o dues frases; el detall és al README.
 
 | Bloc | Català | Castellà | Anglès | Captura |
 |---|---|---|---|---|
 | Parlants | **Qui diu què.** Les veus s'agrupen en directe i es comproven en acabar. Posa-hi noms, o tria'ls entre els convidats del calendari. | **Quién dice qué.** Las voces se agrupan en directo y se comprueban al terminar. Ponles nombre, o elígelos entre los invitados del calendario. | **Who said what.** Voices are grouped live and checked again at the end. Name them, or pick from the calendar guests. | `01-reunio` |
+| La teva veu i presentacions | **Et reconeix.** Llegeix una frase i Murmur et marcarà com a «Tu» a totes les reunions; l'empremta es queda a l'ordinador. A la sala, n'hi ha prou amb dir «Murmur, sóc la Marta». | **Te reconoce.** Lee una frase y Murmur te marcará como «Tú» en todas las reuniones; la huella se queda en el ordenador. En la sala, basta con decir «Murmur, soy Marta». | **It knows your voice.** Read one sentence and Murmur marks you as "You" in every meeting; the voiceprint stays on your computer. In the room, just say "Murmur, I'm Marta". | `20-la-teva-veu`, `21-presenta-te` |
 | Notes | **Notes lligades al moment.** Títols, llistes, caselles i sagnats. Cada nota recorda el minut en què la vas escriure, i les captures de pantalla queden al costat del que es deia. | **Notas ligadas al momento.** Títulos, listas, casillas y sangrías. Cada nota recuerda el minuto en que la escribiste, y las capturas quedan junto a lo que se decía. | **Notes tied to the moment.** Headings, lists, checkboxes and indents. Each note remembers the minute you wrote it, and screenshots sit next to what was being said. | `01-reunio` |
 | Resum | **El resum, les decisions i les tasques.** Amb el to de la reunió, qui ha parlat i quant, i les parts amb les captures. El fa un model local; si vols, Claude o OpenAI amb la teva clau. | **El resumen, las decisiones y las tareas.** Con el tono de la reunión, quién ha hablado y cuánto, y las partes con las capturas. Lo hace un modelo local; si quieres, Claude u OpenAI con tu clave. | **Summary, decisions and tasks.** With the meeting's tone, who spoke and for how long, and its parts with the screenshots. A local model writes it; or Claude or OpenAI with your own key. | `03-resum`, `05-resum-sencer` |
-| Calendari | **Sap quan comença la reunió.** T'avisa dos minuts abans i la gravació agafa el títol i els convidats. iCloud, Google o Exchange, a través del Calendari de macOS. | **Sabe cuándo empieza la reunión.** Te avisa dos minutos antes y la grabación toma el título y los invitados. iCloud, Google o Exchange, a través del Calendario de macOS. | **Knows when your meeting starts.** It alerts you two minutes before, and the recording takes the event's title and guests. iCloud, Google or Exchange, via macOS Calendar. | Falta (vegeu més avall) |
-| Compartir i exportar | **Comparteix-la o endu-te-la.** Un enllaç xifrat al teu compte gratuït de Cloudflare, amb caducitat i contrasenya si vols. O Word, PDF, Markdown a la teva carpeta, àudio i captures. | **Compártela o llévatela.** Un enlace cifrado en tu cuenta gratuita de Cloudflare, con caducidad y contraseña si quieres. O Word, PDF, Markdown en tu carpeta, audio y capturas. | **Share it or take it with you.** An encrypted link on your free Cloudflare account, with expiry and a password if you like. Or Word, PDF, Markdown to your folder, audio and screenshots. | `09-exportar` |
+| Traducció | **En una altra llengua.** Tradueix la transcripció al català, al castellà o a l'anglès, i tria en quina llengua vols el resum. L'original no es toca. | **En otra lengua.** Traduce la transcripción al catalán, al castellano o al inglés, y elige en qué lengua quieres el resumen. El original no se toca. | **In another language.** Translate the transcript into Catalan, Spanish or English, and choose the summary's language. The original stays as it was. | Falta |
+| Calendari | **Sap quan comença la reunió.** T'avisa dos minuts abans i la gravació agafa el títol i els convidats. iCloud, Google o Exchange, a través del Calendari de macOS (de moment, només al Mac). | **Sabe cuándo empieza la reunión.** Te avisa dos minutos antes y la grabación toma el título y los invitados. iCloud, Google o Exchange, a través del Calendario de macOS. | **Knows when your meeting starts.** It alerts you two minutes before, and the recording takes the event's title and guests. iCloud, Google or Exchange, via macOS Calendar. | Falta (vegeu més avall) |
+| Compartir i exportar | **Comparteix-la o endu-te-la.** Un enllaç xifrat al teu compte gratuït de Cloudflare, amb caducitat i contrasenya si vols. O Word, PDF, Markdown a la teva carpeta, subtítols, àudio i captures. | **Compártela o llévatela.** Un enlace cifrado en tu cuenta gratuita de Cloudflare, con caducidad y contraseña si quieres. O Word, PDF, Markdown en tu carpeta, subtítulos, audio y capturas. | **Share it or take it with you.** An encrypted link on your free Cloudflare account, with expiry and a password if you like. Or Word, PDF, Markdown to your folder, subtitles, audio and screenshots. | `09-exportar`, `15-exportar-notion-obsidian` |
+| Notion i Obsidian | **On ja treballes.** Desa cada reunió a Notion, sense crear cap clau, o com una nota a la teva caixa forta d'Obsidian, amb les tasques i les captures. A mà o sola en acabar. | **Donde ya trabajas.** Guarda cada reunión en Notion, sin crear ninguna clave, o como una nota en tu bóveda de Obsidian, con las tareas y las capturas. A mano o sola al terminar. | **Where you already work.** Save each meeting to Notion, with no key to create, or as a note in your Obsidian vault, with tasks and screenshots. By hand or on its own when it ends. | `16-desat-notion`, `17-desat-obsidian`, `18-configuracio-exportar` |
+| Vídeos i subtítols | **Subtitula un vídeo.** Deixa anar un vídeo (mp4, mov, mkv, webm) i Murmur en transcriu el so. Exporta els subtítols en SRT o WebVTT, al costat del vídeo i amb el seu nom. | **Subtitula un vídeo.** Suelta un vídeo (mp4, mov, mkv, webm) y Murmur transcribe su sonido. Exporta los subtítulos en SRT o WebVTT, junto al vídeo y con su nombre. | **Subtitle a video.** Drop a video (mp4, mov, mkv, webm) and Murmur transcribes its sound. Export subtitles as SRT or WebVTT, next to the video and with its name. | Falta |
 
-Funcionalitats més petites, per a una llista o una graella d'icones: cerca a totes les reunions (`10-cerca`), etiquetes, glossari de noms i marques, transcriure un fitxer d'àudio, continuar una reunió aturada, connector per a Claude, tres temes amb mode clar i fosc (`06` a `08`).
+Funcionalitats més petites, per a una llista o una graella d'icones: cerca a totes les reunions (`10-cerca`), etiquetes, glossari de noms i marques, transcriure un fitxer d'àudio o de vídeo, ajuntar dos parlants, continuar una reunió aturada, connector per a Claude, tres temes amb mode clar i fosc (`06` a `08`).
 
 ### 5. Privadesa
 
 | Català | Castellà | Anglès |
 |---|---|---|
-| **Tot es queda en aquest Mac.** La veu, els parlants i el resum es processen a l'ordinador. Murmur només es connecta per descarregar els models, buscar actualitzacions i enviar estadístiques d'ús anònimes, que es poden desactivar. Sense compte i sense subscripció. Si comparteixes una reunió, es xifra abans de sortir del Mac. | **Todo se queda en este Mac.** La voz, los hablantes y el resumen se procesan en el ordenador. Murmur solo se conecta para descargar los modelos, buscar actualizaciones y enviar estadísticas de uso anónimas, que se pueden desactivar. Sin cuenta y sin suscripción. Si compartes una reunión, se cifra antes de salir del Mac. | **Everything stays on this Mac.** Speech, speakers and the summary are processed on your computer. Murmur only goes online to download models, check for updates and send anonymous usage statistics, which you can turn off. No account, no subscription. If you share a meeting, it's encrypted before it leaves your Mac. |
+| **Tot es queda al teu ordinador.** La veu, els parlants i el resum es processen a l'ordinador. Murmur només es connecta per descarregar els models, buscar actualitzacions i enviar estadístiques d'ús anònimes, que es poden desactivar. Sense compte i sense subscripció. Si comparteixes una reunió, es xifra abans de sortir de l'ordinador. Si connectes Notion, només hi va el text de les reunions que hi desis, directament al teu espai. | **Todo se queda en tu ordenador.** La voz, los hablantes y el resumen se procesan en el ordenador. Murmur solo se conecta para descargar los modelos, buscar actualizaciones y enviar estadísticas de uso anónimas, que se pueden desactivar. Sin cuenta y sin suscripción. Si compartes una reunión, se cifra antes de salir del ordenador. Si conectas Notion, solo le llega el texto de las reuniones que guardes allí, directamente a tu espacio. | **Everything stays on your computer.** Speech, speakers and the summary are processed on your computer. Murmur only goes online to download models, check for updates and send anonymous usage statistics, which you can turn off. No account, no subscription. If you share a meeting, it's encrypted before it leaves your computer. If you connect Notion, only the text of the meetings you save there goes to it, straight to your own workspace. |
 
 Nota que ha de sortir a prop: **per gravar una reunió cal el consentiment de tothom que hi participa** (*Grabar una reunión requiere el consentimiento de todos los participantes* / *Recording a meeting requires everyone's consent*).
 
@@ -86,11 +90,15 @@ Nota que ha de sortir a prop: **per gravar una reunió cal el consentiment de to
 | Cal connexió a internet? | Només el primer cop, per descarregar els models (uns 600 MB), i per buscar actualitzacions. |
 | Quanta memòria cal? | En té prou amb 8 GB. Per al resum local se'n recomanen 16; si no, el resum el pot fer Claude o OpenAI amb la teva clau. |
 | Funciona a Windows, a Linux o a Macs amb Intel? | A Windows 10 o 11 i a Linux de 64 bits, sí, des de la 0.12, gràcies a @xaviviro (cal un processador amb AVX2: Intel des del 2013, AMD des del 2015). Als Macs amb Intel, no. |
-| On es desen les reunions? | En una base de dades al teu Mac. L'àudio només es desa si ho actives. També pots desar cada reunió en Markdown a la carpeta que triïs. |
+| Entén el valencià i el balear? | Sí. En acabar, el Whisper català del BSC torna a escoltar la reunió, i és el millor de les nostres proves amb totes tres variants. |
+| Pot transcriure un vídeo? | Sí: mp4, mov, m4v, mkv i webm. Murmur n'agafa només el so, i en pots exportar els subtítols. |
+| Què s'envia a Notion? | Només el text de la reunió (resum, notes i transcripció), quan l'exportes o en acabar si ho tens activat. Mai l'àudio ni les captures. |
+| Hi haurà app per al mòbil? | Sí, per a iPhone, iPad i Android. Podrà gravar sense l'ordinador i, quan s'hi connecti, l'ordinador refarà la transcripció. |
+| On es desen les reunions? | En una base de dades al teu ordinador. L'àudio només es desa si ho actives. També pots desar cada reunió en Markdown a la carpeta que triïs. |
 
 ### 7. Peu
 
-Codi obert (MIT) · GitHub · amb models del projecte AINA i del BSC, NVIDIA, OpenAI, Softcatalà i Google (la taula de models és al README, amb les llicències).
+Codi obert (MIT) · GitHub · Windows i Linux gràcies a @xaviviro · amb models del projecte AINA i del BSC, NVIDIA, OpenAI, Softcatalà i Google (la taula de models és al README, amb les llicències).
 
 ## Captures
 
@@ -141,4 +149,8 @@ Aquestes només es poden fer amb l'app de veritat, perquè depenen del motor, de
 - [ ] **Compartir:** el diàleg amb un Worker connectat (què hi surt, caducitat, contrasenya) i la pàgina que veu qui rep l'enllaç.
 - [ ] **Continuar una reunió:** el botó «Continua» després d'aturar, i la pausa marcada a la transcripció.
 - [ ] **Claude** llegint una reunió amb el connector, si es vol parlar d'aquesta funcionalitat.
+- [ ] **Subtítols sobre un vídeo:** un vídeo transcrit amb el `.srt` carregat a VLC o IINA. És la imatge del bloc de vídeos.
+- [ ] **La traducció:** una reunió amb la transcripció traduïda i el segmentat Original / traducció.
+- [ ] **Windows:** la finestra de Murmur a Windows.
+- [ ] **Dins Obsidian i Notion:** la nota a Obsidian i la pàgina a Notion, fetes amb l'app de veritat (les de Murmur són simulades).
 - [ ] Un vídeo curt (20 a 30 segons) d'una gravació en directe, si la landing en vol.

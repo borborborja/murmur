@@ -89,4 +89,4 @@ Amb les apps de demostració de sherpa-onnx (Android i iOS), carregar-hi el nost
 2. La qualitat en català, comparada amb el Mac (la mateixa gravació).
 3. La bateria i la temperatura en mitja hora de gravació.
 
-Si surt bé, el pas següent és provar si Tauri mobile compila el motor.
+Si surt bé, el pas següent és la primera app SwiftUI (punt 4 de l'ordre de feina), amb el motor de `core/` cridat amb UniFFI.

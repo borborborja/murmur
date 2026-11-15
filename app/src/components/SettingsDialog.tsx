@@ -1271,6 +1271,144 @@ function ExportTab({ settings, onChange }: { settings: Settings; onChange: Props
         <Lock className="mt-px size-3 shrink-0" aria-hidden />
         <span>{t("export.privacy")}</span>
       </p>
+      <NotionGroup settings={settings} onChange={onChange} />
+    </>
+  );
+}
+
+/**
+ * Notion (notion.rs): "Connecta amb Notion" signs in in the browser, with nothing to create or
+ * paste; then the page meetings go under, found as you type, and whether each one goes on its own.
+ */
+function NotionGroup({ settings, onChange }: { settings: Settings; onChange: Props["onChange"] }) {
+  const { t } = useTranslation("settings");
+  const [status, setStatus] = useState<backend.NotionStatus | null>(null);
+  const [waiting, setWaiting] = useState(false);
+  const [picking, setPicking] = useState(false);
+  const [query, setQuery] = useState("");
+  const [places, setPlaces] = useState<backend.NotionPlace[] | null>(null);
+  useEffect(() => {
+    if (backend.isTauri()) backend.notionStatus().then(setStatus).catch(() => {});
+  }, []);
+  // The picker: recent pages at first, then what matches as you type.
+  useEffect(() => {
+    if (!picking) return;
+    let current = true;
+    setPlaces(null);
+    const timer = window.setTimeout(() => {
+      backend
+        .notionFind(query)
+        .then((p) => current && setPlaces(p))
+        .catch((e) => {
+          if (current) setPlaces([]);
+          toast.error(String(e));
+        });
+    }, 250);
+    return () => {
+      current = false;
+      window.clearTimeout(timer);
+    };
+  }, [picking, query]);
+
+  const connect = async () => {
+    setWaiting(true);
+    try {
+      const workspace = await backend.notionConnect();
+      setStatus({ connected: true, workspace });
+      toast(t("export.notionConnected", { workspace }));
+    } catch (e) {
+      toast.error(String(e));
+    } finally {
+      setWaiting(false);
+    }
+  };
+  const disconnect = async () => {
+    const confirmed = await ask(t("export.notionDisconnectMessage"), { title: t("export.notionDisconnectTitle"), kind: "warning", okLabel: t("export.notionDisconnect"), cancelLabel: t("common:cancel") });
+    if (!confirmed) return;
+    await backend.notionDisconnect().catch((e) => toast.error(String(e)));
+    setStatus({ connected: false, workspace: null });
+    onChange({ notionAuto: false });
+  };
+
+  return (
+    <>
+      <Group title="Notion">
+        {status?.connected ? (
+          <Row label={t("export.notionWorkspace", { workspace: status.workspace ?? "Notion" })} hint={t("export.notionConnectedHint")}>
+            <button type="button" className={cn(SMALL_BUTTON, "text-destructive")} onClick={() => void disconnect()}>
+              {t("export.notionDisconnect")}
+            </button>
+          </Row>
+        ) : (
+          <Row label={t("export.notionConnect")} hint={waiting ? t("export.notionWaiting") : t("export.notionConnectHint")}>
+            {waiting ? (
+              <button type="button" className={SMALL_BUTTON} onClick={() => void backend.notionCancel()}>
+                {t("common:cancel")}
+              </button>
+            ) : (
+              <button type="button" className={SMALL_BUTTON} disabled={!backend.isTauri()} onClick={() => void connect()}>
+                {t("export.notionConnectButton")}
+              </button>
+            )}
+          </Row>
+        )}
+        {status?.connected && (
+          <>
+            <Row label={t("export.notionPage")} hint={settings.notionPage?.title ?? t("export.notionPrivate")}>
+              <button type="button" className={SMALL_BUTTON} aria-expanded={picking} onClick={() => setPicking((p) => !p)}>
+                {picking ? t("common:cancel") : t("export.chooseVault")}
+              </button>
+            </Row>
+            {picking && (
+              <div className="px-3 py-2.5">
+                <input
+                  type="search"
+                  autoFocus
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder={t("export.notionSearch")}
+                  aria-label={t("export.notionSearch")}
+                  className="h-7 w-full rounded-md border border-input bg-background px-2 text-[13px]"
+                />
+                <ul className="mt-2 max-h-48 overflow-y-auto" aria-busy={places === null}>
+                  {places === null ? (
+                    <li className="px-2 py-1.5 text-[12px] text-muted-foreground">{t("export.notionSearching")}</li>
+                  ) : places.length ? (
+                    places.map((p) => (
+                      <li key={p.id}>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            onChange({ notionPage: { id: p.id, title: p.title } });
+                            setPicking(false);
+                          }}
+                          className="w-full truncate rounded-md px-2 py-1.5 text-left text-[13px] hover:bg-muted"
+                        >
+                          {p.title}
+                        </button>
+                      </li>
+                    ))
+                  ) : (
+                    <li className="px-2 py-1.5 text-[12px] text-muted-foreground">{t("export.notionNothing")}</li>
+                  )}
+                </ul>
+                {settings.notionPage && (
+                  <button type="button" className="mt-1 px-2 text-[12px] text-mm-link hover:underline" onClick={() => (onChange({ notionPage: null }), setPicking(false))}>
+                    {t("export.notionUsePrivate")}
+                  </button>
+                )}
+              </div>
+            )}
+            <Row label={t("export.notionAuto")} hint={t("export.obsidianAutoHint")}>
+              <Switch checked={settings.notionAuto} onCheckedChange={(on) => onChange({ notionAuto: on })} aria-label={t("export.notionAuto")} />
+            </Row>
+          </>
+        )}
+      </Group>
+      <p className="-mt-3 mb-5 flex gap-1.5 px-1 text-[11px] leading-snug text-muted-foreground">
+        <CloudUpload className="mt-px size-3 shrink-0" aria-hidden />
+        <span>{t("export.notionPrivacy")}</span>
+      </p>
     </>
   );
 }

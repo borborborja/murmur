@@ -55,6 +55,10 @@ export type Settings = {
   obsidianAuto: boolean;
   /** Speakers as [[links]]: a page per person. */
   obsidianPeople: boolean;
+  /** Notion (lib/notion.ts): the page meetings go under; null = a private page each. */
+  notionPage: { id: string; title: string } | null;
+  /** Each meeting goes to Notion when it's done. */
+  notionAuto: boolean;
   /** Who writes the cover: the local model, or Claude or OpenAI with the user's key (lib/cloud.ts). */
   coverEngine: "local" | CloudProvider;
   /** The model chosen for each provider; missing = its default (lib/cloud.ts). */
@@ -126,6 +130,8 @@ export const DEFAULT_SETTINGS: Settings = {
   obsidianFolder: "Murmur",
   obsidianAuto: false,
   obsidianPeople: false,
+  notionPage: null,
+  notionAuto: false,
   coverEngine: "local",
   cloudModels: {},
   shareExpiry: "7d",

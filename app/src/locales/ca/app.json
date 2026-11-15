@@ -115,5 +115,10 @@
   "exportObsidian": "Obsidian",
   "obsidianSaved": "Desada a Obsidian",
   "openInObsidian": "Obre a Obsidian",
-  "obsidianChooseVault": "Tria la caixa forta d'Obsidian a Configuració › Exportar."
+  "obsidianChooseVault": "Tria la caixa forta d'Obsidian a Configuració › Exportar.",
+  "exportNotion": "Notion",
+  "notionSaved": "Desada a Notion",
+  "openInNotion": "Obre a Notion",
+  "notionSaving": "Desant a Notion…",
+  "notionConnectFirst": "Connecta Notion a Configuració › Exportar."
 }

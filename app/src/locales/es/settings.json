@@ -343,7 +343,7 @@
     "copyFailed": "No se ha podido copiar el código."
   },
   "export": {
-    "intro": "Adónde van las reuniones, además de Murmur: archivos Markdown en una carpeta y tu bóveda de Obsidian. Cada uno puede recibir cada reunión solo, cuando termina.",
+    "intro": "Adónde van las reuniones, además de Murmur: archivos Markdown en una carpeta, tu bóveda de Obsidian y Notion. Cada uno puede recibir cada reunión solo, cuando termina.",
     "vault": "Bóveda",
     "noVault": "Todavía no has elegido ninguna.",
     "chooseVault": "Elegir…",
@@ -356,6 +356,24 @@
     "obsidianAutoHint": "Cuando termina la pasada final y el resumen. También se puede hacer a mano desde Exportar.",
     "people": "Personas como enlaces",
     "peopleHint": "Escribe los nombres como [[Marta]]: Obsidian crea una página por persona con todas sus reuniones.",
-    "privacy": "Todo se guarda en este ordenador. Nada sale a internet."
+    "privacy": "El Markdown y Obsidian se guardan en este ordenador: nada sale a internet.",
+    "notionConnect": "Conectar con Notion",
+    "notionConnectHint": "Se abrirá Notion en el navegador: entras y aceptas. No hace falta crear ninguna clave.",
+    "notionConnectButton": "Conectar…",
+    "notionWaiting": "Esperando a que aceptes en Notion, en el navegador…",
+    "notionConnected": "Murmur está conectado con «{{workspace}}».",
+    "notionWorkspace": "Conectado a «{{workspace}}»",
+    "notionConnectedHint": "La conexión se guarda en el llavero y se renueva sola.",
+    "notionDisconnect": "Desconectar",
+    "notionDisconnectTitle": "¿Quieres desconectar Notion?",
+    "notionDisconnectMessage": "Las reuniones que ya has guardado se quedan en Notion. Para volver a guardar, habrá que conectarlo de nuevo.",
+    "notionPage": "Dónde se guardan",
+    "notionPrivate": "Una página privada por reunión",
+    "notionSearch": "Busca una página…",
+    "notionSearching": "Buscando…",
+    "notionNothing": "No se ha encontrado ninguna página.",
+    "notionUsePrivate": "Usar páginas privadas",
+    "notionAuto": "Guardar cada reunión al terminar",
+    "notionPrivacy": "A Notion solo se envía el texto de la reunión (resumen, notas y transcripción), directamente a tu espacio, cuando la exportas o al terminar si lo tienes activado. El audio y las capturas, nunca."
   }
 }

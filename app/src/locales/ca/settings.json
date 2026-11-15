@@ -343,7 +343,7 @@
     "copyFailed": "No s'ha pogut copiar el codi."
   },
   "export": {
-    "intro": "On van les reunions, a més de Murmur: fitxers Markdown en una carpeta i la teva caixa forta d'Obsidian. Cadascun pot rebre cada reunió sol, quan s'acaba.",
+    "intro": "On van les reunions, a més de Murmur: fitxers Markdown en una carpeta, la teva caixa forta d'Obsidian i Notion. Cadascun pot rebre cada reunió sol, quan s'acaba.",
     "vault": "Caixa forta",
     "noVault": "Encara no n'has triat cap.",
     "chooseVault": "Tria…",
@@ -356,6 +356,24 @@
     "obsidianAutoHint": "Quan s'acaba la passada final i el resum. També es pot fer a mà des d'Exporta.",
     "people": "Persones com a enllaços",
     "peopleHint": "Escriu els noms com a [[Marta]]: Obsidian fa una pàgina per persona amb totes les seves reunions.",
-    "privacy": "Tot es desa en aquest ordinador. Res no surt cap a internet."
+    "privacy": "El Markdown i Obsidian es desen en aquest ordinador: res no surt cap a internet.",
+    "notionConnect": "Connecta amb Notion",
+    "notionConnectHint": "S'obrirà Notion al navegador: hi entres i acceptes. No cal crear cap clau.",
+    "notionConnectButton": "Connecta…",
+    "notionWaiting": "Esperant que acceptis a Notion, al navegador…",
+    "notionConnected": "Murmur està connectat amb «{{workspace}}».",
+    "notionWorkspace": "Connectat a «{{workspace}}»",
+    "notionConnectedHint": "La connexió es desa al clauer i es renova sola.",
+    "notionDisconnect": "Desconnecta",
+    "notionDisconnectTitle": "Vols desconnectar Notion?",
+    "notionDisconnectMessage": "Les reunions que ja hi has desat es queden a Notion. Per tornar-hi a desar, caldrà connectar-lo de nou.",
+    "notionPage": "On es desen",
+    "notionPrivate": "Una pàgina privada per reunió",
+    "notionSearch": "Busca una pàgina…",
+    "notionSearching": "Buscant…",
+    "notionNothing": "No s'ha trobat cap pàgina.",
+    "notionUsePrivate": "Fes servir pàgines privades",
+    "notionAuto": "Desa-hi cada reunió en acabar",
+    "notionPrivacy": "A Notion només s'hi envia el text de la reunió (resum, notes i transcripció), directament al teu espai, quan l'exportes o en acabar si ho tens activat. L'àudio i les captures, mai."
   }
 }

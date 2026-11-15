@@ -343,7 +343,7 @@
     "copyFailed": "Couldn't copy the code."
   },
   "export": {
-    "intro": "Where meetings go besides Murmur: Markdown files in a folder and your Obsidian vault. Each can take every meeting on its own when it ends.",
+    "intro": "Where meetings go besides Murmur: Markdown files in a folder, your Obsidian vault and Notion. Each can take every meeting on its own when it ends.",
     "vault": "Vault",
     "noVault": "None chosen yet.",
     "chooseVault": "Choose…",
@@ -356,6 +356,24 @@
     "obsidianAutoHint": "Once the final pass and the summary are done. You can also do it from Export.",
     "people": "People as Links",
     "peopleHint": "Writes names as [[Marta]]: Obsidian makes a page per person with all their meetings.",
-    "privacy": "Everything is saved on this computer. Nothing goes to the internet."
+    "privacy": "Markdown and Obsidian are saved on this computer: nothing goes to the internet.",
+    "notionConnect": "Connect to Notion",
+    "notionConnectHint": "Notion opens in your browser: sign in and allow. No key to create.",
+    "notionConnectButton": "Connect…",
+    "notionWaiting": "Waiting for you to allow it in Notion, in your browser…",
+    "notionConnected": "Murmur is connected to “{{workspace}}”.",
+    "notionWorkspace": "Connected to “{{workspace}}”",
+    "notionConnectedHint": "The connection is kept in the keychain and renews itself.",
+    "notionDisconnect": "Disconnect",
+    "notionDisconnectTitle": "Disconnect Notion?",
+    "notionDisconnectMessage": "Meetings you already saved stay in Notion. To save more, you'll need to connect it again.",
+    "notionPage": "Where They Go",
+    "notionPrivate": "A private page per meeting",
+    "notionSearch": "Search for a page…",
+    "notionSearching": "Searching…",
+    "notionNothing": "No pages found.",
+    "notionUsePrivate": "Use private pages",
+    "notionAuto": "Save Each Meeting When It Ends",
+    "notionPrivacy": "Only the meeting's text (summary, notes and transcript) goes to Notion, straight to your workspace, when you export it or when it ends if that's on. Never the audio or the screenshots."
   }
 }

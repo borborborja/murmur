@@ -115,5 +115,10 @@
   "exportObsidian": "Obsidian",
   "obsidianSaved": "Guardada en Obsidian",
   "openInObsidian": "Abrir en Obsidian",
-  "obsidianChooseVault": "Elige la bóveda de Obsidian en Ajustes › Exportar."
+  "obsidianChooseVault": "Elige la bóveda de Obsidian en Ajustes › Exportar.",
+  "exportNotion": "Notion",
+  "notionSaved": "Guardada en Notion",
+  "openInNotion": "Abrir en Notion",
+  "notionSaving": "Guardando en Notion…",
+  "notionConnectFirst": "Conecta Notion en Ajustes › Exportar."
 }

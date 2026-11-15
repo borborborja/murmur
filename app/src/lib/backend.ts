@@ -265,6 +265,18 @@ export const retranscribeMeeting = (
 export type ObsidianVault = { name: string; path: string; open: boolean };
 export const obsidianVaults = () => invoke<ObsidianVault[]>("obsidian_vaults");
 
+// --- Notion (notion.rs) ---
+export type NotionStatus = { connected: boolean; workspace: string | null };
+export type NotionPlace = { id: string; title: string; url: string };
+export const notionStatus = () => invoke<NotionStatus>("notion_status");
+/** Opens the browser to sign in; resolves with the workspace's name when it comes back. */
+export const notionConnect = () => invoke<string>("notion_connect");
+export const notionCancel = () => invoke<void>("notion_cancel");
+export const notionDisconnect = () => invoke<void>("notion_disconnect");
+export const notionFind = (query: string) => invoke<NotionPlace[]>("notion_find", { query });
+export const notionExport = (title: string, summary: string, transcript: string, parent: string | null) =>
+  invoke<string>("notion_export", { title, summary, transcript, parent });
+
 // --- Phones (mobile.rs, docs/EMPARELLAR.md) ---
 export type Phone = { id: string; name: string; pairedAt: number; lastSeen: number | null };
 export type MobileStatus = { computer: string; phones: Phone[]; pairing: boolean };

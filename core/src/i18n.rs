@@ -263,6 +263,31 @@ fn strings(key: &str) -> Option<[&'static str; 3]> {
             "Couldn't create the model context",
         ],
         // Cover written by Claude or OpenAI (cloud.rs).
+        "notion_cancelled" => ["S'ha cancel·lat la connexió amb Notion", "Se ha cancelado la conexión con Notion", "Connecting to Notion was cancelled"],
+        "notion_timed_out" => [
+            "Notion no ha respost a temps. Torna-ho a provar.",
+            "Notion no ha respondido a tiempo. Vuelve a intentarlo.",
+            "Notion didn't answer in time. Try again.",
+        ],
+        "notion_signed_in_page" => [
+            "Murmur ja està connectat amb Notion. Pots tancar aquesta pestanya i tornar a Murmur.",
+            "Murmur ya está conectado con Notion. Puedes cerrar esta pestaña y volver a Murmur.",
+            "Murmur is now connected to Notion. You can close this tab and go back to Murmur.",
+        ],
+        "notion_refused" => ["Notion no ha donat permís ({error})", "Notion no ha dado permiso ({error})", "Notion didn't allow it ({error})"],
+        "notion_not_connected" => [
+            "Murmur no està connectat amb Notion: connecta'l a Configuració › Exportar",
+            "Murmur no está conectado con Notion: conéctalo en Ajustes › Exportar",
+            "Murmur isn't connected to Notion: connect it in Settings › Export",
+        ],
+        "notion_reconnect" => [
+            "La connexió amb Notion ha caducat: torna a connectar-lo a Configuració › Exportar",
+            "La conexión con Notion ha caducado: vuelve a conectarlo en Ajustes › Exportar",
+            "The connection to Notion has expired: connect it again in Settings › Export",
+        ],
+        "notion_untitled" => ["Sense títol", "Sin título", "Untitled"],
+        "notion_export_failed" => ["No s'ha pogut desar a Notion: {error}", "No se ha podido guardar en Notion: {error}", "Couldn't save to Notion: {error}"],
+        "notion_transcript" => ["Transcripció", "Transcripción", "Transcript"],
         "mobile_no_network" => [
             "No es pot obrir la connexió amb el mòbil en aquest ordinador",
             "No se puede abrir la conexión con el móvil en este ordenador",

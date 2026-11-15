@@ -6458,6 +6458,7 @@ name = "transcriptor"
 version = "0.13.0"
 dependencies = [
  "anyhow",
+ "base64 0.22.1",
  "block2",
  "chrono",
  "core-foundation 0.10.1",

@@ -115,5 +115,10 @@
   "exportObsidian": "Obsidian",
   "obsidianSaved": "Saved to Obsidian",
   "openInObsidian": "Open in Obsidian",
-  "obsidianChooseVault": "Choose your Obsidian vault in Settings › Export."
+  "obsidianChooseVault": "Choose your Obsidian vault in Settings › Export.",
+  "exportNotion": "Notion",
+  "notionSaved": "Saved to Notion",
+  "openInNotion": "Open in Notion",
+  "notionSaving": "Saving to Notion…",
+  "notionConnectFirst": "Connect Notion in Settings › Export."
 }

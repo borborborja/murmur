@@ -54,6 +54,8 @@ dirs = "6"
 chrono = { version = "0.4", default-features = false, features = ["clock", "std"] }
 # Phones (mobile.rs): Bonjour on the local network and the pairing QR.
 mdns-sd = "0.13"
+# Notion (notion.rs): PKCE.
+base64 = "0.22"
 qrcode = { version = "0.14", default-features = false, features = ["svg"] }
 tauri-plugin-aptabase = { version = "1.3.0", default-features = false, features = ["rustls-tls"] }
 

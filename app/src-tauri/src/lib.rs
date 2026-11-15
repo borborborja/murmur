@@ -14,6 +14,7 @@ pub mod mcp;
 pub mod micwatch;
 pub mod mobile;
 pub mod obsidian;
+pub mod notion;
 pub mod permissions;
 pub mod retranscribe;
 pub mod shell;
@@ -1295,6 +1296,49 @@ fn obsidian_vaults() -> Vec<obsidian::Vault> {
     obsidian::vaults()
 }
 
+// --- Notion (notion.rs) ------------------------------------------------------------------
+
+#[tauri::command]
+fn notion_status() -> notion::Status {
+    notion::status()
+}
+
+/// "Connecta amb Notion": the browser opens to sign in; this returns once it comes back.
+#[tauri::command]
+async fn notion_connect(app: AppHandle) -> Result<String, String> {
+    use tauri_plugin_opener::OpenerExt;
+    tauri::async_runtime::spawn_blocking(move || {
+        notion::connect(|url| app.opener().open_url(url, None::<&str>).map_err(|e| anyhow::anyhow!("{e}"))).map_err(|e| format!("{e:#}"))
+    })
+    .await
+    .map_err(|e| e.to_string())?
+}
+
+#[tauri::command]
+fn notion_cancel() {
+    notion::cancel();
+}
+
+#[tauri::command]
+fn notion_disconnect() -> Result<(), String> {
+    notion::disconnect().map_err(|e| format!("{e:#}"))
+}
+
+#[tauri::command]
+async fn notion_find(query: String) -> Result<Vec<notion::Place>, String> {
+    tauri::async_runtime::spawn_blocking(move || notion::find(&query).map_err(|e| format!("{e:#}"))).await.map_err(|e| e.to_string())?
+}
+
+/// The meeting's text to a page in Notion (only when the user exports it, or asked for it on each meeting).
+#[tauri::command]
+async fn notion_export(title: String, summary: String, transcript: String, parent: Option<String>) -> Result<String, String> {
+    tauri::async_runtime::spawn_blocking(move || {
+        notion::export(&title, &summary, &transcript, parent.as_deref()).map_err(|e| tr!("notion_export_failed", error = format!("{e:#}")))
+    })
+    .await
+    .map_err(|e| e.to_string())?
+}
+
 // --- Phones (mobile.rs, docs/EMPARELLAR.md) ----------------------------------------------
 
 #[tauri::command]
@@ -1769,6 +1813,12 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             mobile_status,
             obsidian_vaults,
+            notion_status,
+            notion_connect,
+            notion_cancel,
+            notion_disconnect,
+            notion_find,
+            notion_export,
             mobile_start_pairing,
             mobile_cancel_pairing,
             mobile_unpair,

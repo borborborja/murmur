@@ -74,7 +74,7 @@ Tot el procés és a `docs/PUBLICAR.md`. Els passos que és fàcil d'oblidar:
 
 - **Si la versió porta canvis visibles, s'escriuen les novetats** que l'app mostra després d'actualitzar:
   - La versió i la data van a `RELEASES` (`app/src/lib/whatsnew.ts`).
-  - De 2 a 5 novetats van a `app/src/locales/{ca,es,en}/whatsnew.json` › `releases` › `"<versió>"`. Cadascuna té `title`, un `text` d'una o dues frases i, si cal, un `link` a una pestanya de la configuració amb el seu `linkLabel`. Sense icones.
+  - De 2 a 5 novetats van a `app/src/locales/{ca,es,en}/whatsnew.json` › `releases` › `"<versió>"`. Cadascuna té `title`, un `text` d'una o dues frases i, si cal, un `link` a una pestanya de la configuració amb el seu `linkLabel`. Sense icones. Només una novetat molt important pot portar una imatge (`image` i, si cal, `imageDark`: un fitxer de `app/public/whatsnew/` d'uns 880×400 px).
   - Les `RELEASE_NOTES` de `publish.sh` són una frase de resum d'aquestes novetats.
   - Una correcció petita pot anar sense novetats, i llavors no surt res.
 

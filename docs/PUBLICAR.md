@@ -62,7 +62,7 @@ La clau pública del Mac és a `app/src-tauri/tauri.conf.json` › `plugins.upda
 
 2. **Escriu les novetats** de la versió (la pantalla «Novetats de Murmur» que surt després d'actualitzar):
    - Afegeix la versió i la data a `RELEASES` (`app/src/lib/whatsnew.ts`).
-   - Afegeix el text a `app/src/locales/{ca,es,en}/whatsnew.json` › `releases` › `"<versió>"`: de 2 a 5 novetats, cadascuna amb `title` i `text` (una o dues frases), i, si cal, un enllaç a una pestanya de la configuració (`link`: `general`, `appearance`, `calendar`, `audio`, `transcription` o `intelligence`, i el seu `linkLabel`).
+   - Afegeix el text a `app/src/locales/{ca,es,en}/whatsnew.json` › `releases` › `"<versió>"`: de 2 a 5 novetats, cadascuna amb `title` i `text` (una o dues frases), i, si cal, un enllaç a una pestanya de la configuració (`link`: `general`, `appearance`, `calendar`, `audio`, `transcription` o `intelligence`, i el seu `linkLabel`). Una novetat molt important pot portar una imatge: `image` (i `imageDark` per al mode fosc), el camí d'un fitxer de `app/public/whatsnew/` d'uns 880×400 px, com `/whatsnew/0.13-veu.png`. Si el text de la imatge canvia amb l'idioma, cada idioma porta el seu fitxer.
    - `npm run check-locales` ha de passar. Una versió sense novetats no mostra res (per a correccions petites, no cal).
    - Les `RELEASE_NOTES` del pas 3 són una frase de resum d'aquestes novetats.
 

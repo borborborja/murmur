@@ -28,7 +28,7 @@ struct RecordingLiveActivity: Widget {
                     Text(context.attributes.title).font(.system(size: 15, weight: .semibold)).lineLimit(1)
                 }
                 DynamicIslandExpandedRegion(.trailing) {
-                    RecordingTimer(state: context.state).font(.mono(17, weight: .medium))
+                    RecordingTimer(state: context.state).font(.tabular(17, weight: .medium))
                         .multilineTextAlignment(.trailing).frame(width: 84, alignment: .trailing).padding(.trailing, 6)
                 }
                 DynamicIslandExpandedRegion(.bottom) {
@@ -41,7 +41,7 @@ struct RecordingLiveActivity: Widget {
                 // Murmur in the island: its mark, whose echo moves with the voice.
                 EchoMark(state: context.state, size: 24)
             } compactTrailing: {
-                RecordingTimer(state: context.state).font(.mono(14, weight: .semibold))
+                RecordingTimer(state: context.state).font(.tabular(14, weight: .semibold))
                     .foregroundStyle(MurmurPalette.acidDark.recordingLevel)
                     .multilineTextAlignment(.trailing).frame(width: 52, alignment: .trailing)
             } minimal: {
@@ -146,40 +146,40 @@ struct LockScreenRecording: View {
     @Environment(\.murmur) private var palette
     var context: ActivityViewContext<RecordingAttributes>
 
-    // Three rows that fill the ~160 pt iOS allows (16 + 44 + 10 + 20 + 10 + 42 + 16 = 158):
-    // the mark, the title and the time; the last line; the buttons.
+    // The mockup's order (screen 7) inside the ~160 pt iOS allows (12 + 28 + 4 + 42 + 4 + 20 + 8 +
+    // 34 + 12 = 164, the rows' own leading trims it): a small header (the mark, the title, the
+    // state), the time big with the voice beside it, the last line, the buttons.
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            HStack(alignment: .center, spacing: 12) {
-                EchoMark(state: context.state, size: 36)
-                    .frame(width: 44, height: 44)
-                    .background(palette.logoBackground, in: RoundedRectangle(cornerRadius: 11, style: .continuous))
-                    .overlay(RoundedRectangle(cornerRadius: 11, style: .continuous).strokeBorder(palette.textPrimary.opacity(0.15)))
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(context.attributes.title).font(.system(size: 15, weight: .semibold)).foregroundStyle(palette.textPrimary).lineLimit(1)
-                    HStack(spacing: 6) {
-                        VoiceBars(state: context.state).scaleEffect(0.6, anchor: .leading).frame(width: 26, height: 17, alignment: .leading)
-                        Text("\(context.state.pausedAt == nil ? L("rec.recording") : L("rec.pause")) · \(context.attributes.language)")
-                            .font(.system(size: 13)).foregroundStyle(palette.textSecondary).lineLimit(1)
-                    }
+        VStack(alignment: .leading, spacing: 4) {
+            HStack(spacing: 9) {
+                EchoMark(state: context.state, size: 24)
+                    .frame(width: 28, height: 28)
+                    .background(palette.logoBackground, in: RoundedRectangle(cornerRadius: 7, style: .continuous))
+                    .overlay(RoundedRectangle(cornerRadius: 7, style: .continuous).strokeBorder(palette.textPrimary.opacity(0.15)))
+                VStack(alignment: .leading, spacing: 0) {
+                    Text(context.attributes.title).font(.system(size: 14, weight: .semibold)).foregroundStyle(palette.textPrimary).lineLimit(1)
+                    Text("\(context.state.pausedAt == nil ? L("rec.recording") : L("rec.pause")) · \(context.attributes.language)")
+                        .font(.system(size: 12)).foregroundStyle(palette.textSecondary).lineLimit(1)
                 }
-                .layoutPriority(0)
-                Spacer(minLength: 6)
+            }
+            HStack(alignment: .center) {
                 // A system timer measures itself as wide as the longest time it could show: it gets
                 // a fixed width (up to "9:59:59") instead of fixedSize, which broke the whole card.
-                RecordingTimer(state: context.state).font(.mono(30, weight: .medium)).foregroundStyle(palette.textPrimary)
-                    .lineLimit(1).multilineTextAlignment(.trailing)
-                    .frame(width: 140, alignment: .trailing)
+                RecordingTimer(state: context.state).font(.tabular(38, weight: .regular)).foregroundStyle(palette.textPrimary)
+                    .lineLimit(1).frame(width: 190, height: 42, alignment: .leading)
+                Spacer(minLength: 0)
+                VoiceBars(state: context.state)
             }
-            LastLine(state: context.state, size: 15).lineLimit(1)
-            RecordingButtons(paused: context.state.pausedAt != nil, confirming: context.state.confirmingStop, height: 42, fontSize: 15)
+            LastLine(state: context.state, size: 14).lineLimit(1)
+                .padding(.bottom, 4)
+            RecordingButtons(paused: context.state.pausedAt != nil, confirming: context.state.confirmingStop, height: 34, fontSize: 14)
         }
-        .padding(16)
+        .padding(.horizontal, 16).padding(.vertical, 12)
     }
 }
 
 extension Font {
-    static func mono(_ size: CGFloat, weight: Font.Weight = .regular) -> Font {
-        .system(size: size, weight: weight, design: .monospaced).monospacedDigit()
+    static func tabular(_ size: CGFloat, weight: Font.Weight = .regular) -> Font {
+        .system(size: size, weight: weight).monospacedDigit()
     }
 }

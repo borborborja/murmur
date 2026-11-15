@@ -83,7 +83,7 @@ struct Dock: View {
                     TimelineView(.periodic(from: .now, by: 0.1)) { _ in
                         HStack(spacing: 10) {
                             LevelBars(level: live.paused ? 0 : store.meter.level)
-                            Text(clock(store.meter.seconds)).font(.mono(17, weight: .semibold))
+                            Text(clock(store.meter.seconds)).font(.tabular(17, weight: .semibold))
                         }
                     }
                     .frame(minWidth: 120, minHeight: 56).padding(.horizontal, 18)
@@ -348,7 +348,7 @@ struct LiveCard: View {
                     Text(live.title).font(.system(size: 17, weight: .semibold)).lineLimit(1)
                     Spacer()
                     TimelineView(.periodic(from: .now, by: 0.5)) { _ in
-                        HStack(spacing: 6) { RecordingDot(); Text(clock(store.meter.seconds)).font(.mono(13, weight: .bold)) }
+                        HStack(spacing: 6) { RecordingDot(); Text(clock(store.meter.seconds)).font(.tabular(13, weight: .bold)) }
                             .foregroundStyle(palette.recordingLabel)
                     }
                 }

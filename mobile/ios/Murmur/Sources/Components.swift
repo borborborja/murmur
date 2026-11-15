@@ -148,9 +148,10 @@ extension View {
 }
 
 extension Font {
-    /// Monospaced, tabular figures: times never jump.
-    static func mono(_ size: CGFloat, weight: Font.Weight = .regular) -> Font {
-        .system(size: size, weight: weight, design: .monospaced).monospacedDigit()
+    /// SF Pro with tabular figures, as the desktop's times (DESIGN.md): the digits keep their
+    /// width, so times never jump, without a monospaced typeface.
+    static func tabular(_ size: CGFloat, weight: Font.Weight = .regular) -> Font {
+        .system(size: size, weight: weight).monospacedDigit()
     }
 }
 

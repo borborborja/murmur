@@ -175,15 +175,16 @@ struct RecordingCard: View {
             Waveform(meter: store.meter, paused: live?.paused == true || live == nil)
                 .frame(height: 134)
             VStack(alignment: .leading, spacing: 4) {
-                // The state and the language in one line, in the label's style.
+                // The state and the language in one line, in plain SF Pro (DESIGN.md: the system
+                // typeface everywhere; no monospaced capitals).
                 HStack(spacing: 8) {
                     RecordingDot()
-                    Text("\(live?.paused == true ? L("rec.pause") : L("rec.recording")) · \(languageName(store.language))".uppercased())
-                        .font(.mono(11)).tracking(0.9).foregroundStyle(palette.textSecondary).lineLimit(1)
+                    Text("\(live?.paused == true ? L("rec.pause") : L("rec.recording")) · \(languageName(store.language))")
+                        .font(.system(size: 13, weight: .medium)).foregroundStyle(palette.textSecondary).lineLimit(1)
                 }
                 // The microphone's clock, not the engine's: it never stalls behind the transcription.
                 TimelineView(.periodic(from: .now, by: 0.1)) { _ in
-                    Text(longClock(store.meter.seconds)).font(.mono(40, weight: .medium)).tracking(-0.8).lineLimit(1)
+                    Text(longClock(store.meter.seconds)).font(.tabular(40, weight: .medium)).tracking(-0.8).lineLimit(1)
                 }
                 // The microphone only when it isn't the phone's own: then it's worth knowing.
                 if let input = store.inputName {
@@ -247,7 +248,7 @@ struct Waveform: View {
                 let x = now + CGFloat(mark - seconds) * pxPerSecond
                 guard x > 16, x < size.width - 16 else { continue }
                 let current = abs(mark - seconds) < 2.5
-                ctx.draw(Text(clock(mark)).font(.mono(11, weight: current ? .medium : .regular)).foregroundColor(current ? palette.textPrimary : palette.textTertiary),
+                ctx.draw(Text(clock(mark)).font(.tabular(11, weight: current ? .medium : .regular)).foregroundColor(current ? palette.textPrimary : palette.textTertiary),
                          at: CGPoint(x: x, y: waveHeight + Self.rulerHeight / 2))
             }
             ctx.fill(Path(roundedRect: CGRect(x: now, y: 12, width: 2, height: waveHeight - 12), cornerRadius: 1), with: .color(palette.recordingDot))
@@ -267,7 +268,7 @@ struct LineView: View {
         VStack(alignment: .leading, spacing: 5) {
             HStack(spacing: 8) {
                 SpeakerChip(speaker: speaker, name: name)
-                Text(clock(start)).font(.mono(12)).foregroundStyle(palette.timestamp)
+                Text(clock(start)).font(.tabular(12)).foregroundStyle(palette.timestamp)
                 if marked { FlagChip(label: L("rec.important")) }
             }
             Text(text).font(.system(size: 17)).lineSpacing(4).fixedSize(horizontal: false, vertical: true)
@@ -289,7 +290,7 @@ struct NoteRow: View {
     var note: NoteItem
     var body: some View {
         HStack(alignment: .firstTextBaseline, spacing: 10) {
-            Text(clock(note.t)).font(.mono(12)).foregroundStyle(palette.timestamp).frame(width: 44, alignment: .trailing)
+            Text(clock(note.t)).font(.tabular(12)).foregroundStyle(palette.timestamp).frame(width: 44, alignment: .trailing)
             if note.mark { FlagChip(label: note.text) } else { Text(note.text).font(.system(size: 17)) }
             Spacer(minLength: 0)
         }

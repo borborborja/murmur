@@ -9,11 +9,12 @@ case "${PLATFORM_NAME:-}" in
   iphonesimulator) targets=(aarch64-apple-ios-sim) ;;
   *) targets=(aarch64-apple-ios aarch64-apple-ios-sim) ;;
 esac
+# Only the static library: iOS links it into the app (the crate's .dylib is for Android).
 # Xcode's environment (SDKROOT, deployment targets, its own cc) confuses the C code cargo builds,
 # both for the phone (opus, sqlite) and for the Mac (build scripts): cargo runs as in a terminal.
 for target in "${targets[@]}"; do
   env -i HOME="$HOME" USER="${USER:-}" IPHONEOS_DEPLOYMENT_TARGET=18.0 PATH="$HOME/.cargo/bin:/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin" \
-    nice -n 15 cargo build --release --lib --target "$target"
+    nice -n 15 cargo rustc --release --lib --crate-type staticlib --target "$target"
 done
 # sherpa-onnx's build script unpacks its xcframework again whenever the target changes: Xcode
 # links a copy of it that stays put.

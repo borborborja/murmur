@@ -12,6 +12,7 @@ pub mod i18n;
 pub mod models;
 pub mod pipeline;
 pub mod playback;
+#[cfg(feature = "punctuation")]
 pub mod punctuate;
 pub mod recorder;
 pub mod storage;

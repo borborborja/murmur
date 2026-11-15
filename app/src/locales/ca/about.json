@@ -4,7 +4,7 @@
   "description": "Transcripció de reunions en directe, amb el català al centre. Tot es processa en aquest Mac: l'àudio i el text no surten mai de l'ordinador. Local vol dir privat.",
   "analytics": "Si no ho desactives, Murmur envia estadístiques d'ús anònimes amb Aptabase: quines funcions es fan servir, quant duren les reunions, la versió i el sistema. Sense cap identificador i sense res de les reunions (títols, text, noms, notes ni àudio). Es desactiven a Configuració › General.",
   "chips": {
-    "local": "Res surt d'aquest Mac",
+    "local": "Les reunions no surten del Mac",
     "noCloud": "Sense núvol ni comptes",
     "languages": "Català i castellà"
   },

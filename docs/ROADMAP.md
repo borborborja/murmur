@@ -40,7 +40,7 @@ En aturar la gravació, reprocessar l'àudio desat:
 - [x] **Torna a escoltar amb Whisper** es pot apagar (Configuració › Transcripció › En acabar la gravació), i els dos Whisper hi són sempre a la vista, cadascun amb per a què serveix.
 - [x] **Glossari:** quantes vegades s'ha corregit cada paraula, al costat de cadascuna.
 - [x] **Estadístiques d'ús anònimes** amb Aptabase (`lib/analytics.ts`), que es poden desactivar.
-- [ ] Posar la clau d'Aptabase a `APTABASE_KEY` (lib.rs): sense, l'app no envia res.
+- [x] Posar la clau d'Aptabase a `APTABASE_KEY` (lib.rs): sense, l'app no envia res.
 - [ ] Glossari: «com se sent» (les formes en què la transcripció escriu malament una paraula, per corregir-les encara que siguin lluny) i suggeriments a partir dels noms corregits a mà i dels convidats.
 - [x] **Barra superior endreçada:** la marca a 30 pt amb «murmur», el títol en gris i sense menú, les accions de la reunió al botó «···» i les exportacions totes a Exporta.
 - [ ] Triar l'idioma per reunió (ara és un sol valor a Configuració), o endevinar-lo del calendari.

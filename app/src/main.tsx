@@ -13,6 +13,7 @@ import "./index.css";
 import { initAppearance } from "./lib/appearance";
 import { initI18n } from "./lib/i18n";
 import { loadCapabilities, markOs } from "./lib/platform";
+import { AboutDialog } from "./components/AboutDialog";
 
 // The OS on <html> (styles that differ, like room for the Mac's traffic lights), and what it can do.
 markOs();
@@ -34,7 +35,8 @@ if (!import.meta.env.DEV) {
 // The same page also runs the floating alert and the recording indicator (shell.rs), both
 // transparent around their content.
 // In a browser during development, "?window=indicator" or "?window=toast" shows that window on its own
-// ("?window=whatsnew": the version notes; "?window=onboarding": the welcome screens, from the start).
+// ("?window=whatsnew": the version notes; "?window=onboarding": the welcome screens, from the start;
+// "?window=about": the About window).
 const devLabel = import.meta.env.DEV ? new URLSearchParams(location.search).get("window") : null;
 const label = "__TAURI_INTERNALS__" in window ? getCurrentWindow().label : (devLabel ?? "main");
 const isToast = label === "toast";
@@ -45,6 +47,8 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
     {devLabel === "whatsnew" ? (
       <WhatsNewDialog releases={releasesBetween(null, "999.0.0")} manual={false} onLink={() => {}} onClose={() => {}} />
+    ) : devLabel === "about" ? (
+      <AboutDialog open onOpenChange={() => {}} />
     ) : devLabel === "onboarding" ? (
       <Onboarding open startAtModels={false} onChange={() => {}} onClose={() => location.reload()} />
     ) : isToast ? (

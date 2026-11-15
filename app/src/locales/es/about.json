@@ -4,7 +4,7 @@
   "description": "Transcripción de reuniones en directo, con el catalán en el centro. Todo se procesa en este Mac: el audio y el texto nunca salen del ordenador. Local quiere decir privado.",
   "analytics": "Si no lo desactivas, Murmur envía estadísticas de uso anónimas con Aptabase: qué funciones se usan, cuánto duran las reuniones, la versión y el sistema. Sin ningún identificador y sin nada de las reuniones (títulos, texto, nombres, notas ni audio). Se desactivan en Configuración › General.",
   "chips": {
-    "local": "Nada sale de este Mac",
+    "local": "Las reuniones no salen del Mac",
     "noCloud": "Sin nube ni cuentas",
     "languages": "Catalán y castellano"
   },

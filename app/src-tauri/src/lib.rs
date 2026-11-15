@@ -1526,7 +1526,7 @@ fn set_ui_language(app: AppHandle, language: String) {
 
 /// Anonymous usage statistics (Aptabase; lib/analytics.ts decides what's sent and whether the
 /// user allows it). Without a key the plugin isn't loaded and nothing is ever sent.
-const APTABASE_KEY: &str = "";
+const APTABASE_KEY: &str = "A-EU-9961693988";
 
 pub fn run() {
     let builder = tauri::Builder::default();

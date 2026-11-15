@@ -28,7 +28,8 @@ struct RecordingLiveActivity: Widget {
                     Text(context.attributes.title).font(.system(size: 15, weight: .semibold)).lineLimit(1)
                 }
                 DynamicIslandExpandedRegion(.trailing) {
-                    RecordingTimer(state: context.state).font(.mono(17, weight: .medium)).padding(.trailing, 6)
+                    RecordingTimer(state: context.state).font(.mono(17, weight: .medium))
+                        .multilineTextAlignment(.trailing).frame(width: 84, alignment: .trailing).padding(.trailing, 6)
                 }
                 DynamicIslandExpandedRegion(.bottom) {
                     VStack(alignment: .leading, spacing: 8) {
@@ -41,7 +42,8 @@ struct RecordingLiveActivity: Widget {
                 EchoMark(state: context.state, size: 24)
             } compactTrailing: {
                 RecordingTimer(state: context.state).font(.mono(14, weight: .semibold))
-                    .foregroundStyle(MurmurPalette.acidDark.recordingLevel).frame(maxWidth: 52)
+                    .foregroundStyle(MurmurPalette.acidDark.recordingLevel)
+                    .multilineTextAlignment(.trailing).frame(width: 52, alignment: .trailing)
             } minimal: {
                 EchoMark(state: context.state, size: 22)
             }
@@ -163,8 +165,11 @@ struct LockScreenRecording: View {
                 }
                 .layoutPriority(0)
                 Spacer(minLength: 6)
-                RecordingTimer(state: context.state).font(.mono(34, weight: .medium)).foregroundStyle(palette.textPrimary)
-                    .lineLimit(1).fixedSize().layoutPriority(1)
+                // A system timer measures itself as wide as the longest time it could show: it gets
+                // a fixed width (up to "9:59:59") instead of fixedSize, which broke the whole card.
+                RecordingTimer(state: context.state).font(.mono(30, weight: .medium)).foregroundStyle(palette.textPrimary)
+                    .lineLimit(1).multilineTextAlignment(.trailing)
+                    .frame(width: 140, alignment: .trailing)
             }
             LastLine(state: context.state, size: 15).lineLimit(1)
             RecordingButtons(paused: context.state.pausedAt != nil, confirming: context.state.confirmingStop, height: 42, fontSize: 15)

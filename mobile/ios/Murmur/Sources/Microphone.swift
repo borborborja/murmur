@@ -71,9 +71,11 @@ final class Microphone: @unchecked Sendable {
         try? AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
     }
 
-    /// The microphone in use, as iOS names it ("Micròfon de l'iPhone", "AirPods de…").
+    /// The microphone in use, as iOS names it ("AirPods de…", "USB Audio"), or nil when it's the
+    /// phone's own: the recording card only shows the others.
     static var currentName: String? {
-        AVAudioSession.sharedInstance().currentRoute.inputs.first?.portName
+        guard let input = AVAudioSession.sharedInstance().currentRoute.inputs.first, input.portType != .builtInMic else { return nil }
+        return input.portName
     }
 
     /// The microphones this phone has now, for Configuració. Bluetooth ones only show up while the

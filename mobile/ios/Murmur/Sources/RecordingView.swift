@@ -174,31 +174,23 @@ struct RecordingCard: View {
         VStack(spacing: 0) {
             Waveform(meter: store.meter, paused: live?.paused == true || live == nil)
                 .frame(height: 134)
-            HStack(alignment: .bottom) {
-                VStack(alignment: .leading, spacing: 4) {
-                    HStack(spacing: 8) {
-                        RecordingDot()
-                        Text((live?.paused == true ? L("rec.pause") : L("rec.recording")).uppercased())
-                            .font(.mono(11)).tracking(0.9).foregroundStyle(palette.textSecondary)
-                    }
-                    // The microphone's clock, not the engine's: it never stalls behind the transcription.
-                    TimelineView(.periodic(from: .now, by: 0.1)) { _ in
-                        // Never split: it keeps its width, the other column gives way.
-                        Text(longClock(store.meter.seconds)).font(.mono(40, weight: .medium)).tracking(-0.8)
-                            .lineLimit(1).fixedSize()
-                    }
+            VStack(alignment: .leading, spacing: 4) {
+                // The state and the language in one line, in the label's style.
+                HStack(spacing: 8) {
+                    RecordingDot()
+                    Text("\(live?.paused == true ? L("rec.pause") : L("rec.recording")) · \(languageName(store.language))".uppercased())
+                        .font(.mono(11)).tracking(0.9).foregroundStyle(palette.textSecondary).lineLimit(1)
                 }
-                .layoutPriority(1)
-                Spacer(minLength: 8)
-                VStack(alignment: .trailing, spacing: 3) {
-                    Text(languageName(store.language)).lineLimit(1)
-                    // Which microphone hears it: a headset plugged in mid-meeting shows up here.
-                    if let input = store.inputName {
-                        Label(input, systemImage: "mic").labelStyle(.titleAndIcon).lineLimit(1).truncationMode(.middle)
-                    }
+                // The microphone's clock, not the engine's: it never stalls behind the transcription.
+                TimelineView(.periodic(from: .now, by: 0.1)) { _ in
+                    Text(longClock(store.meter.seconds)).font(.mono(40, weight: .medium)).tracking(-0.8).lineLimit(1)
                 }
-                .font(.system(size: 13)).foregroundStyle(palette.textSecondary)
+                // The microphone only when it isn't the phone's own: then it's worth knowing.
+                if let input = store.inputName {
+                    Label(input, systemImage: "headphones").font(.system(size: 13)).foregroundStyle(palette.textSecondary).lineLimit(1)
+                }
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.horizontal, 18).padding(.vertical, 14)
             .background(palette.background, in: UnevenRoundedRectangle(topLeadingRadius: 26, topTrailingRadius: 26, style: .continuous))
         }

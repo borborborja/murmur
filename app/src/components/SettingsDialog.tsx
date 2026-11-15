@@ -133,7 +133,7 @@ export function SettingsDialog({ open, onOpenChange, settings, onChange, recordi
           {tab === "appearance" && <AppearanceTab settings={settings} onChange={change} />}
           {tab === "calendar" && <CalendarSettings settings={settings} onChange={change} />}
           {tab === "audio" && <AudioTab open={open} settings={settings} onChange={change} recording={recording} />}
-          {tab === "transcription" && <TranscriptionTab settings={settings} onChange={change} />}
+          {tab === "transcription" && <TranscriptionTab settings={settings} onChange={change} recording={recording} />}
           {tab === "intelligence" && <IntelligenceTab settings={settings} onChange={change} meeting={meeting} onLlmLoaded={() => (llmLoaded.current = true)} />}
           {tab === "share" && <ShareTab />}
           {tab === "claude" && <ClaudeTab open={open} />}
@@ -556,7 +556,6 @@ function AudioTab({ open, settings, onChange, recording }: { open: boolean; sett
             <Row label={t("audio.inputLevel")} hint={recording ? t("audio.inputLevelInUse") : t("audio.inputLevelHint")}>
               {recording ? <span className="text-[12px] text-muted-foreground">{t("audio.inUse")}</span> : <InputLevel device={settings.micDevice} />}
             </Row>
-            <VoiceRow open={open} device={settings.micDevice} recording={recording} />
           </>
         )}
         {capabilities.systemAudio && (
@@ -601,8 +600,8 @@ function VoiceRow({ open, device, recording }: { open: boolean; device: string |
   }, [open]);
   const remove = async () => {
     const confirmed = backend.isTauri()
-      ? await ask(t("audio.voiceDeleteMessage"), { title: t("audio.voiceDeleteTitle"), kind: "warning", okLabel: t("audio.voiceDeleteConfirm"), cancelLabel: t("common:cancel") })
-      : window.confirm(t("audio.voiceDeleteMessage"));
+      ? await ask(t("transcription.voiceDeleteMessage"), { title: t("transcription.voiceDeleteTitle"), kind: "warning", okLabel: t("transcription.voiceDeleteConfirm"), cancelLabel: t("common:cancel") })
+      : window.confirm(t("transcription.voiceDeleteMessage"));
     if (!confirmed) return;
     await backend.deleteVoice().catch((e) => toast.error(String(e)));
     setAt(null);
@@ -611,14 +610,14 @@ function VoiceRow({ open, device, recording }: { open: boolean; device: string |
   const button = "h-6 shrink-0 rounded-md border border-input bg-background px-2.5 text-[13px] hover:bg-muted disabled:opacity-50";
   return (
     <>
-      <Row label={t("audio.voice")} hint={at ? t("audio.voiceSaved", { date }) : t("audio.voiceNone")}>
+      <Row label={t("transcription.voice")} hint={at ? t("transcription.voiceSaved", { date }) : t("transcription.voiceNone")}>
         <span className="flex shrink-0 gap-1.5">
           <button type="button" className={button} disabled={recording || !backend.isTauri()} onClick={() => setRecorder(true)}>
-            {at ? t("audio.voiceAgain") : t("audio.voiceRecord")}
+            {at ? t("transcription.voiceAgain") : t("transcription.voiceRecord")}
           </button>
           {at && (
             <button type="button" className={cn(button, "text-destructive")} onClick={remove}>
-              {t("audio.voiceDelete")}
+              {t("transcription.voiceDelete")}
             </button>
           )}
         </span>
@@ -752,7 +751,7 @@ function InputLevel({ device }: { device: string | null }) {
 /** Meeting languages, in the order shown; `key` names their strings under transcription.languages. */
 const LANGUAGES = MEETING_LANGUAGES;
 
-function TranscriptionTab({ settings, onChange }: { settings: Settings; onChange: Props["onChange"] }) {
+function TranscriptionTab({ settings, onChange, recording }: { settings: Settings; onChange: Props["onChange"]; recording: boolean }) {
   const { t } = useTranslation("settings");
   const models = useModels();
   const language = LANGUAGES.find((l) => l.value === settings.language) ?? LANGUAGES[2];
@@ -793,6 +792,7 @@ function TranscriptionTab({ settings, onChange }: { settings: Settings; onChange
       </Group>
       <GlossaryGroup />
       <Group title={t("transcription.liveSpeakers")}>
+        <VoiceRow open device={settings.micDevice} recording={recording} />
         <Row
           label={t("transcription.roomSpeakers")}
           hint={t("transcription.roomSpeakersHint")}

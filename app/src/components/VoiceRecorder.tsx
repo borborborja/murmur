@@ -5,8 +5,12 @@ import { useTranslation } from "react-i18next";
 import * as backend from "@/lib/backend";
 import { cn } from "@/lib/utils";
 
-/** How long the sentence takes to read, about; recording stops on its own then. */
-const SECONDS = 8;
+/** The longest it records, if the sentence never ends (voice.rs keeps it under 30). */
+const MAX_SECONDS = 20;
+/** Reading pace, words per second of speech: the guide moves on only while the user talks. */
+const WORDS_PER_SECOND = 2.6;
+/** After the last word, a moment before stopping (the end of the word is still being said). */
+const TAIL_MS = 700;
 
 type Phase = "idle" | "recording" | "saving" | "saved";
 
@@ -20,6 +24,10 @@ export function VoiceRecorder({ device, saved, onSaved }: { device: string | nul
   const [phase, setPhase] = useState<Phase>(saved ? "saved" : "idle");
   const [elapsed, setElapsed] = useState(0);
   const [level, setLevel] = useState(0);
+  // Seconds the user has been talking (the karaoke's clock), and the noise floor heard so far.
+  const [spoken, setSpoken] = useState(0);
+  const floor = useRef(1);
+  const lastLevel = useRef(0);
   const [error, setError] = useState<string | null>(null);
   const started = useRef(0);
   const sentence = t("voice.sentence");
@@ -27,8 +35,16 @@ export function VoiceRecorder({ device, saved, onSaved }: { device: string | nul
 
   useEffect(() => {
     if (phase !== "recording") return;
-    const timer = setInterval(() => setElapsed(Math.min(SECONDS, (Date.now() - started.current) / 1000)), 100);
-    const unlisten = backend.onVoiceLevel(setLevel);
+    const timer = setInterval(() => setElapsed((Date.now() - started.current) / 1000), 100);
+    // A level every ~50 ms: speech is well above the quietest level heard (the room's noise).
+    const unlisten = backend.onVoiceLevel((rms) => {
+      const now = Date.now();
+      const step = lastLevel.current ? Math.min(0.2, (now - lastLevel.current) / 1000) : 0.05;
+      lastLevel.current = now;
+      floor.current = Math.min(floor.current * 1.01, Math.max(rms, 1e-4));
+      if (rms > Math.max(0.012, floor.current * 2.5)) setSpoken((s) => s + step);
+      setLevel(rms);
+    });
     return () => {
       clearInterval(timer);
       void unlisten.then((u) => u());
@@ -39,11 +55,14 @@ export function VoiceRecorder({ device, saved, onSaved }: { device: string | nul
   const record = async () => {
     setError(null);
     setElapsed(0);
+    setSpoken(0);
+    floor.current = 1;
+    lastLevel.current = 0;
     started.current = Date.now();
     setPhase("recording");
     try {
-      const promise = backend.recordVoice(device, SECONDS);
-      // Recording ends at SECONDS or on stop; then the print takes a moment.
+      const promise = backend.recordVoice(device, MAX_SECONDS);
+      // Recording ends at the last word (stop below), on the button, or at MAX_SECONDS; then the print takes a moment.
       const at = await promise;
       setPhase("saved");
       onSaved(at);
@@ -56,11 +75,16 @@ export function VoiceRecorder({ device, saved, onSaved }: { device: string | nul
     setPhase("saving");
     backend.stopVoiceRecording().catch(() => {});
   };
+  const said = phase === "recording" ? Math.min(words.length, Math.floor(spoken * WORDS_PER_SECOND)) : 0;
+  // The whole sentence read: stop a moment later. At MAX_SECONDS the engine stops by itself.
   useEffect(() => {
-    if (phase === "recording" && elapsed >= SECONDS) setPhase("saving");
-  }, [phase, elapsed]);
-
-  const said = phase === "recording" ? Math.floor((elapsed / SECONDS) * words.length) : 0;
+    if (phase !== "recording") return;
+    if (said >= words.length) {
+      const timer = setTimeout(stop, TAIL_MS);
+      return () => clearTimeout(timer);
+    }
+    if (elapsed >= MAX_SECONDS) setPhase("saving");
+  }, [phase, said, elapsed]); // eslint-disable-line react-hooks/exhaustive-deps
   // Speech sits around rms 0.01–0.1: a log scale over 10 segments.
   const lit = level <= 0 ? 0 : Math.round(Math.max(0, Math.min(1, (Math.log10(level) + 3) / 2.5)) * 10);
   return (
@@ -99,7 +123,7 @@ export function VoiceRecorder({ device, saved, onSaved }: { device: string | nul
           {phase === "idle" && (error ? <span className="text-destructive">{error}</span> : t("voice.ready"))}
           {phase === "recording" && (
             <>
-              <span className="font-semibold text-foreground">{t("voice.recording")}</span> · {t("voice.time", { done: `0:0${Math.floor(elapsed)}`, total: `0:0${SECONDS}` })}
+              <span className="font-semibold text-foreground">{t("voice.recording")}</span> · <span className="tabular-nums">0:{String(Math.floor(elapsed)).padStart(2, "0")}</span>
             </>
           )}
           {phase === "saving" && t("voice.saving")}
@@ -115,7 +139,7 @@ export function VoiceRecorder({ device, saved, onSaved }: { device: string | nul
       </div>
       {phase === "recording" && (
         <div className="mt-3 h-1 overflow-hidden rounded-full bg-mm-meter-off">
-          <div className="h-full rounded-full bg-primary transition-[width] duration-100 ease-linear" style={{ width: `${(elapsed / SECONDS) * 100}%` }} />
+          <div className="h-full rounded-full bg-primary transition-[width] duration-150 ease-out" style={{ width: `${(said / words.length) * 100}%` }} />
         </div>
       )}
     </div>

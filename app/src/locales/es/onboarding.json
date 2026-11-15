@@ -111,11 +111,10 @@
     "stop": "Parar",
     "level": "Nivel del micrófono",
     "recording": "Grabando",
-    "time": "{{done}} de {{total}}",
     "saving": "Guardando…",
     "saved": "Guardada",
     "again": "Volver a grabarla",
-    "privacy": "Murmur no guarda la grabación, solo una huella de tu voz (un dato biométrico). Se queda en este ordenador, nunca sale de él, y puedes borrarla en Configuración › Audio.",
+    "privacy": "Murmur no guarda la grabación, solo una huella de tu voz (un dato biométrico). Se queda en este ordenador, nunca sale de él, y puedes borrarla en Configuración › Transcripción.",
     "skip": "Ahora no",
     "done": "Hecho"
   }

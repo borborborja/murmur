@@ -111,11 +111,10 @@
     "stop": "Atura",
     "level": "Nivell del micròfon",
     "recording": "Gravant",
-    "time": "{{done}} de {{total}}",
     "saving": "Desant…",
     "saved": "Desada",
     "again": "Torna-la a gravar",
-    "privacy": "Murmur no desa la gravació, només una empremta de la teva veu (una dada biomètrica). Es queda en aquest ordinador, no surt mai, i la pots esborrar a Configuració › Àudio.",
+    "privacy": "Murmur no desa la gravació, només una empremta de la teva veu (una dada biomètrica). Es queda en aquest ordinador, no surt mai, i la pots esborrar a Configuració › Transcripció.",
     "skip": "Ara no",
     "done": "Fet"
   }

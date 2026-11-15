@@ -111,11 +111,10 @@
     "stop": "Stop",
     "level": "Microphone level",
     "recording": "Recording",
-    "time": "{{done}} of {{total}}",
     "saving": "Saving…",
     "saved": "Saved",
     "again": "Record it again",
-    "privacy": "Murmur doesn't keep the recording, only a print of your voice (biometric data). It stays on this computer, never leaves it, and you can delete it in Settings › Audio.",
+    "privacy": "Murmur doesn't keep the recording, only a print of your voice (biometric data). It stays on this computer, never leaves it, and you can delete it in Settings › Transcription.",
     "skip": "Not now",
     "done": "Done"
   }

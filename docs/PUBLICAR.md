@@ -137,7 +137,7 @@ Una actualització de model substitueix els fitxers d'un model **amb els mateixo
    - `version`: un número més alt que l'actual (la de fàbrica és 1).
    - `minApp`: la versió més antiga de Murmur que el pot fer servir.
    - `notes`: una línia; surt a la finestra d'actualització.
-   - `files`: només els fitxers que canvien, amb el mateix `name` que tenen a `app/src-tauri/src/models.rs`.
+   - `files`: només els fitxers que canvien, amb el mateix `name` que tenen a `core/src/models.rs`.
 
    Les apps només actualitzen els models que ja tenen instal·lats. Ho descarreguen a `models/.updates/<id>/`, comproven la mida i el SHA-256, i només llavors substitueixen els fitxers antics. La versió instal·lada queda a `models/versions.json`.
 

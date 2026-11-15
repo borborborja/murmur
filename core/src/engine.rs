@@ -53,7 +53,7 @@ pub fn models_dir() -> PathBuf {
     if let Ok(dir) = std::env::var("TRANSCRIPTOR_MODELS") {
         return PathBuf::from(dir);
     }
-    let repo = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../models");
+    let repo = Path::new(env!("CARGO_MANIFEST_DIR")).join("../models");
     if repo.is_dir() {
         return repo;
     }

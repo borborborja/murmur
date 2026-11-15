@@ -1,13 +1,10 @@
-pub mod aec;
+// The engine lives in core/ (murmur-core), shared with the mobile apps; its modules keep their
+// `crate::` paths here.
+pub use murmur_core::{aec, db, diarize, engine, glossary, i18n, models, pipeline, playback, punctuate, recorder, storage, voice};
 pub mod audio;
 pub mod calendar;
 pub mod capture;
-pub mod db;
-pub mod diarize;
-pub mod engine;
 pub mod gate;
-pub mod glossary;
-pub mod i18n;
 pub mod import;
 pub mod keychain;
 pub mod cloud;
@@ -15,16 +12,9 @@ pub mod share;
 pub mod llm;
 pub mod mcp;
 pub mod micwatch;
-pub mod models;
-pub mod punctuate;
 pub mod permissions;
-pub mod playback;
-pub mod pipeline;
-pub mod recorder;
 pub mod retranscribe;
 pub mod shell;
-pub mod storage;
-pub mod voice;
 #[cfg(target_os = "macos")]
 pub mod systap;
 

@@ -71,6 +71,8 @@ cd src-tauri && cargo run --release --example simulate -- ../../data/reunio-3min
 
 L'app es diu Murmur. El codi i el crate es diuen `transcriptor`, el nom antic. Identificador: `com.quicodomingo.murmur`.
 
+El motor és a `core/` (`murmur-core`), separat de l'app de l'ordinador perquè el puguin fer servir també les apps de mòbil ([MOBIL.md](MOBIL.md)): transcripció en directe, parlants, la teva veu, glossari, puntuació, gravació i reproducció en Opus, la base de dades i els textos de Rust (`i18n.rs`). No sap res de finestres ni d'interfície. L'app (`app/src-tauri`) en reexporta els mòduls, de manera que el seu codi els continua trobant a `crate::engine`, `crate::db`… Tots dos formen un sol espai de treball de Cargo (un `Cargo.lock` i una carpeta `target`), i `cargo test` passa els tests de tots dos. La captura d'àudio de l'ordinador (`audio.rs`, `systap.rs`), Whisper, el model de llenguatge, el calendari, compartir i el connector per a Claude es queden a l'app.
+
 ### Motor en directe (`engine.rs`)
 
 - Port de `mvp/live.py` sobre el crate oficial `sherpa-onnx` (1.13.8). L'API de Rust del VAD no té `current_segment`, així que el text provisional es fa amb un buffer propi (pre-roll de 0,4 s) que només descodifica els últims 8 s.

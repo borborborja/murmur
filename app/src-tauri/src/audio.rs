@@ -10,11 +10,7 @@ use crossbeam_channel::Sender;
 
 use crate::engine::SAMPLE_RATE;
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub enum Source {
-    Mic = 0,
-    System = 1,
-}
+pub use crate::pipeline::Source;
 
 /// 100 ms: block size used by the WAV simulator.
 const SIM_CHUNK: usize = SAMPLE_RATE / 10;

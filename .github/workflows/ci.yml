@@ -87,7 +87,7 @@ jobs:
         uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
         with:
           path: e2e-models
-          key: models-transcription-${{ hashFiles('app/src-tauri/src/models.rs') }}
+          key: models-transcription-${{ hashFiles('core/src/models.rs') }}
           enableCrossOsArchive: true
       - name: Descarrega el model de transcripció
         if: steps.models.outputs.cache-hit != 'true'
@@ -180,7 +180,7 @@ jobs:
         uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
         with:
           path: e2e-models
-          key: models-transcription-${{ hashFiles('app/src-tauri/src/models.rs') }}
+          key: models-transcription-${{ hashFiles('core/src/models.rs') }}
           enableCrossOsArchive: true
       - name: Descarrega el model de transcripció
         if: steps.models.outputs.cache-hit != 'true'

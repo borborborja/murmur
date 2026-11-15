@@ -9,7 +9,7 @@ L'idioma de la interfície i el de les reunions són dues coses separades. La in
 | Què | On |
 |---|---|
 | Interfície (React) | `app/src/locales/<idioma>/<espai>.json`, un espai de noms per component o mòdul |
-| Menús natius, safata, avisos i errors del motor | `app/src-tauri/src/i18n.rs` |
+| Menús natius, safata, avisos i errors del motor | `core/src/i18n.rs` |
 | Textos dels permisos de macOS | `app/src-tauri/locales/<idioma>.lproj/InfoPlist.strings` |
 | Instruccions per escriure la portada | `app/src/locales/<idioma>/cover.json` (`prompts`) |
 

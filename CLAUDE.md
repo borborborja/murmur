@@ -17,7 +17,8 @@ Guia per a qui treballa en aquest repositori, persones o agents de codi. Murmur 
 | Carpeta | Què hi ha |
 |---|---|
 | `app/src/` | Interfície (React, shadcn/ui, i18next) |
-| `app/src-tauri/src/` | Motor en Rust: àudio, transcripció, parlants, base de dades, model de llenguatge |
+| `core/` | El motor en Rust (`murmur-core`), compartit amb el mòbil: transcripció, parlants, la teva veu, glossari, puntuació, gravació, base de dades i textos (`i18n.rs`) |
+| `app/src-tauri/src/` | L'app de l'ordinador en Rust: captura d'àudio, finestres, calendari, Whisper, model de llenguatge, compartir, connector per a Claude |
 | `app/whisper/` | `murmur-whisper`, el procés a part que fa la passada final amb Whisper |
 | `share/` | El Worker de Cloudflare dels enllaços compartits ([`docs/COMPARTIR.md`](docs/COMPARTIR.md)) |
 | `bench/`, `mvp/`, `tools/` | Banc de proves, primer prototip, scripts d'exportació de models (Python, amb `uv`) i les captures de la landing (`tools/landing-captures/`) |
@@ -27,7 +28,7 @@ Guia per a qui treballa en aquest repositori, persones o agents de codi. Murmur 
 ```bash
 cd app && npm install && npm run tauri dev            # l'app
 TRANSCRIPTOR_SIMULATE=../data/reunio-3min.wav npm run tauri dev   # amb un WAV en lloc del micròfon
-cd app/src-tauri && cargo test                         # tests del motor
+cd app/src-tauri && cargo test                         # tests de l'app i del motor (core/)
 cd app && npx tsc --noEmit && npm run check-locales    # tipus i traduccions
 cd app/src-tauri && cargo run --release -- --mcp       # el connector per a Claude (MCP per stdio)
 cd app/src-tauri && cargo run --release --example lang_probe -- ../../data/reunio.m4a   # l'idioma que detectaria
@@ -37,7 +38,7 @@ cd app/src-tauri && cargo run --release --example lang_probe -- ../../data/reuni
 
 **Llengua**
 - Codi, noms i comentaris en anglès. Documentació en català.
-- Cap text visible s'escriu al codi: sempre amb `t()` i claus a `app/src/locales/`, o a `i18n.rs` des de Rust. El català és la font, i el castellà i l'anglès s'actualitzen alhora. `npm run check-locales` ha de passar.
+- Cap text visible s'escriu al codi: sempre amb `t()` i claus a `app/src/locales/`, o a `core/src/i18n.rs` des de Rust. El català és la font, i el castellà i l'anglès s'actualitzen alhora. `npm run check-locales` ha de passar.
 - Cap text, en cap idioma, porta guions llargs (—).
 - Els textos parlen de l'**ordinador**, no del Mac: Murmur funciona a macOS, Windows i Linux. Només es diu «Mac» del que és exclusiu del Mac (el Finder, el Dock, Configuració del Sistema…). Els textos antics que diuen «Mac» tenen la versió de PC a `locales/*/pc.json`.
 

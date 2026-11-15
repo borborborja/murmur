@@ -56,6 +56,7 @@ pub fn fill(pattern: &str, args: &[(&str, &dyn std::fmt::Display)]) -> String {
 }
 
 /// `tr!("key")` → `&'static str`; `tr!("key", name = value, …)` → `String`.
+#[macro_export]
 macro_rules! tr {
     ($key:literal) => {
         $crate::i18n::t($key)
@@ -64,7 +65,7 @@ macro_rules! tr {
         $crate::i18n::fill($crate::i18n::t($key), &[$((stringify!($name), &$value as &dyn std::fmt::Display)),+])
     };
 }
-pub(crate) use tr;
+pub use crate::tr;
 
 /// [Catalan, Spanish, English].
 fn strings(key: &str) -> Option<[&'static str; 3]> {

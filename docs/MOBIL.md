@@ -20,13 +20,68 @@ Idea: una versió «light» per a iOS i Android que només faci la transcripció
 - **Tauri 2 mobile** (recomanat per provar primer): compila per a iOS i Android, i reaprofitaria la interfície de React i el motor en Rust (`pipeline.rs`, `engine.rs`). Riscos: que sherpa-onnx compili per a mòbil des de Rust (`sherpa-onnx-sys`), que la captura d'àudio de `cpal` funcioni a iOS (CoreAudio) i Android (AAudio), i el segon pla, que demana codi natiu.
 - **Pla B:** apps natives a partir dels exemples oficials de sherpa-onnx en Swift i Kotlin.
 
-## Enviar-ho a l'ordinador
+## Proposta funcional
 
-- **Primera versió:** el mòbil desa l'àudio i la transcripció del directe; en acabar, es comparteixen al Mac (AirDrop o menú Compartir). El Mac ja obre àudios («Transcriu des d'un fitxer») i té l'extensió de Compartir, i hi fa la passada final.
-- **Més endavant:** sincronització per la xarxa local (Bonjour) o una carpeta d'iCloud Drive.
-- Si el Mac rep l'àudio, la transcripció del mòbil només serveix per llegir-la en directe: el Mac en fa una de millor. Això simplifica el format que s'ha d'enviar.
+El mòbil és un **company de l'ordinador**, no una còpia de l'app: grava reunions presencials amb el text en directe, i l'ordinador hi fa la passada final (Whisper, parlants, resum), que torna al mòbil.
 
-## Primer pas: una prova d'una tarda
+### Gravar
+- Botó gran per gravar i el recordatori de consentiment en començar, com a l'ordinador.
+- Text en directe amb els colors dels parlants. «Murmur, sóc la Marta» hi funciona igual. «La teva veu» es grava al mateix mòbil: l'empremta és biomètrica i no viatja entre aparells.
+- Notes ràpides amb el minut, i un botó per marcar un moment com a important.
+- **Fotos amb el minut:** la pissarra, una diapositiva projectada, un paper. Són l'equivalent de les captures de l'ordinador (`capture.rs`): van a la reunió com una captura més, amb el seu minut, i a l'ordinador surten sota la frase d'aquell moment i a la portada.
+  - No toquen el micròfon. La càmera es fa servir dins de l'app i només per a fotos: a iOS, una `AVCaptureSession` sense entrada d'àudio no canvia la sessió d'àudio; a Android, CameraX (`ImageCapture`) no fa servir el micròfon, i la gravació continua al servei en primer pla. El que no es pot fer és vídeo, que sí que demana el micròfon.
+  - El so de l'obturador queda gravat; és un soroll curt que no afecta la transcripció.
+  - També es poden afegir després fotos fetes amb la càmera del sistema: es col·loquen al minut segons l'hora de la foto (EXIF), si són de durant la reunió.
+- Amb la pantalla bloquejada: Live Activity a l'iPhone (Dynamic Island, temps i botó d'aturar) i notificació fixa a Android. Per començar d'un toc: widget, drecera de Siri, botó d'acció.
+- El calendari del telèfon per posar títol a la reunió i avisar quan comença.
+
+### Després
+- Al mòbil queden l'àudio, la transcripció del directe i les fotos, que ja es poden llegir i buscar.
+- La reunió passa a l'ordinador, que hi fa la passada final i en retorna el resultat. Mentrestant, la reunió diu «Pendent de l'ordinador».
+- L'àudio i les fotos no s'esborren del mòbil fins que l'ordinador confirma que els té.
+
+### Emparellar amb l'ordinador (des de la primera versió)
+- L'ordinador ensenya un codi QR (Configuració, i un pas opcional de l'onboarding del mòbil). El QR porta l'adreça i una clau; a partir d'aquí, els dos aparells es reconeixen i tot el que s'envien va xifrat amb aquesta clau.
+- Es troben per la xarxa local (Bonjour / mDNS), sense cap servidor de Murmur. Funciona entre plataformes: iPhone amb Windows, Android amb Mac.
+- Es sincronitza en totes dues direccions: les reunions noves del mòbil van a l'ordinador, i els resultats (text revisat, parlants, resum) tornen al mòbil. Si l'ordinador no hi és, les reunions esperen al mòbil.
+- Es pot desemparellar des de tots dos costats.
+- El menú Compartir (AirDrop, etc.) queda com a alternativa per a qui no vulgui emparellar.
+- Permisos: «Xarxa local» a iOS; a l'ordinador, el tallafoc pot demanar permís la primera vegada.
+- Si l'ordinador rep l'àudio, la transcripció del mòbil només serveix per llegir-la en directe: l'ordinador en fa una de millor.
+
+### Fora del mòbil
+- L'àudio de les trucades (el sistema no ho deixa), Whisper, Gemma i el connector per a Claude.
+- Més endavant, opcional: resum des del mòbil amb la clau pròpia de Claude o ChatGPT, desada al clauer del telèfon i enviant només text.
+
+### Fases
+| Fase | Què hi ha |
+|---|---|
+| 0 | La prova d'una tarda (a sota): velocitat, qualitat i bateria |
+| 1 | Gravar, text en directe, parlants, notes, fotos amb el minut, pantalla bloquejada, emparellar i sincronitzar |
+| 2 | Llegir al mòbil les reunions gravades a l'ordinador, fotos de la galeria per hora |
+| 3 | Resum al núvol amb la clau pròpia, widgets, rellotge |
+
+### Decidit
+- **El mòbil funciona sol.** Sense ordinador, la reunió es queda amb la transcripció ràpida (Conformer, parlants en directe, notes i fotos). Emparellat, l'ordinador hi afegeix la passada final i el resum.
+- **Primer iOS** (iPhone i iPad), que és el que tenim per provar. Android després.
+- **Apps natives amb el motor compartit**, no Tauri. Tauri pinta la interfície en una pàgina web, i el que fa que una app se senti d'iOS (Liquid Glass, barres que el sistema col·loca, les size classes, `ArrangementView` i les zones reservades de l'iPhone Duo, la Live Activity, la càmera) només existeix en SwiftUI i UIKit. Per això:
+  - L'ordinador continua amb Tauri.
+  - El motor en Rust (transcripció, parlants, presentacions, la teva veu, glossari, base de dades) se separa en un mòdul comú que fan servir l'ordinador i el mòbil.
+  - iOS: app en SwiftUI a `mobile/ios/`, que crida el motor amb UniFFI. Android, més endavant, en Jetpack Compose amb el mateix motor.
+  - Els textos surten de `app/src/locales/` i es converteixen als formats d'iOS i Android, sense duplicar traduccions.
+- **Disposició per size classes**, no per dispositiu: amplada compacta (iPhone, Duo tancat, iPad estret) amb una columna; amplada regular (Duo obert, iPad) amb la llista i la reunió alhora; Duo mig plegat amb una banda per costat del plec (la frase a dalt, els botons a baix).
+- **Cal Xcode** per a qualsevol app d'iOS. Les proves es fan directament a l'iPhone, sense simuladors.
+- Mockups: iPhone (llista, gravant, foto amb el minut, acabada sola, revisada a l'ordinador, emparellar, pantalla bloquejada), iPad (llista i gravació amb notes i qui parla) i Android (llista, gravant i notificació).
+
+## Ordre de feina
+
+1. Sense Xcode: separar el motor en un mòdul comú i comprovar que l'ordinador continua igual (`cargo test`).
+2. Sense Xcode: la part de l'ordinador de l'emparellament (Configuració › Mòbil, codi QR, Bonjour i el protocol xifrat).
+3. Amb Xcode: la prova d'una tarda (a sota).
+4. Amb Xcode: la primera app SwiftUI, només gravar i text en directe, a l'iPhone per TestFlight.
+5. La resta de pantalles del mockup i la sincronització.
+
+## Primer pas amb Xcode: una prova d'una tarda
 
 Amb les apps de demostració de sherpa-onnx (Android i iOS), carregar-hi el nostre Conformer int8 i mesurar al telèfon:
 

@@ -179,6 +179,10 @@ Entre reunions (bloc 5):
 - [ ] Windows i Linux: calendari (Google o Outlook directes, amb OAuth).
 - [ ] Windows: signar l'instal·lador perquè SmartScreen no avisi.
 - [ ] Windows i Linux: acceleració per GPU (Vulkan) per a Whisper i Gemma.
-- [ ] Murmur per a mòbil (iOS i Android), només amb el directe, i la passada final a l'ordinador: exploració i primera prova a [`docs/MOBIL.md`](MOBIL.md).
+- [ ] Murmur per a mòbil (iOS i Android): funciona sol amb la transcripció ràpida, i emparellat amb l'ordinador hi fa la passada final. Pla i mockups a [`docs/MOBIL.md`](MOBIL.md).
+  - [x] El motor separat de l'app de l'ordinador (`core/`, `murmur-core`), per compartir-lo amb el mòbil.
+  - [ ] L'emparellament, la part de l'ordinador: Configuració › Mòbil, codi QR, Bonjour i protocol xifrat.
+  - [ ] La prova d'una tarda a l'iPhone (cal Xcode): velocitat, qualitat i bateria del Conformer.
+  - [ ] Primera app en SwiftUI: gravar i text en directe, per TestFlight.
 - [ ] macOS amb Intel (x86_64), si algú ho demana.
 - [ ] iOS / Android reaprofitant el nucli Rust.

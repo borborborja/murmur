@@ -21,10 +21,17 @@ use std::time::Instant;
 use anyhow::Result;
 
 use crate::aec::{EchoCanceller, FRAME};
-use crate::audio::Source;
 use crate::diarize::Span;
 use crate::engine::{Channel, Event, LiveSession, Models, SAMPLE_RATE, SYSTEM_SPEAKER_BASE};
 use crate::recorder::Recorder;
+
+/// Where audio comes from. Sources are never mixed: the pipeline processes each one separately
+/// (echo cancellation, its own transcription session).
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Source {
+    Mic = 0,
+    System = 1,
+}
 
 /// A source further behind the wall clock than this is padded with silence.
 const PAD_AFTER: usize = SAMPLE_RATE * 3 / 10;

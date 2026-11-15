@@ -1,0 +1,35 @@
+[package]
+name = "murmur-core"
+version = "0.13.0"
+description = "Murmur's engine: live transcription, speakers, voice, glossary, recording and the meetings database"
+authors = ["Quico Domingo"]
+edition = "2024"
+license = "MIT"
+# Built and tested from the app's workspace (one Cargo.lock, one target folder).
+workspace = "../app/src-tauri"
+
+[lib]
+name = "murmur_core"
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+anyhow = "1"
+log = "0.4"
+opus = "0.4"
+ogg = "0.9"
+sonora = "0.2"
+rusqlite = { version = "0.40", features = ["bundled"] }
+# How sherpa-onnx is linked (static, shared) is chosen by the app that uses this crate.
+sherpa-onnx = { version = "1.13.8", default-features = false }
+# onnxruntime comes with sherpa-onnx: ort only binds to it.
+ort = { version = "=2.0.0-rc.14", default-features = false, features = ["std", "ndarray", "api-28"] }
+ort-sys = { version = "=2.0.0-rc.14", default-features = false, features = ["std", "api-28", "disable-linking"] }
+tokenizers = { version = "0.23.2", default-features = false, features = ["fancy-regex"] }
+ureq = { version = "2", features = ["json"] }
+sha2 = "0.10"
+semver = "1"
+libc = "0.2"
+
+[target.'cfg(windows)'.dependencies]
+windows-sys = { version = "0.60", features = ["Win32_Foundation", "Win32_Storage_FileSystem"] }

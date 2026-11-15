@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { getVersion } from "@tauri-apps/api/app";
 import { disable as disableAutostart, enable as enableAutostart, isEnabled as autostartEnabled } from "@tauri-apps/plugin-autostart";
 import { ask, open as openDialog } from "@tauri-apps/plugin-dialog";
@@ -23,6 +23,8 @@ import { connectShare, disconnectShare, setupShare, useShareStatus } from "@/lib
 import type { CloudProvider, Language, LlmProgress, LlmResult, Meeting, ModelId } from "@/lib/types";
 import { preferredFinalModel } from "@/lib/finalpass";
 import { cn } from "@/lib/utils";
+import { copyText } from "@/lib/clipboard";
+import { MarkerBackground, useMarker } from "@/lib/motion";
 import { MEETING_LANGUAGES } from "./StartOptions";
 import { capabilities, isMac } from "@/lib/platform";
 import { VoicePrivacy, VoiceRecorder } from "@/components/VoiceRecorder";
@@ -77,18 +79,9 @@ export function SettingsDialog({ open, onOpenChange, settings, onChange, recordi
   useEffect(() => {
     if (open && initialTab) setTab(initialTab);
   }, [open, initialTab]);
-  // Where the selection's background sits: measured from the chosen row; it only animates once
-  // it's been placed (opening the window shouldn't slide it in from the top).
+  // The selection's background slides to the section chosen (lib/motion.tsx).
   const navRef = useRef<HTMLElement>(null);
-  const [marker, setMarker] = useState<{ top: number; height: number; animate: boolean } | null>(null);
-  useLayoutEffect(() => {
-    if (!open) {
-      setMarker(null);
-      return;
-    }
-    const row = navRef.current?.querySelector<HTMLElement>(`[data-tab="${tab}"]`);
-    if (row) setMarker((m) => ({ top: row.offsetTop, height: row.offsetHeight, animate: !!m }));
-  }, [open, tab]);
+  const marker = useMarker(navRef, open ? tab : null, [open]);
   // Trying prompts keeps the language model loaded; free its memory when the window closes.
   const llmLoaded = useRef(false);
   useEffect(() => {
@@ -129,20 +122,14 @@ export function SettingsDialog({ open, onOpenChange, settings, onChange, recordi
           {/* The sections in a column, as in the system's settings: they all fit, however many. */}
           <nav ref={navRef} className="relative w-[184px] shrink-0 overflow-y-auto border-r border-border bg-mm-sidebar p-2" role="tablist" aria-orientation="vertical">
             {/* The selection's background slides to the section chosen (not on opening; motion-reduce: jumps). */}
-            {marker && (
-              <span
-                aria-hidden
-                className={cn("pointer-events-none absolute inset-x-2 top-0 rounded-md bg-mm-sidebar-selection motion-reduce:transition-none", marker.animate && "transition-transform duration-200 ease-out")}
-                style={{ height: marker.height, transform: `translateY(${marker.top}px)` }}
-              />
-            )}
+            <MarkerBackground marker={marker} className="rounded-md bg-mm-sidebar-selection" />
             {/* Mòbil: only in development until there's a phone app to pair (docs/MOBIL.md). */}
             {TABS.filter(({ id }) => (id !== "calendar" || capabilities.calendar) && (id !== "mobile" || import.meta.env.DEV)).map(({ id, icon: Icon }) => (
               <button
                 key={id}
                 type="button"
                 role="tab"
-                data-tab={id}
+                data-marker={id}
                 aria-selected={tab === id}
                 onClick={() => setTab(id)}
                 className={cn(
@@ -1292,7 +1279,7 @@ function ClaudeTab({ open }: { open: boolean }) {
       setBusy(false);
     }
   };
-  const copy = (text: string) => navigator.clipboard.writeText(text).then(() => toast(t("claude.copied")));
+  const copy = (text: string) => copyText(text).then(() => toast(t("claude.copied")));
 
   return (
     <>
@@ -1446,7 +1433,7 @@ function MobileTab({ open }: { open: boolean }) {
                   {t("common:cancel")}
                 </button>
                 {import.meta.env.DEV && (
-                  <button type="button" className={SMALL_BUTTON} onClick={() => navigator.clipboard.writeText(code.uri).then(() => toast(t("claude.copied")))}>
+                  <button type="button" className={SMALL_BUTTON} onClick={() => copyText(code.uri).then(() => toast(t("claude.copied")), () => toast.error(t("mobile.copyFailed")))}>
                     {t("mobile.copyCode")}
                   </button>
                 )}
@@ -1975,16 +1962,21 @@ export function Segmented<T extends string>({
   onChange: (v: T) => void;
   labelledBy?: string;
 }) {
+  // The white thumb slides to the option chosen (lib/motion.tsx).
+  const track = useRef<HTMLDivElement>(null);
+  const marker = useMarker(track, value, [options.map((o) => o.label).join("|")]);
   return (
-    <div role="radiogroup" aria-labelledby={labelledBy} className="flex shrink-0 rounded-[7px] bg-mm-segmented-track p-0.5">
+    <div ref={track} role="radiogroup" aria-labelledby={labelledBy} className="relative flex shrink-0 rounded-[7px] bg-mm-segmented-track p-0.5">
+      <MarkerBackground marker={marker} className="rounded-[5px] bg-mm-segmented-selected shadow-[0_1px_2px_rgb(0_0_0/0.15)]" />
       {options.map((o) => (
         <button
           key={o.value}
           type="button"
           role="radio"
+          data-marker={o.value}
           aria-checked={value === o.value}
           onClick={() => onChange(o.value)}
-          className={cn("h-6 rounded-[5px] px-3 text-[12px]", value === o.value ? "bg-mm-segmented-selected font-medium shadow-[0_1px_2px_rgb(0_0_0/0.15)]" : "text-muted-foreground")}
+          className={cn("relative h-6 rounded-[5px] px-3 text-[12px] transition-colors duration-200", value === o.value ? "font-medium" : "text-muted-foreground")}
         >
           {o.label}
         </button>

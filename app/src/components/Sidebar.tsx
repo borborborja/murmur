@@ -13,6 +13,7 @@ import { t as translate } from "@/lib/i18n";
 import { shortcut } from "@/lib/platform";
 import { activeShares } from "@/lib/share";
 import { cn } from "@/lib/utils";
+import { MarkerBackground, useMarker } from "@/lib/motion";
 import { StartOptionsCompact, type StartChoice } from "./StartOptions";
 import { hasTag, tagCounts, type TagCount } from "./Tags";
 
@@ -20,6 +21,8 @@ type Props = {
   meetings: MeetingSummary[];
   selectedId: string | null;
   canCreate: boolean;
+  /** A recording is starting (permissions, models): the button's dot pulses until it does. */
+  starting?: boolean;
   /** The meeting being made from an audio file: it isn't recording, it's being transcribed. */
   importingId?: string | null;
   search: (query: string) => Promise<SearchHit[]>;
@@ -56,7 +59,7 @@ const HITS_PER_MEETING = 3;
 const TAGS_SHOWN = 5;
 const TAGS_OPEN_KEY = "murmur.sidebar.tagsOpen";
 
-export function Sidebar({ meetings, selectedId, canCreate, importingId, search, onSelect, onOpenHit, onNew, startChoice, onStartChoice, englishReady, onSettings, onCalendarSettings, onDelete, tagFilter, onTagFilter, onRenameTag, onDeleteTag }: Props) {
+export function Sidebar({ meetings, selectedId, canCreate, starting, importingId, search, onSelect, onOpenHit, onNew, startChoice, onStartChoice, englishReady, onSettings, onCalendarSettings, onDelete, tagFilter, onTagFilter, onRenameTag, onDeleteTag }: Props) {
   const { t } = useTranslation("sidebar");
   const { t: tt } = useTranslation("tags");
   const calendarSync = useCalendarSync();
@@ -66,6 +69,17 @@ export function Sidebar({ meetings, selectedId, canCreate, importingId, search, 
   const tags = useMemo(() => tagCounts(meetings), [meetings]);
   const shown = tagFilter ? meetings.filter((m) => hasTag(m, tagFilter)) : meetings;
   const shownIds = useMemo(() => new Set(shown.map((m) => m.id)), [shown]);
+  // The selected meeting's background and bar slide to the one chosen (lib/motion.tsx).
+  const list = useRef<HTMLDivElement>(null);
+  const order = shown.map((m) => m.id).join(",");
+  const marker = useMarker(list, searching ? null : selectedId, [order, tagFilter, tags.length]);
+  // Meetings that arrive while the list is open (a recording, one from the phone) come in gently;
+  // the ones there when it loads, don't.
+  const known = useRef<Set<string> | null>(null);
+  const fresh = new Set(known.current ? shown.filter((m) => !known.current!.has(m.id)).map((m) => m.id) : []);
+  useEffect(() => {
+    if (meetings.length || known.current) known.current = new Set([...(known.current ?? []), ...meetings.map((m) => m.id)]);
+  }, [meetings]);
 
   useEffect(() => {
     const q = query.trim();
@@ -101,9 +115,20 @@ export function Sidebar({ meetings, selectedId, canCreate, importingId, search, 
         type="button"
         onClick={onNew}
         disabled={!canCreate}
-        className="mx-3 mb-2.5 flex h-8 shrink-0 items-center gap-2 rounded-lg bg-mm-new-meeting px-2.5 text-[13px] font-semibold text-mm-on-new-meeting transition-opacity hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring disabled:opacity-40"
+        aria-busy={starting || undefined}
+        className={cn(
+          "mx-3 mb-2.5 flex h-8 shrink-0 items-center gap-2 rounded-lg bg-mm-new-meeting px-2.5 text-[13px] font-semibold text-mm-on-new-meeting transition-[opacity,transform] duration-150 ease-out hover:opacity-90 active:scale-[0.97] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring disabled:opacity-40 motion-reduce:transition-none motion-reduce:active:scale-100",
+          starting && "disabled:opacity-100",
+        )}
       >
-        <Plus className="size-3.5" strokeWidth={2.4} aria-hidden />
+        {/* While a recording starts, the plus becomes the recording dot, pulsing. */}
+        {starting ? (
+          <span className="grid size-3.5 place-items-center" aria-hidden>
+            <span className="size-2 animate-pulse rounded-full bg-mm-recording-dot motion-reduce:animate-none" />
+          </span>
+        ) : (
+          <Plus className="size-3.5" strokeWidth={2.4} aria-hidden />
+        )}
         <span className="flex-1 text-left">{t("newMeeting")}</span>
         <kbd className="font-sans text-[11px] font-medium opacity-60">{shortcut("⌘N")}</kbd>
       </button>
@@ -128,7 +153,11 @@ export function Sidebar({ meetings, selectedId, canCreate, importingId, search, 
           )}
         </label>
       </div>
-      <div className="mt-3 flex-1 overflow-y-auto px-2">
+      <div ref={list} className="relative mt-3 flex-1 overflow-y-auto px-2">
+        {/* The bar echoes the logo; it slides with the background. */}
+        <MarkerBackground marker={marker} className="rounded-md bg-mm-sidebar-selection">
+          <span className="absolute inset-y-1.5 left-0 w-[3px] rounded-[2px] bg-mm-sidebar-selection-bar" />
+        </MarkerBackground>
         {tags.length > 0 && (
           <TagSection tags={tags} filter={tagFilter} onFilter={onTagFilter} onRename={onRenameTag} onDelete={onDeleteTag} total={meetings.length} />
         )}
@@ -156,13 +185,13 @@ export function Sidebar({ meetings, selectedId, canCreate, importingId, search, 
                           showRowMenu(m, onDelete);
                         }}
                         aria-current={m.id === selectedId ? "page" : undefined}
+                        data-marker={m.id}
                         className={cn(
                           "relative flex h-[30px] w-full items-center gap-2 rounded-md pl-2.5 pr-2 text-left text-[13px]",
-                          m.id === selectedId ? "bg-mm-sidebar-selection font-medium" : "hover:bg-black/5 dark:hover:bg-white/5",
+                          m.id === selectedId ? "font-medium" : "hover:bg-black/5 dark:hover:bg-white/5",
+                          fresh.has(m.id) && "animate-in fade-in-0 slide-in-from-top-1 duration-300 ease-out motion-reduce:animate-none",
                         )}
                       >
-                        {/* The selected row's bar echoes the logo. */}
-                        {m.id === selectedId && <span className="absolute inset-y-1.5 left-0 w-[3px] rounded-[2px] bg-mm-sidebar-selection-bar" aria-hidden />}
                         <span className="flex-1 truncate">{m.title}</span>
                         {m.device && <Smartphone className="size-3 shrink-0 text-text-secondary" aria-label={translate("app:fromPhone", { phone: m.device.name })} />}
                         {activeShares(m).length > 0 && <Link2 className="size-3 shrink-0 text-text-secondary" aria-label={translate("share:shared")} />}

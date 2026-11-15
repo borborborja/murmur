@@ -163,6 +163,7 @@ Quan arriba el text de Whisper (o la puntuació, si en ve després), o el resum,
 ## Accessibilitat i moviment
 - Contrast mínim 4,5:1 per al text (3:1 a partir de 24 pt). Per això l'àcid mai és text sobre clar.
 - Respecta "Redueix el moviment": atura el parpelleig del REC, les barres de nivell, el cursor i la brillantor dels esquelets, i el contingut nou apareix sense l'aurora.
+- **Micro-interaccions** (`lib/motion.tsx`): la selecció **llisca** d'una opció a la nova en 200 ms (`ease-out`), amb el mateix component a la barra lateral de la configuració, als controls segmentats (el polze blanc, també Portada / Transcripció) i a la llista de reunions (el fons i la barreta junts). Mai en obrir una finestra o una llista: el primer cop ja hi és. Les reunions que arriben amb la llista oberta (una gravació nova, una del mòbil) **entren** amb una fosa i un desplaçament de 4 pt (300 ms). El botó «Nova reunió» s'**encongeix** al 97 % en prémer-lo (150 ms) i, mentre la gravació arrenca, el «+» es converteix en el punt de gravació bategant. Amb "Redueix el moviment", tot això salta o no es mou.
 - Els colors que s'han de distingir també es diferencien en lluminositat, no només en to.
 
 ## Notes d'implementació

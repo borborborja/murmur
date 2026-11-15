@@ -1,7 +1,7 @@
 //! A phone without a phone: pairs with Murmur on this computer and sends it a meeting, to try
 //! the computer's side (mobile.rs) before there's an iOS app (docs/EMPARELLAR.md).
 //!
-//!   cargo run --example fake_phone -- pair 'murmur://pair?…'        (the QR's text, "Copia")
+//!   cargo run --example fake_phone -- pair                  (the code on screen; or pass its text)
 //!   cargo run --example fake_phone -- send ../../data/reunio-3min.wav "Reunió de prova"
 //!   cargo run --example fake_phone -- results
 //!
@@ -42,7 +42,12 @@ fn main() -> Result<()> {
     let args: Vec<String> = std::env::args().skip(1).collect();
     match args.first().map(String::as_str) {
         Some("pair") => {
-            let code = PairingCode::parse(args.get(1).ok_or_else(|| anyhow!("pair <uri>"))?)?;
+            // A development build of the app leaves the code on screen in a temp file.
+            let uri = match args.get(1) {
+                Some(uri) => uri.clone(),
+                None => std::fs::read_to_string(std::env::temp_dir().join("murmur-pairing-code.txt")).context("no code: open Settings › Mòbil › Connecta un mòbil, or pass the code")?,
+            };
+            let code = PairingCode::parse(uri.trim())?;
             let keys = Keys::generate()?;
             let addr = format!("{}:{}", code.addrs.first().ok_or_else(|| anyhow!("no address in the code"))?, code.port);
             let session = sync::pair(TcpStream::connect(&addr)?, &keys, &code, NAME)?;

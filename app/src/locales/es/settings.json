@@ -338,6 +338,7 @@
     "expires": "El código caduca dentro de {{time}}.",
     "copyCode": "Copiar el código",
     "paired": "«{{name}}» se ha conectado con este ordenador.",
-    "privacy": "El móvil y el ordenador se hablan directamente por tu red, cifrados, sin pasar por ningún servidor. La huella de tu voz nunca sale del aparato."
+    "privacy": "El móvil y el ordenador se hablan directamente por tu red, cifrados, sin pasar por ningún servidor. La huella de tu voz nunca sale del aparato.",
+    "copyFailed": "No se ha podido copiar el código."
   }
 }

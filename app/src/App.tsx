@@ -61,6 +61,8 @@ import { capabilities, hasMod, isMac, shortcut } from "@/lib/platform";
 import { useMeetings } from "@/lib/store";
 import { SYSTEM_SPEAKER_BASE, type Language, type Meeting, type ModelId, type SearchHit, type Utterance } from "@/lib/types";
 import { cn } from "@/lib/utils";
+import { copyText } from "@/lib/clipboard";
+import { MarkerBackground, useMarker } from "@/lib/motion";
 import { markSeen, pendingReleases, releasesBetween, type WhatsNewRelease } from "@/lib/whatsnew";
 
 const ONBOARDED_KEY = "murmur.onboarded.v1";
@@ -165,6 +167,8 @@ export default function App() {
   const [hoveredNote, setHoveredNote] = useState<string | null>(null);
   // Cover or transcript in the main area (the cover only exists after a recording).
   const [view, setView] = useStoredState("transcriptor.view.v1", { cover: true });
+  // Portada / Transcripció: the white thumb slides (lib/motion.tsx).
+  const viewTrack = useRef<HTMLDivElement>(null);
   const models = useModels();
   const cloud = useCloud();
   const calendarSync = useCalendarSync();
@@ -223,6 +227,8 @@ export default function App() {
   const post = usePostProcess(state, dispatch, settings);
   const [level, setLevel] = useState(0);
   const [busy, setBusy] = useState(false);
+  /** A recording is starting (not stopping or importing): the new-meeting button's dot pulses. */
+  const [starting, setStarting] = useState(false);
   /** "Desa en Markdown", chosen for each meeting while it records; written once it's done. */
   const [markdown, setMarkdown] = useState<Record<string, boolean>>({});
   const startedAt = useRef(0);
@@ -520,10 +526,12 @@ export default function App() {
       return;
     }
     setBusy(true);
+    setStarting(true);
     // Ask for the microphone and system audio like other apps do; record what's allowed.
     const sources = await ensurePermissions({ mic: settings.mic, system: settings.system }).catch(() => ({ mic: settings.mic, system: settings.system }));
     if (!sources) {
       setBusy(false);
+      setStarting(false);
       return;
     }
     // Named after the calendar event going on now, if there's one.
@@ -561,6 +569,7 @@ export default function App() {
       toast.error(String(e));
     } finally {
       setBusy(false);
+      setStarting(false);
     }
   }, [dispatch, settings, updateSettings, post.planRecording, transcriptionReady, models.status, t]);
   startRef.current = (choice) => {
@@ -592,10 +601,12 @@ export default function App() {
       return;
     }
     setBusy(true);
+    setStarting(true);
     const wanted = m.sources ?? { mic: settings.mic, system: settings.system };
     const sources = await ensurePermissions(wanted).catch(() => wanted);
     if (!sources) {
       setBusy(false);
+      setStarting(false);
       return;
     }
     setStoppedAt(null);
@@ -634,6 +645,7 @@ export default function App() {
       toast.error(String(e));
     } finally {
       setBusy(false);
+      setStarting(false);
     }
   };
   const continueRef = useRef((_id: string) => {});
@@ -764,7 +776,7 @@ export default function App() {
       .catch((e) => toast.error(String(e)));
 
   const copyMarkdown = (m: Meeting) =>
-    (track("exported", { format: "clipboard" }), navigator.clipboard.writeText(toMarkdown(m)).then(() => toast(t("copiedMarkdown"))));
+    (track("exported", { format: "clipboard" }), copyText(toMarkdown(m)).then(() => toast(t("copiedMarkdown"))));
 
   /** From the sidebar (right click) or ⌘⌫: the meeting may not be loaded yet. */
   const removeById = async (id: string) => {
@@ -801,6 +813,7 @@ export default function App() {
   const coverAvailable =
     !!meeting && meeting.status !== "recording" && (!!meeting.cover || !!run?.steps.includes("cover") || settings.summarize);
   const showCover = coverAvailable && view.cover;
+  const viewMarker = useMarker(viewTrack, coverAvailable ? (view.cover ? "cover" : "text") : null, [notesPrimary, meeting?.id, settings.uiLanguage]);
   const engine = coverEngine(settings);
   const coverBlocked = (engine ? !cloud.status[engine.provider] : !models.status.llm?.installed)
     ? t(engine ? "coverNeedsKey" : "coverNeedsModel")
@@ -1152,6 +1165,7 @@ export default function App() {
             meetings={state.summaries}
             selectedId={state.selectedId}
             canCreate={!recording && !busy}
+            starting={starting}
             importingId={importing?.id}
             search={search}
             onSelect={(id) => dispatch({ type: "select", id })}
@@ -1184,7 +1198,8 @@ export default function App() {
               </span>
             )}
             {coverAvailable && (
-              <div role="radiogroup" aria-label={t("view")} className="ml-1 flex shrink-0 rounded-[7px] bg-mm-segmented-track p-0.5">
+              <div ref={viewTrack} role="radiogroup" aria-label={t("view")} className="relative ml-1 flex shrink-0 rounded-[7px] bg-mm-segmented-track p-0.5">
+                <MarkerBackground marker={viewMarker} className="rounded-[5px] bg-mm-segmented-selected shadow-[0_1px_2px_rgb(0_0_0/0.15)]" />
                 {[
                   { cover: true, label: t("viewCover") },
                   { cover: false, label: notesPrimary ? t("viewNotes") : t("viewTranscript") },
@@ -1194,11 +1209,9 @@ export default function App() {
                     type="button"
                     role="radio"
                     aria-checked={view.cover === o.cover}
+                    data-marker={o.cover ? "cover" : "text"}
                     onClick={() => setView({ cover: o.cover })}
-                    className={cn(
-                      "h-[22px] rounded-[5px] px-3 text-[12px]",
-                      view.cover === o.cover ? "bg-mm-segmented-selected font-medium shadow-[0_1px_2px_rgb(0_0_0/0.15)]" : "text-muted-foreground",
-                    )}
+                    className={cn("relative h-[22px] rounded-[5px] px-3 text-[12px] transition-colors duration-200", view.cover === o.cover ? "font-medium" : "text-muted-foreground")}
                   >
                     {o.label}
                   </button>

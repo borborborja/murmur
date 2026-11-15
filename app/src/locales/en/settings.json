@@ -338,6 +338,7 @@
     "expires": "The code expires in {{time}}.",
     "copyCode": "Copy Code",
     "paired": "“{{name}}” is now connected to this computer.",
-    "privacy": "Your phone and this computer talk directly over your network, encrypted, through no server. Your voiceprint never leaves the device."
+    "privacy": "Your phone and this computer talk directly over your network, encrypted, through no server. Your voiceprint never leaves the device.",
+    "copyFailed": "Couldn't copy the code."
   }
 }

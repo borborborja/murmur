@@ -13,6 +13,7 @@ import type { Settings } from "@/lib/settings";
 import { defaultParts, expired, revokeShare, SHARE_EXPIRIES, shareableParts, shareMeeting, useShareStatus, type ShareExpiry, type ShareProgress } from "@/lib/share";
 import type { Meeting, ShareLink, SharePart } from "@/lib/types";
 import { cn } from "@/lib/utils";
+import { copyText } from "@/lib/clipboard";
 
 const ALL_PARTS: SharePart[] = ["cover", "notes", "transcript", "screens", "audio"];
 
@@ -65,8 +66,7 @@ export function ShareDialog({
   const ready = parts.length > 0 && (!usePassword || password.length > 0) && !busy;
 
   const copy = (link: ShareLink) =>
-    navigator.clipboard
-      .writeText(link.url)
+    copyText(link.url)
       .then(() => setCopied(link.id))
       .catch(() => {});
 

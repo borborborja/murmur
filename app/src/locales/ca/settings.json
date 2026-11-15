@@ -338,6 +338,7 @@
     "expires": "El codi caduca d'aquí a {{time}}.",
     "copyCode": "Copia el codi",
     "paired": "«{{name}}» s'ha connectat amb aquest ordinador.",
-    "privacy": "El mòbil i l'ordinador es parlen directament per la teva xarxa, xifrats, sense passar per cap servidor. L'empremta de la teva veu no surt mai de l'aparell."
+    "privacy": "El mòbil i l'ordinador es parlen directament per la teva xarxa, xifrats, sense passar per cap servidor. L'empremta de la teva veu no surt mai de l'aparell.",
+    "copyFailed": "No s'ha pogut copiar el codi."
   }
 }

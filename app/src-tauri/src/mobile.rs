@@ -188,6 +188,10 @@ pub fn start_pairing(app: &AppHandle) -> Result<Code> {
         port,
     };
     let uri = code.to_uri();
+    // Development only: where `fake_phone pair` picks it up without copying (it's the secret).
+    if cfg!(debug_assertions) {
+        let _ = std::fs::write(std::env::temp_dir().join("murmur-pairing-code.txt"), &uri);
+    }
     let svg = qrcode::QrCode::new(uri.as_bytes())?
         .render::<qrcode::render::svg::Color>()
         .dark_color(qrcode::render::svg::Color("currentColor"))

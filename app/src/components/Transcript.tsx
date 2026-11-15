@@ -13,6 +13,7 @@ import type { Jump, State } from "@/lib/store";
 import { SYSTEM_SPEAKER_BASE, type Channel, type Meeting, type PostStage, type Screen, type Translation, type Utterance } from "@/lib/types";
 import { Segmented } from "@/components/SettingsDialog";
 import { cn } from "@/lib/utils";
+import { copyText } from "@/lib/clipboard";
 
 type Props = {
   meeting: Meeting;
@@ -401,7 +402,7 @@ function UtteranceRow({ utterance: u, flash, heard, onPlay, showFlag, notes, hov
       <button
         type="button"
         aria-label={t("copy")}
-        onClick={() => navigator.clipboard.writeText(translated?.text ?? u.text).then(() => toast(t("copied")))}
+        onClick={() => copyText(translated?.text ?? u.text).then(() => toast(t("copied")))}
         className="absolute right-2 top-2 hidden rounded-md p-1 text-muted-foreground hover:bg-black/5 group-hover:block"
       >
         <Copy className="size-3.5" />

@@ -996,6 +996,13 @@ export default function App() {
     const m = await backend.getMeeting(id).catch(() => null);
     if (!m) return;
     dispatch({ type: "received", meeting: m });
+    // "Murmur, sóc la Laia" said on the phone: kept as if heard here, so the speaker check below
+    // gives the name back to the person (onFinalPassSpeakers), even if it renumbers them.
+    const heard = m.utterances.flatMap((u) => {
+      const name = introducedName(u.text);
+      return name ? [{ utteranceId: u.id, name: matchName(name, [...(m.guests ?? []), ...Object.values(m.speakerNames), ...glossaryTerms.current]) }] : [];
+    });
+    if (heard.length) intros.current.set(id, heard);
     obsidianPending.current.add(id);
     notionPending.current.add(id);
     toast(t("mobileReceived", { title: m.title, phone }));

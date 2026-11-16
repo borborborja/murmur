@@ -43,7 +43,15 @@
   },
   "notes": {
     "placeholder": "Write a note…",
-    "add": "Add"
+    "add": "Add",
+    "heading": "Heading",
+    "list": "List",
+    "task": "Checkbox",
+    "photo": "Take a Photo",
+    "done": "Done",
+    "photoAt": "Photo · {{time}}",
+    "deletePhoto": "Delete Photo",
+    "noCamera": "Murmur needs the camera to take photos. You can allow it in the iPhone's Settings."
   },
   "meeting": {
     "pending": "When the phone finds your computer, it will add the title, the summary and the Whisper pass. For now this is the quick transcript.",
@@ -55,7 +63,9 @@
     "save": "Save",
     "cancel": "Cancel",
     "pendingUnpaired": "This is the phone's quick transcript. Connect your computer in Settings and it'll go there on its own: it listens to it again with Whisper and writes the summary.",
-    "sent": "It's on the computer now, which will listen to it again with Whisper. When it's done, the revised version will arrive here."
+    "sent": "It's on the computer now, which will listen to it again with Whisper. When it's done, the revised version will arrive here.",
+    "summary": "Summary",
+    "revised": "Revised on the computer: Whisper, speakers and summary."
   },
   "settings": {
     "title": "Settings",
@@ -130,5 +140,23 @@
     "unreachable": "Can't find the computer. Check both are on the same Wi-Fi.",
     "noCamera": "Murmur needs the camera to read the code. You can allow it in the iPhone's Settings.",
     "openSettings": "Open Settings"
+  },
+  "cover": {
+    "tone": "Tone",
+    "talk": "Who spoke",
+    "summary": "Summary",
+    "decisions": "Decisions",
+    "noDecisions": "No explicit decision was made.",
+    "tasks": "Tasks",
+    "noTasks": "No tasks were requested in this meeting.",
+    "parts": "Parts of the meeting",
+    "tones": {
+      "constructive": "Constructive",
+      "relaxed": "Relaxed",
+      "neutral": "Neutral",
+      "formal": "Formal",
+      "tense": "Tense",
+      "conflictive": "Confrontational"
+    }
   }
 }

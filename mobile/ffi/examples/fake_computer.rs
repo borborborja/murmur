@@ -65,7 +65,17 @@ fn main() -> Result<()> {
                         }
                         let mut back = m.clone();
                         back["title"] = json!(format!("{} (revisada)", m["title"].as_str().unwrap_or("")));
-                        back["cover"] = json!({ "summary": "Resum de prova de l'ordinador." });
+                        // A cover as the computer's language model writes it (app/src/lib/types.ts).
+                        back["cover"] = json!({
+                            "generatedAt": 0,
+                            "excerpt": "L'equip tanca el calendari: la web nova es publica el dimarts 18 al matí, amb els preus i els textos en anglès acabats abans.",
+                            "tone": { "label": "constructive", "reason": "Tothom proposa solucions." },
+                            "summary": ["La portada ja està acabada.", "Falten els preus definitius i els textos en anglès.", "Es publica el dimarts 18 al matí."],
+                            "decisions": [{ "text": "Es publica el dimarts 18 al matí.", "t": 26.0 }, { "text": "Els preus es tanquen dilluns amb direcció.", "t": 18.0 }],
+                            "tasks": [{ "text": "Canviar l'adreça del formulari", "owner": "Marta", "when": null, "t": 12.0, "done": true },
+                                      { "text": "Anunci a les xarxes", "owner": "Laia", "when": "divendres", "t": 30.0 }],
+                            "parts": [{ "t": 0.0, "title": "El calendari", "points": ["Data de publicació", "Què falta"] }, { "t": 30.0, "title": "Els preus", "points": ["Es tanquen dilluns"] }],
+                        });
                         s.send(&Msg::Results { meeting: back, revised_at })?;
                     }
                     received.clear();

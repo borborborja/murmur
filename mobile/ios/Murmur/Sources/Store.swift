@@ -5,14 +5,6 @@ import SwiftUI
 extension Line: Identifiable {}
 extension MeetingRow: Identifiable {}
 
-/// A note taken while recording, at its second; `mark` is "Marca" (an important moment).
-struct NoteItem: Identifiable {
-    let id = UUID()
-    var t: Double
-    var text: String
-    var mark = false
-}
-
 /// The recording in progress, as the screen shows it.
 struct LiveMeeting {
     var id: String
@@ -20,7 +12,8 @@ struct LiveMeeting {
     var seconds: Double = 0
     var lines: [Line] = []
     var partial = ""
-    var notes: [NoteItem] = []
+    /// The notes, the marked moments and the photos (Notes.swift), with an empty line to write on.
+    var notes: [NoteBlock] = [NoteBlock()]
     var paused = false
     /// Names given while recording, by speaker number.
     var speakerNames: [Int: String] = [:]
@@ -32,7 +25,7 @@ struct LiveMeeting {
     /// The last thing said, for the list.
     var lastLine: String { partial.isEmpty ? (lines.last?.text ?? "") : partial }
     func isMarked(_ line: Line) -> Bool {
-        notes.contains { $0.mark && $0.t >= line.start - 1 && $0.t <= line.end + 2 }
+        notes.contains { $0.kind == .mark && ($0.t ?? -10) >= line.start - 1 && ($0.t ?? -10) <= line.end + 2 }
     }
 
     /// Who said a line, after what was changed by hand.
@@ -146,10 +139,12 @@ final class Store: ObservableObject {
     private let microphone = Microphone()
     private let paused = Gate()
     let meter = Meter()
+    /// Where meetings, recordings and photos go (the engine's data folder).
+    let dataDir = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0].appendingPathComponent("Murmur")
 
     init() {
         let models = (Bundle.main.resourcePath ?? "") + "/models"
-        let data = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0].appendingPathComponent("Murmur").path
+        let data = dataDir.path
         do {
             engine = try Murmur(modelsDir: models, dataDir: data)
         } catch {
@@ -342,15 +337,33 @@ final class Store: ObservableObject {
     }
 
     func mark() {
-        guard let t = live?.seconds else { return }
-        live?.notes.append(NoteItem(t: t, text: L("rec.markNote"), mark: true))
+        guard live != nil else { return }
+        live?.notes.insertBeforeTrailing(NoteBlock(kind: .mark, text: L("rec.markNote"), t: meter.seconds.rounded(.down)))
         UIImpactFeedbackGenerator(style: .medium).impactOccurred()
     }
 
-    func addNote(_ text: String) {
-        let text = text.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !text.isEmpty, let t = live?.seconds else { return }
-        live?.notes.append(NoteItem(t: t, text: text))
+    /// A photo while recording: saved at its second in the meeting's folder, and into the notes.
+    /// It goes to the computer with the meeting, as one of its screenshots.
+    func addPhoto(_ image: UIImage) {
+        guard let current = live else { return }
+        let t = meter.seconds.rounded(.down)
+        let path = "screens/\(current.id)/\(Int(t * 1000)).jpg"
+        let url = dataDir.appendingPathComponent(path)
+        Task.detached(priority: .userInitiated) {
+            guard let data = image.jpeg() else { return }
+            try? FileManager.default.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
+            try? data.write(to: url, options: .atomic)
+            await MainActor.run {
+                guard self.live?.id == current.id else { return }
+                self.live?.notes.insertBeforeTrailing(NoteBlock(kind: .photo, t: t, photo: path))
+            }
+        }
+    }
+
+    /// A finished meeting's notes, as they're edited.
+    func saveNotes(_ blocks: [NoteBlock], in meeting: String) {
+        let doc = NotesDoc.encode(blocks) ?? ["type": "doc", "content": [["type": "paragraph"]]]
+        try? engine?.setNotes(id: meeting, doc: NotesDoc.json(doc))
     }
 
     /// Stops and saves the meeting; returns its id.
@@ -415,16 +428,14 @@ final class Store: ObservableObject {
     /// the marked moments, and what was changed about the speakers while recording (the engine
     /// applies the aliases and the lines' speakers, also to the last lines).
     private static func extra(_ live: LiveMeeting) -> String {
-        let paragraphs: [[String: Any]] = live.notes.sorted { $0.t < $1.t }.map {
-            ["type": "paragraph", "attrs": ["t": $0.t], "content": [["type": "text", "text": $0.text]]]
-        }
         var extra: [String: Any] = [
-            "marks": live.notes.filter(\.mark).map { ["t": $0.t] },
+            "marks": NotesDoc.marks(live.notes),
+            "screens": NotesDoc.screens(live.notes),
             "speakerNames": Dictionary(uniqueKeysWithValues: live.speakerNames.map { ("\($0.key)", $0.value) }),
             "speakerAliases": Dictionary(uniqueKeysWithValues: live.aliases.map { ("\($0.key)", $0.value) }),
             "lineSpeakers": live.lineSpeakers,
         ]
-        if !paragraphs.isEmpty { extra["notesDoc"] = ["type": "doc", "content": paragraphs] }
+        if let doc = NotesDoc.encode(live.notes) { extra["notesDoc"] = doc }
         let data = (try? JSONSerialization.data(withJSONObject: extra)) ?? Data("{}".utf8)
         return String(decoding: data, as: UTF8.self)
     }
@@ -437,11 +448,13 @@ struct MeetingDetail {
     var createdAt = Date()
     var duration: Double = 0
     var utterances: [Utterance] = []
-    var notes: [NoteItem] = []
+    var notes: [NoteBlock] = []
     var speakerNames: [Int: String] = [:]
     /// The computer has it, and has sent back the revised version.
     var sent = false
     var revised = false
+    /// What the computer's language model wrote (its cover), once it comes back.
+    var cover: Cover?
 
     init?(json: Data) {
         guard let m = try? JSONSerialization.jsonObject(with: json) as? [String: Any] else { return nil }
@@ -455,15 +468,20 @@ struct MeetingDetail {
             Utterance(id: $0["id"] as? String ?? UUID().uuidString, start: $0["start"] as? Double ?? 0, end: $0["end"] as? Double ?? 0, speaker: $0["speaker"] as? Int ?? 0, text: $0["text"] as? String ?? "")
         }
         let marks = Set((m["marks"] as? [[String: Any]] ?? []).compactMap { $0["t"] as? Double })
-        let doc = (m["notesDoc"] as? [String: Any])?["content"] as? [[String: Any]] ?? []
-        notes = doc.map { block in
-            let t = (block["attrs"] as? [String: Any])?["t"] as? Double ?? 0
-            let text = (block["content"] as? [[String: Any]] ?? []).compactMap { $0["text"] as? String }.joined()
-            return NoteItem(t: t, text: text, mark: marks.contains(t))
-        }
+        notes = NotesDoc.decode(doc: m["notesDoc"] as? [String: Any], marks: marks, screens: m["screens"] as? [[String: Any]] ?? [])
+        cover = (m["cover"] as? [String: Any]).flatMap(Cover.init)
     }
 
-    func isMarked(_ u: Utterance) -> Bool { notes.contains { $0.mark && $0.t >= u.start - 1 && $0.t <= u.end + 2 } }
+    func isMarked(_ u: Utterance) -> Bool {
+        notes.contains { $0.kind == .mark && ($0.t ?? -10) >= u.start - 1 && ($0.t ?? -10) <= u.end + 2 }
+    }
+
+    /// Who spoke and how much (seconds), largest first.
+    var talk: [(speaker: Int, seconds: Double)] {
+        var seconds: [Int: Double] = [:]
+        for u in utterances { seconds[u.speaker, default: 0] += max(0, u.end - u.start) }
+        return seconds.map { ($0.key, $0.value) }.sorted { $0.seconds > $1.seconds }
+    }
 
     var speakers: [Speaker] {
         Set(utterances.map(\.speaker)).sorted().map { Speaker(id: $0, name: speakerNames[$0]) }

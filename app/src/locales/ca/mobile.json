@@ -43,7 +43,15 @@
   },
   "notes": {
     "placeholder": "Escriu una nota…",
-    "add": "Afegeix"
+    "add": "Afegeix",
+    "heading": "Títol",
+    "list": "Llista",
+    "task": "Casella",
+    "photo": "Fes una foto",
+    "done": "Fet",
+    "photoAt": "Foto · {{time}}",
+    "deletePhoto": "Elimina la foto",
+    "noCamera": "Murmur necessita la càmera per fer fotos. Pots donar-li permís a la Configuració de l'iPhone."
   },
   "meeting": {
     "pending": "Quan el telèfon trobi l'ordinador, hi afegirà el títol, el resum i la passada de Whisper. Ara és la transcripció ràpida.",
@@ -55,7 +63,9 @@
     "save": "Desa",
     "cancel": "Cancel·la",
     "pendingUnpaired": "Ara és la transcripció ràpida del telèfon. Connecta l'ordinador a Configuració i hi passarà sola: la tornarà a escoltar amb Whisper i en farà el resum.",
-    "sent": "Ja és a l'ordinador, que la tornarà a escoltar amb Whisper. Quan acabi, la versió revisada arribarà aquí."
+    "sent": "Ja és a l'ordinador, que la tornarà a escoltar amb Whisper. Quan acabi, la versió revisada arribarà aquí.",
+    "summary": "Resum",
+    "revised": "Revisada a l'ordinador: Whisper, parlants i resum."
   },
   "settings": {
     "title": "Configuració",
@@ -130,5 +140,23 @@
     "unreachable": "No trobo l'ordinador. Comprova que tots dos són a la mateixa wifi.",
     "noCamera": "Murmur necessita la càmera per llegir el codi. Pots donar-li permís a la Configuració de l'iPhone.",
     "openSettings": "Obre la Configuració"
+  },
+  "cover": {
+    "tone": "To",
+    "talk": "Qui ha parlat",
+    "summary": "Resum",
+    "decisions": "Decisions",
+    "noDecisions": "No s'hi ha pres cap decisió explícita.",
+    "tasks": "Tasques",
+    "noTasks": "En aquesta reunió no s'han demanat tasques.",
+    "parts": "Parts de la reunió",
+    "tones": {
+      "constructive": "Constructiu",
+      "relaxed": "Distès",
+      "neutral": "Neutre",
+      "formal": "Formal",
+      "tense": "Tens",
+      "conflictive": "Conflictiu"
+    }
   }
 }

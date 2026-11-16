@@ -303,6 +303,11 @@ void uniffi_murmur_mobile_fn_method_murmur_rename_meeting(uint64_t ptr, RustBuff
 void uniffi_murmur_mobile_fn_method_murmur_set_line_speaker(uint64_t ptr, RustBuffer id, RustBuffer line, int64_t speaker, RustCallStatus *_Nonnull out_status
 );
 #endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_MURMUR_MOBILE_FN_METHOD_MURMUR_SET_NOTES
+#define UNIFFI_FFIDEF_UNIFFI_MURMUR_MOBILE_FN_METHOD_MURMUR_SET_NOTES
+void uniffi_murmur_mobile_fn_method_murmur_set_notes(uint64_t ptr, RustBuffer id, RustBuffer doc, RustCallStatus *_Nonnull out_status
+);
+#endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_MURMUR_MOBILE_FN_METHOD_MURMUR_SET_SPEAKER_NAME
 #define UNIFFI_FFIDEF_UNIFFI_MURMUR_MOBILE_FN_METHOD_MURMUR_SET_SPEAKER_NAME
 void uniffi_murmur_mobile_fn_method_murmur_set_speaker_name(uint64_t ptr, RustBuffer id, int64_t speaker, RustBuffer name, RustCallStatus *_Nonnull out_status
@@ -672,6 +677,12 @@ uint16_t uniffi_murmur_mobile_checksum_method_murmur_rename_meeting(void
 #ifndef UNIFFI_FFIDEF_UNIFFI_MURMUR_MOBILE_CHECKSUM_METHOD_MURMUR_SET_LINE_SPEAKER
 #define UNIFFI_FFIDEF_UNIFFI_MURMUR_MOBILE_CHECKSUM_METHOD_MURMUR_SET_LINE_SPEAKER
 uint16_t uniffi_murmur_mobile_checksum_method_murmur_set_line_speaker(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_MURMUR_MOBILE_CHECKSUM_METHOD_MURMUR_SET_NOTES
+#define UNIFFI_FFIDEF_UNIFFI_MURMUR_MOBILE_CHECKSUM_METHOD_MURMUR_SET_NOTES
+uint16_t uniffi_murmur_mobile_checksum_method_murmur_set_notes(void
     
 );
 #endif

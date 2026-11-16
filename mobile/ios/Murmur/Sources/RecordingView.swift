@@ -1,6 +1,6 @@
 import SwiftUI
 
-enum MeetingTab: Hashable { case transcript, notes }
+enum MeetingTab: Hashable { case summary, transcript, notes }
 
 /// Recording: the card with the waveform, the ruler and the timer; the transcript or the notes;
 /// and, within reach of the thumb, Marca, Pausa and Atura.
@@ -11,7 +11,8 @@ struct RecordingView: View {
     @Environment(\.colorScheme) private var scheme
     var done: (String?) -> Void
     @State private var tab: MeetingTab = .transcript
-    @State private var note = ""
+    @FocusState private var editing: UUID?
+    @State private var camera = false
     @State private var stopping = false
     /// Atura was tapped once: it turns red, "Toca per aturar", for 4 s (as the desktop's indicator).
     @State private var confirmStop = false
@@ -55,7 +56,15 @@ struct RecordingView: View {
                     LinearGradient(colors: [.black, .black.opacity(0)], startPoint: .top, endPoint: .bottom).frame(height: 44)
                 }
             }
-            controls(live)
+            // Writing a note: the format bar takes the controls' place, above the keyboard.
+            if editing != nil {
+                NotesFormatBar(blocks: notesBinding, focus: $editing, photo: { camera = true }, seconds: { store.meter.seconds })
+            } else {
+                controls(live)
+            }
+        }
+        .fullScreenCover(isPresented: $camera) {
+            CameraPicker { store.addPhoto($0) }.ignoresSafeArea()
         }
         .background {
             ZStack(alignment: .bottom) {
@@ -82,8 +91,13 @@ struct RecordingView: View {
     }
 
     private func notesLabel(_ live: LiveMeeting?) -> String {
-        let n = live?.notes.count ?? 0
+        let n = live?.notes.noteCount ?? 0
         return n > 0 ? "\(L("rec.notes")) · \(n)" : L("rec.notes")
+    }
+
+    /// The recording's notes, to edit in place.
+    private var notesBinding: Binding<[NoteBlock]> {
+        Binding(get: { store.live?.notes ?? [] }, set: { store.live?.notes = $0 })
     }
 
     private func transcript(_ live: LiveMeeting?) -> some View {
@@ -115,33 +129,17 @@ struct RecordingView: View {
     }
 
     private func notes(_ live: LiveMeeting?) -> some View {
-        VStack(spacing: 0) {
-            ScrollView {
-                LazyVStack(alignment: .leading, spacing: 12) {
-                    ForEach(live?.notes ?? []) { NoteRow(note: $0) }
-                }
-                .padding(.horizontal, 12).padding(.top, 10)
-            }
-            HStack(spacing: 10) {
-                TextField(L("notes.placeholder"), text: $note)
-                    .submitLabel(.done)
-                    .onSubmit { store.addNote(note); note = "" }
-                    .font(.system(size: 17))
-                    .padding(.horizontal, 16).frame(height: 48)
-                    .background(palette.fillSubtle, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
-            }
-            .padding(.horizontal, 16).padding(.top, 6)
+        ScrollView {
+            NotesEditor(blocks: notesBinding, focus: $editing, now: { store.meter.seconds }, dataDir: store.dataDir)
+                .padding(.leading, 4).padding(.trailing, 20).padding(.top, 10).padding(.bottom, 20)
         }
+        .scrollDismissesKeyboard(.interactively)
     }
 
     private func controls(_ live: LiveMeeting?) -> some View {
         HStack(spacing: 10) {
-            Button { store.mark() } label: {
-                Image(systemName: "flag").font(.system(size: 19, weight: .medium)).frame(width: 56, height: 56)
-                    .background(palette.background, in: Circle())
-                    .overlay(Circle().strokeBorder(palette.separator))
-            }
-            .accessibilityLabel(L("rec.mark"))
+            round("camera", L("notes.photo")) { camera = true }
+            round("flag", L("rec.mark")) { store.mark() }
             Button { store.togglePause() } label: {
                 Label(live?.paused == true ? L("rec.recording") : L("rec.pause"), systemImage: live?.paused == true ? "record.circle" : "pause.fill")
                     .font(.system(size: 17, weight: .semibold))
@@ -174,6 +172,16 @@ struct RecordingView: View {
         }
         .buttonStyle(.plain)
         .padding(.horizontal, 16).padding(.bottom, 8).padding(.top, 6)
+    }
+
+    /// A round button beside Pausa and Atura (a photo, a marked moment).
+    private func round(_ systemImage: String, _ label: String, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Image(systemName: systemImage).font(.system(size: 19, weight: .medium)).frame(width: 52, height: 52)
+                .background(palette.background, in: Circle())
+                .overlay(Circle().strokeBorder(palette.separator))
+        }
+        .accessibilityLabel(label)
     }
 }
 
@@ -367,14 +375,3 @@ extension View {
     }
 }
 
-struct NoteRow: View {
-    @Environment(\.murmur) private var palette
-    var note: NoteItem
-    var body: some View {
-        HStack(alignment: .firstTextBaseline, spacing: 10) {
-            Text(clock(note.t)).font(.tabular(12)).foregroundStyle(palette.timestamp).frame(width: 44, alignment: .trailing)
-            if note.mark { FlagChip(label: note.text) } else { Text(note.text).font(.system(size: 17)) }
-            Spacer(minLength: 0)
-        }
-    }
-}

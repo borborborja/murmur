@@ -7,12 +7,17 @@ struct MeetingView: View {
     @Environment(\.murmur) private var palette
     @Environment(\.dismiss) private var dismiss
     var id: String
-    @State private var tab: MeetingTab = .transcript
     @State private var confirmDelete = false
     @State private var renaming = false
     @State private var newTitle = ""
     /// The speaker being renamed (the label's menu).
     @State private var naming: Speaker?
+    /// The notes, as they're edited here (saved as they change).
+    @State private var notes: [NoteBlock] = []
+    @State private var notesLoaded = false
+    @FocusState private var editing: UUID?
+    /// The tab chosen by hand; until then, the summary if there is one.
+    @State private var chosen: MeetingTab?
 
     var body: some View {
         let m = store.meeting(id)
@@ -47,25 +52,26 @@ struct MeetingView: View {
                         .accessibilityHint(L("meeting.rename"))
                         .padding(.top, 6)
 
-                        if !m.revised {
-                            HStack(alignment: .top, spacing: 10) {
-                                Image(systemName: "laptopcomputer")
-                                // No computer yet; on the computer, waiting for its final pass; or
-                                // waiting to find it.
-                                Text(store.computer == nil ? L("meeting.pendingUnpaired") : m.sent ? L("meeting.sent") : L("meeting.pending"))
-                            }
-                            .font(.system(size: 13)).foregroundStyle(palette.textSecondary)
-                            .padding(.horizontal, 14).padding(.vertical, 11)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .background(palette.fillSubtle, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
-                            .padding(.top, 14)
+                        HStack(alignment: .top, spacing: 10) {
+                            Image(systemName: m.revised ? "checkmark.seal" : "laptopcomputer")
+                            // No computer yet; waiting to find it; on the computer, waiting for its
+                            // final pass; or back, revised.
+                            Text(m.revised ? L("meeting.revised") : store.computer == nil ? L("meeting.pendingUnpaired") : m.sent ? L("meeting.sent") : L("meeting.pending"))
                         }
+                        .font(.system(size: 13)).foregroundStyle(palette.textSecondary)
+                        .padding(.horizontal, 14).padding(.vertical, 11)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .background(palette.fillSubtle, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+                        .padding(.top, 14)
 
-                        Segmented(options: [(MeetingTab.transcript, L("rec.transcript")), (.notes, m.notes.isEmpty ? L("rec.notes") : "\(L("rec.notes")) · \(m.notes.count)")], selection: $tab)
+                        let tab = currentTab(m)
+                        Segmented(options: tabs(m), selection: Binding(get: { tab }, set: { chosen = $0 }))
                             .padding(.top, 14)
 
                         VStack(alignment: .leading, spacing: 14) {
-                            if tab == .transcript {
+                            if tab == .summary, let cover = m.cover {
+                                CoverView(cover: cover, talk: m.talk, speakerNames: m.speakerNames)
+                            } else if tab == .transcript {
                                 if m.utterances.isEmpty { Text(L("meeting.empty")).foregroundStyle(palette.textTertiary) }
                                 let actions = SpeakerActions(
                                     speakers: m.speakers,
@@ -77,7 +83,8 @@ struct MeetingView: View {
                                              marked: m.isMarked(u), actions: actions)
                                 }
                             } else {
-                                ForEach(m.notes) { NoteRow(note: $0) }
+                                NotesEditor(blocks: $notes, focus: $editing, now: { nil }, dataDir: store.dataDir)
+                                    .padding(.leading, -16)
                             }
                         }
                         .padding(.top, 16)
@@ -85,6 +92,19 @@ struct MeetingView: View {
                 }
                 .padding(.horizontal, 20).padding(.bottom, 120)
             }
+            .scrollDismissesKeyboard(.interactively)
+            if editing != nil {
+                NotesFormatBar(blocks: $notes, focus: $editing, photo: nil, seconds: nil)
+            }
+        }
+        .onAppear {
+            guard !notesLoaded, let m = store.meeting(id) else { return }
+            notes = m.notes
+            notes.ensureTrailing()
+            notesLoaded = true
+        }
+        .onChange(of: notes) { _, blocks in
+            if notesLoaded { store.saveNotes(blocks, in: id) }
         }
         .background(palette.background.ignoresSafeArea())
         .foregroundStyle(palette.textPrimary)
@@ -97,6 +117,19 @@ struct MeetingView: View {
             }
         }
         .renameAlert(isPresented: $renaming, title: $newTitle) { store.rename(id, to: $0) }
+    }
+
+    /// Resum (once the computer has written it), Transcripció and Notes.
+    private func tabs(_ m: MeetingDetail) -> [(MeetingTab, String)] {
+        let count = notes.noteCount
+        let notesTab = (MeetingTab.notes, count == 0 ? L("rec.notes") : "\(L("rec.notes")) · \(count)")
+        let summary = m.cover == nil ? [] : [(MeetingTab.summary, L("meeting.summary"))]
+        return summary + [(.transcript, L("rec.transcript")), notesTab]
+    }
+
+    private func currentTab(_ m: MeetingDetail) -> MeetingTab {
+        if let chosen, chosen != .summary || m.cover != nil { return chosen }
+        return m.cover != nil ? .summary : .transcript
     }
 
     private func startRename(_ title: String?) {

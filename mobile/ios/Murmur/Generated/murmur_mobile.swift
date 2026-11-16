@@ -663,6 +663,11 @@ public protocol MurmurProtocol: AnyObject, Sendable {
     func setLineSpeaker(id: String, line: String, speaker: Int64) throws 
     
     /**
+     * The notes of a finished meeting, as the computer's editor stores them (a TipTap document).
+     */
+    func setNotes(id: String, doc: String) throws 
+    
+    /**
      * A speaker's name ("Parlant 2" is "Laia"); empty takes it away. As the computer stores it:
      * `speakerNames` by number.
      */
@@ -880,6 +885,19 @@ open func setLineSpeaker(id: String, line: String, speaker: Int64)throws   {try 
         FfiConverterString.lower(id),
         FfiConverterString.lower(line),
         FfiConverterInt64.lower(speaker),uniffiCallStatus
+    )
+}
+}
+    
+    /**
+     * The notes of a finished meeting, as the computer's editor stores them (a TipTap document).
+     */
+open func setNotes(id: String, doc: String)throws   {try rustCallWithError(FfiConverterTypeMurmurError_lift) {
+        uniffiCallStatus in
+    uniffi_murmur_mobile_fn_method_murmur_set_notes(
+            self.uniffiCloneHandle(),
+        FfiConverterString.lower(id),
+        FfiConverterString.lower(doc),uniffiCallStatus
     )
 }
 }
@@ -1815,6 +1833,9 @@ private let initializationResult: InitializationResult = {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_murmur_mobile_checksum_method_murmur_set_line_speaker() != 47918) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_murmur_mobile_checksum_method_murmur_set_notes() != 63937) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_murmur_mobile_checksum_method_murmur_set_speaker_name() != 44142) {

@@ -57,7 +57,13 @@ struct RootView: View {
         .tint(palette.textPrimary)
         // `-autostart` (development, with -simulate): records at launch, to try it without touching the screen.
         .task {
-            if ProcessInfo.processInfo.arguments.contains("-autostart") { record() }
+            let args = ProcessInfo.processInfo.arguments
+            if args.contains("-autostart") { record() }
+            // `-openLatest` (development): opens the newest meeting, to see it without touching the screen.
+            if args.contains("-openLatest") {
+                try? await Task.sleep(for: .seconds(3))
+                if let latest = store.meetings.first { path = [.meeting(latest.id)] }
+            }
         }
         .alert(store.error ?? "", isPresented: Binding(get: { store.error != nil }, set: { if !$0 { store.error = nil } })) {
             Button("OK", role: .cancel) {}

@@ -122,6 +122,11 @@ fn now_ms() -> f64 {
     SystemTime::now().duration_since(UNIX_EPOCH).map(|d| d.as_millis() as f64).unwrap_or(0.0)
 }
 
+/// A meeting id as a folder name: never a path out of where it goes.
+fn safe_dir(id: &str) -> String {
+    id.chars().filter(|c| c.is_ascii_alphanumeric() || *c == '-' || *c == '_').collect()
+}
+
 fn lock<T>(m: &Mutex<T>) -> std::sync::MutexGuard<'_, T> {
     m.lock().unwrap_or_else(|e| e.into_inner())
 }
@@ -169,6 +174,8 @@ impl Murmur {
             if let Some(path) = self.audio_of(&m) {
                 let _ = std::fs::remove_file(path);
             }
+            // Its photos.
+            let _ = std::fs::remove_dir_all(self.data_dir.join("screens").join(safe_dir(&id)));
         }
         lock(&self.db).delete(&id).map_err(Into::into)
     }
@@ -180,6 +187,12 @@ impl Murmur {
             return Ok(());
         }
         self.edit(&id, |m| m["title"] = json!(title))
+    }
+
+    /// The notes of a finished meeting, as the computer's editor stores them (a TipTap document).
+    pub fn set_notes(&self, id: String, doc: String) -> Result<()> {
+        let doc: Value = serde_json::from_str(&doc).map_err(|e| MurmurError::Failed(e.to_string()))?;
+        self.edit(&id, |m| m["notesDoc"] = doc)
     }
 
     /// A speaker's name ("Parlant 2" is "Laia"); empty takes it away. As the computer stores it:
@@ -453,7 +466,10 @@ mod tests {
         std::fs::write(&audio, vec![7u8; 300_000]).unwrap();
         // Stored with the app's folder of an older install: iOS moves it on reinstalls and updates.
         let meeting = json!({ "id": "phone-1", "title": "Reunió de les 10:00", "createdAt": 0.0, "duration": 3.0, "status": "done",
-            "audioPath": "/old/container/recordings/phone-1.ogg", "utterances": [line("phone-1-0", 0)] });
+            "audioPath": "/old/container/recordings/phone-1.ogg", "utterances": [line("phone-1-0", 0)],
+            "screens": [{ "t": 12.0, "path": "screens/phone-1/12000.jpg" }] });
+        std::fs::create_dir_all(dir.join("screens/phone-1")).unwrap();
+        std::fs::write(dir.join("screens/phone-1/12000.jpg"), b"jpeg").unwrap();
         lock(&m.db).put(&meeting).unwrap();
         assert_eq!(m.unsent_count().unwrap(), 1);
 
@@ -476,11 +492,16 @@ mod tests {
         assert_eq!((report.sent, report.revised, report.failed), (1, 1, 0));
         assert!(got[0].get("audioPath").is_none(), "the phone's paths stay on the phone");
         assert_eq!(std::fs::read(dir.join("pc/phone-1/audio.ogg")).unwrap(), vec![7u8; 300_000]);
+        // The photo goes as the computer's screenshot, by a plain name.
+        assert_eq!(got[0]["screens"][0]["path"], "screens/12000.jpg");
+        assert_eq!(std::fs::read(dir.join("pc/phone-1/screens/12000.jpg")).unwrap(), b"jpeg");
 
         let back = saved(&m);
         assert_eq!(back["utterances"][0]["text"], "Text de Whisper.");
         assert_eq!(back["title"], "Revisió del pressupost");
         assert_eq!(back["audioPath"], json!(audio.to_string_lossy()));
+        // ...and the phone keeps its own (the computer doesn't send its paths back).
+        assert_eq!(back["screens"][0]["path"], "screens/phone-1/12000.jpg");
         let row = m.meetings().unwrap().into_iter().next().unwrap();
         assert!(row.sent && row.revised);
         assert_eq!(m.unsent_count().unwrap(), 0);

@@ -234,20 +234,33 @@ impl Murmur {
     /// One meeting and its audio. True when the computer has it whole; false when it refused it.
     fn send_meeting(&self, session: &mut Session<TcpStream>, id: &str) -> Result<bool> {
         let Some(mut meeting) = lock(&self.db).get(id)? else { return Ok(true) };
-        let audio = self.audio_of(&meeting);
+        // Everything goes by a plain name: the audio, and the photos as the computer's screenshots
+        // ("screens/<file>.jpg", which mobile.rs places with the meeting).
+        let mut sending: Vec<(String, std::path::PathBuf)> = vec![];
+        if let Some(path) = self.audio_of(&meeting) {
+            sending.push(("audio.ogg".into(), path));
+        }
+        if let Some(screens) = meeting.get_mut("screens").and_then(Value::as_array_mut) {
+            screens.retain_mut(|screen| {
+                let Some(path) = screen["path"].as_str().map(|p| self.data_dir.join(p)).filter(|p| p.exists()) else { return false };
+                let Some(file) = path.file_name().map(|f| f.to_string_lossy().into_owned()) else { return false };
+                let name = format!("screens/{file}");
+                screen["path"] = Value::from(name.clone());
+                sending.push((name, path));
+                true
+            });
+        }
         // The phone's own paths mean nothing on the computer.
         if let Some(m) = meeting.as_object_mut() {
             m.remove("audioPath");
         }
-        let files = match &audio {
-            Some(path) => vec![sync::file_info("audio.ogg", path)?],
-            None => vec![],
-        };
+        let files = sending.iter().map(|(name, path)| sync::file_info(name, path)).collect::<anyhow::Result<Vec<_>>>()?;
         session.send(&Msg::PutMeeting { meeting, files }).map_err(io)?;
         match session.recv_msg().map_err(io)? {
             Msg::Have { files, .. } => {
-                if let (Some(path), Some(have)) = (&audio, files.iter().find(|f| f.name == "audio.ogg")) {
-                    sync::send_file(session, id, "audio.ogg", path, have.have).map_err(io)?;
+                for (name, path) in &sending {
+                    let have = files.iter().find(|f| &f.name == name).map(|f| f.have).unwrap_or(0);
+                    sync::send_file(session, id, name, path, have).map_err(io)?;
                 }
             }
             Msg::Failed { reason, .. } => {
@@ -277,9 +290,12 @@ impl Murmur {
             Some(path) => Value::from(path.to_string_lossy().into_owned()),
             None => mine["audioPath"].clone(),
         };
+        // The photos stay as the phone has them (the computer doesn't send its paths back).
+        meeting["screens"] = mine["screens"].clone();
         if state.edited.contains(&id) {
             meeting["title"] = mine["title"].clone();
             meeting["speakerNames"] = mine["speakerNames"].clone();
+            meeting["notesDoc"] = mine["notesDoc"].clone();
         }
         meeting["status"] = Value::from("done");
         db.put(&meeting)?;

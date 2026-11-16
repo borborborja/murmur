@@ -43,7 +43,15 @@
   },
   "notes": {
     "placeholder": "Escribe una nota…",
-    "add": "Añadir"
+    "add": "Añadir",
+    "heading": "Título",
+    "list": "Lista",
+    "task": "Casilla",
+    "photo": "Hacer una foto",
+    "done": "Hecho",
+    "photoAt": "Foto · {{time}}",
+    "deletePhoto": "Eliminar la foto",
+    "noCamera": "Murmur necesita la cámara para hacer fotos. Puedes darle permiso en los Ajustes del iPhone."
   },
   "meeting": {
     "pending": "Cuando el teléfono encuentre el ordenador, añadirá el título, el resumen y la pasada de Whisper. Ahora es la transcripción rápida.",
@@ -55,7 +63,9 @@
     "save": "Guardar",
     "cancel": "Cancelar",
     "pendingUnpaired": "Ahora es la transcripción rápida del teléfono. Conecta el ordenador en Ajustes y pasará sola: la volverá a escuchar con Whisper y hará el resumen.",
-    "sent": "Ya está en el ordenador, que la volverá a escuchar con Whisper. Cuando acabe, la versión revisada llegará aquí."
+    "sent": "Ya está en el ordenador, que la volverá a escuchar con Whisper. Cuando acabe, la versión revisada llegará aquí.",
+    "summary": "Resumen",
+    "revised": "Revisada en el ordenador: Whisper, hablantes y resumen."
   },
   "settings": {
     "title": "Ajustes",
@@ -130,5 +140,23 @@
     "unreachable": "No encuentro el ordenador. Comprueba que los dos están en la misma wifi.",
     "noCamera": "Murmur necesita la cámara para leer el código. Puedes darle permiso en los Ajustes del iPhone.",
     "openSettings": "Abrir Ajustes"
+  },
+  "cover": {
+    "tone": "Tono",
+    "talk": "Quién ha hablado",
+    "summary": "Resumen",
+    "decisions": "Decisiones",
+    "noDecisions": "No se ha tomado ninguna decisión explícita.",
+    "tasks": "Tareas",
+    "noTasks": "En esta reunión no se han pedido tareas.",
+    "parts": "Partes de la reunión",
+    "tones": {
+      "constructive": "Constructivo",
+      "relaxed": "Distendido",
+      "neutral": "Neutro",
+      "formal": "Formal",
+      "tense": "Tenso",
+      "conflictive": "Conflictivo"
+    }
   }
 }

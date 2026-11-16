@@ -271,6 +271,52 @@
   .activity .acts svg { width: 18px; height: 18px; }
   .activity .acts .stopb { background: #FF3B30; } .activity .acts .stopb i { width: 12px; height: 12px; border-radius: 3px; background: #fff; display: block; }
 
+  /* Menus, alerts and swipe actions (iOS) */
+  .dim { position: absolute; inset: 0; z-index: 40; background: color-mix(in srgb, var(--mm-background) 35%, transparent); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+  .menu { position: absolute; z-index: 42; width: 268px; border-radius: 14px; overflow: hidden; color: var(--mm-text-primary);
+    background: color-mix(in srgb, var(--mm-background) 88%, transparent); backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px);
+    box-shadow: 0 14px 44px rgba(0,0,0,.28), 0 0 0 .5px var(--mm-separator); }
+  .menu > div { display: flex; justify-content: space-between; align-items: center; gap: 12px; min-height: 44px; padding: 0 16px; font-size: 17px; }
+  .menu > div + div { border-top: .5px solid var(--mm-separator); }
+  .menu > div.gap { border-top: 7px solid color-mix(in srgb, var(--mm-text-primary) 8%, transparent); }
+  .menu .danger { color: var(--mm-recording-label); }
+  .menu .mhead { font-size: 13px; color: var(--mm-text-secondary); min-height: 32px; }
+  .menu svg { width: 19px; height: 19px; flex: none; }
+  .lifted { position: absolute; z-index: 41; left: 16px; right: 16px; transform: scale(1.03); }
+  .lifted .card { margin: 0; box-shadow: 0 12px 34px rgba(0,0,0,.22); }
+  .alert { position: absolute; z-index: 42; left: 50%; top: 300px; transform: translateX(-50%); width: 270px; border-radius: 14px; overflow: hidden; text-align: center; color: var(--mm-text-primary);
+    background: color-mix(in srgb, var(--mm-background) 94%, transparent); backdrop-filter: blur(30px); box-shadow: 0 14px 44px rgba(0,0,0,.3); }
+  .alert b { display: block; font-size: 17px; padding: 19px 16px 12px; }
+  .alert .field { margin: 0 16px 16px; height: 34px; border-radius: 8px; background: var(--mm-field); box-shadow: inset 0 0 0 .5px var(--mm-separator); display: flex; align-items: center; padding: 0 8px; font-size: 15px; text-align: left; }
+  .alert .btns { display: flex; border-top: .5px solid var(--mm-separator); }
+  .alert .btns span { flex: 1; height: 44px; display: grid; place-items: center; font-size: 17px; }
+  .alert .btns span + span { border-left: .5px solid var(--mm-separator); font-weight: 600; }
+  .swiperow { position: relative; margin: 0 16px 10px; height: 104px; overflow: hidden; border-radius: 22px; }
+  .swiperow .act { position: absolute; right: 0; top: 0; bottom: 0; width: 92px; border-radius: 22px; background: var(--mm-recording-label); color: var(--mm-background);
+    display: grid; place-content: center; justify-items: center; gap: 4px; font-size: 13px; font-weight: 600; }
+  .swiperow .card { position: absolute; left: -100px; right: 100px; top: 0; bottom: 0; margin: 0; }
+  /* The "Toca per aturar" red: the light theme's dark red in both modes (white on it, 5.6:1) */
+  .stopconfirm { background: var(--mm-recording-label) !important; color: var(--mm-background) !important; flex: 1.6 !important; }
+  .micline { display: flex; gap: 6px; align-items: center; font-size: 13px; color: var(--mm-text-secondary); margin-top: 4px; }
+  .micline svg { width: 15px; height: 15px; }
+  .cell .tickmark { color: var(--mm-text-primary); }
+  .cell.danger .lbl { color: var(--mm-recording-label); }
+  .banner-k { font-size: 12px; font-weight: 600; color: var(--mm-text-tertiary); margin: 18px 22px -6px; text-transform: none; }
+  /* Dynamic Island with the brand */
+  .island.markd { width: 196px; display: flex; align-items: center; justify-content: space-between; padding: 0 12px 0 8px; color: #fff; font-size: 14px; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .island.markd .lg { width: 24px; height: 24px; border-radius: 7px; background: #0B0B0B; display: grid; place-items: center; }
+  .dynexp { position: absolute; top: 9px; left: 9px; right: 9px; z-index: 31; border-radius: 46px; background: #000; color: #f2f2f2; padding: 18px 20px 18px; display: grid; gap: 12px; }
+  .dynexp .row1 { display: flex; align-items: center; gap: 10px; }
+  .dynexp .row1 .lg { width: 40px; height: 40px; border-radius: 11px; background: #0B0B0B; display: grid; place-items: center; box-shadow: 0 0 0 1px rgba(255,255,255,.15); }
+  .dynexp .row1 .tt { flex: 1; font-size: 15px; font-weight: 600; }
+  .dynexp .row1 .tt small { display: block; font-size: 13px; font-weight: 400; color: #9a9a9a; }
+  .dynexp .row1 .tm { font-size: 30px; font-variant-numeric: tabular-nums; }
+  .dynexp .said { font-size: 15px; color: #d8d8d8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .dynexp .acts { display: flex; gap: 8px; }
+  .dynexp .acts span { flex: 1; height: 40px; border-radius: 20px; background: rgba(255,255,255,.14); display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 15px; font-weight: 600; }
+  .dynexp .acts svg { width: 17px; height: 17px; }
+  .dynexp .acts .stopb { background: #FF3B30; } .dynexp .acts .stopb i { width: 11px; height: 11px; border-radius: 3px; background: #fff; display: block; }
+
   /* Android (Pixel, 412 x 915 dp): Roboto, punch-hole camera, no glass; the same tokens */
   .phone.android { width: 412px; height: 915px; border-radius: 46px; font-family: Roboto, "Google Sans", system-ui, sans-serif; }
   .android .status { padding: 6px 28px 0 30px; font-size: 15px; font-weight: 500; height: 44px; }
@@ -322,7 +368,7 @@
 
 <div class="intro">
   <h1>Murmur per a iPhone</h1>
-  <p>Mida real de l'iPhone 17 (402 × 874 pt), clar i fosc. Els colors són els tokens de l'ordinador (<code>murmur-theme.css</code>, tema Negre i àcid). Tipografia del sistema; xifres monoespaiades als temps.</p>
+  <p>Mida real de l'iPhone 17 (402 × 874 pt), clar i fosc. Els colors són els tokens de l'ordinador (<code>murmur-theme.css</code>, tema Negre i àcid). Tipografia del sistema (SF Pro) a tot arreu; els temps, amb xifres tabulars.</p>
   <p>Idees: la barra flotant de vidre amb el botó de gravar al mig, que es torna la píndola «Gravant» de l'ordinador; la targeta de gravació amb la forma d'ona i el regle; els parlants amb els xips de l'ordinador; el text que encara no és segur, en gris dins la frase; la llista per dies amb l'última frase.</p>
 </div>
 
@@ -399,16 +445,6 @@
   </div>
 </div>
 
-<!-- 15. The computer in the top bar -->
-<div class="row">
-  <div class="screen">
-    <h2>15 · L'ordinador, a dalt de tot</h2>
-    <p class="note">Al costat de la cerca, la icona de l'ordinador diu en quin punt és la sincronització. No diu «connectat»: el telèfon només s'hi connecta mentre sincronitza, uns segons. Tocar-la obre el full de sota; sense cap ordinador, va directa a connectar-ne un (pantalla 8).</p>
-    <div class="pair states" id="sync-states"></div>
-    <div class="pair" id="s-syncsheet"></div>
-  </div>
-</div>
-
 <!-- 9. Settings -->
 <div class="row">
   <div class="screen">
@@ -418,17 +454,76 @@
   </div>
 </div>
 
+<!-- 10. The computer in the top bar -->
+<div class="row">
+  <div class="screen">
+    <h2>10 · L'ordinador, a dalt de tot</h2>
+    <p class="note">Al costat de la cerca, la icona de l'ordinador diu en quin punt és la sincronització. No diu «connectat»: el telèfon només s'hi connecta mentre sincronitza, uns segons. Tocar-la obre el full de sota; sense cap ordinador, va directa a connectar-ne un (pantalla 8).</p>
+    <div class="pair states" id="sync-states"></div>
+    <div class="pair" id="s-syncsheet"></div>
+  </div>
+</div>
+
+<!-- 11 to 16: what the app does that the first screens don't show -->
+<div class="row">
+  <div class="screen">
+    <h2>11 · Els parlants: el menú de l'etiqueta</h2>
+    <p class="note">Com a l'ordinador: tocar l'etiqueta obre el menú. Canvia el nom (a totes les frases d'aquell parlant), aquesta frase és d'un altre, o totes les seves frases són d'un altre (n'ajunta dos). Mentre graves i a la reunió acabada.</p>
+    <div class="pair" id="s-speakers"></div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="screen">
+    <h2>12 · Una reunió a la llista: canviar-li el nom o eliminar-la</h2>
+    <p class="note">Mantenint-la premuda surt el menú del sistema. Lliscant cap a l'esquerra, eliminar, en el vermell fosc del tema clar en tots dos modes (el vermell del sistema no arriba al contrast). Al detall, el títol també es toca per canviar-lo.</p>
+    <div class="pair" id="s-meetingmenu"></div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="screen">
+    <h2>13 · Aturar demana dos tocs</h2>
+    <p class="note">El primer toc posa el botó en vermell, «Toca per aturar», durant 4 segons, com l'indicador de l'ordinador. També a la pantalla bloquejada. Una reunió no s'atura per un toc a la butxaca.</p>
+    <div class="pair" id="s-stop"></div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="screen">
+    <h2>14 · El micròfon</h2>
+    <p class="note">A la targeta només surt quan no és el de l'iPhone. A Configuració › Àudio se'n tria un: Automàtic per defecte. Els auriculars Bluetooth no entren mai sols, perquè només senten qui els porta.</p>
+    <div class="pair" id="s-mic"></div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="screen">
+    <h2>15 · Què diu una reunió de l'ordinador</h2>
+    <p class="note">L'avís de dalt de la reunió acabada, segons el moment: sense ordinador, emparellat però sense trobar-lo, ja a l'ordinador esperant la passada final, i revisada.</p>
+    <div class="pair" id="s-banners"></div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="screen">
+    <h2>16 · La Dynamic Island</h2>
+    <p class="note">Petita, la marca i el temps; l'eco de la «m» s'allunya quan algú parla. Mantenint-la premuda s'obre: el títol, el temps, l'última frase i Marca, Pausa i Atura.</p>
+    <div class="pair" id="s-island"></div>
+  </div>
+</div>
+
 <!-- Android -->
 <div class="row">
   <div class="screen">
-    <h2>10 · Android: inici mentre graves i gravant</h2>
+    <h2>17 · Android: inici mentre graves i gravant</h2>
     <p class="note">Les mateixes pantalles amb les maneres d'Android (Material 3): Roboto, sense vidre, la barra d'eines flotant de Material, títols a l'esquerra i botons més quadrats. Els colors, els mateixos.</p>
     <div class="pair" id="s-alist"></div>
   </div>
 </div>
 <div class="row">
   <div class="screen">
-    <h2>11 · Android: la notificació fixa</h2>
+    <h2>18 · Android: la notificació fixa</h2>
     <p class="note">Android no té Live Activity: la gravació és un servei en primer pla, amb una notificació que no es pot treure mentre grava. Amb el temps, l'última frase, Marca, Pausa i Atura.</p>
     <div class="pair" id="s-anotif"></div>
   </div>
@@ -437,21 +532,21 @@
 <!-- iPhone Duo: inner screen 2007 x 2853 px (about 669 x 951 pt), outer 1398 x 2034 px (about 466 x 678 pt), from the simulator's device profile -->
 <div class="row">
   <div class="screen">
-    <h2>12 · iPhone Duo obert, en vertical</h2>
+    <h2>19 · iPhone Duo obert, en vertical</h2>
     <p class="note">Pantalla interior, uns 669 × 951 pt. El plec és horitzontal, a mitja alçada. Pla, la zona del plec no és activa i el contingut hi pot passar, però no hi posem res que es toqui: la targeta de gravació a dalt, la transcripció a sota.</p>
     <div class="pair" id="s-duov"></div>
   </div>
 </div>
 <div class="row">
   <div class="screen">
-    <h2>13 · iPhone Duo en horitzontal: la llista i la reunió alhora</h2>
+    <h2>20 · iPhone Duo en horitzontal: la llista i la reunió alhora</h2>
     <p class="note">Girat, el plec és vertical i queden dues pàgines, com un llibre: a l'esquerra les reunions, a la dreta la que es grava. Cap columna no creua la zona del plec (40 pt).</p>
     <div class="pair" id="s-duo"></div>
   </div>
 </div>
 <div class="row">
   <div class="screen">
-    <h2>14 · iPhone Duo mig plegat, damunt la taula</h2>
+    <h2>21 · iPhone Duo mig plegat, damunt la taula</h2>
     <p class="note">Com un portàtil petit. A dalt, el que es llegeix: el temps i la frase en gran. A baix, el que es toca: els controls i, quan escrius una nota, el teclat, que ocupa just la meitat de baix. A l'esquerra, sense escriure; a la dreta, escrivint.</p>
     <div class="pair" id="s-duofold"></div>
   </div>
@@ -480,6 +575,11 @@ const icon = {
   laptop: '<svg class="i" viewBox="0 0 24 24" style="width:20px;height:20px"><rect x="4" y="5" width="16" height="11" rx="1.5"/><path d="M2 19h20"/></svg>',
   sync: '<svg class="i" viewBox="0 0 24 24" style="width:20px;height:20px"><path d="M20 11a8 8 0 0 0-14.5-4.5L4 8"/><path d="M4 3v5h5"/><path d="M4 13a8 8 0 0 0 14.5 4.5L20 16"/><path d="M20 21v-5h-5"/></svg>',
   back: '<svg class="i" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg>',
+  pencil: '<svg class="i" viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="m13.5 6.5 4 4"/></svg>',
+  trash: '<svg class="i" viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>',
+  headphones: '<svg class="i" viewBox="0 0 24 24"><path d="M4 15v-3a8 8 0 0 1 16 0v3"/><rect x="3" y="14" width="4" height="6" rx="1.5"/><rect x="17" y="14" width="4" height="6" rx="1.5"/></svg>',
+  right: '<svg class="i" viewBox="0 0 24 24" style="width:16px;height:16px"><path d="m9 6 6 6-6 6"/></svg>',
+  check: '<svg class="i" viewBox="0 0 24 24" style="width:18px;height:18px"><path d="m5 12 5 5 9-10"/></svg>',
   more: '<svg class="i" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.2" fill="currentColor"/><circle cx="12" cy="12" r="1.2" fill="currentColor"/><circle cx="19" cy="12" r="1.2" fill="currentColor"/></svg>',
   flag: '<svg class="i" viewBox="0 0 24 24"><path d="M5 21V4m0 0h11l-2 4 2 4H5"/></svg>',
   camera: '<svg class="i" viewBox="0 0 24 24"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>',
@@ -603,8 +703,7 @@ const screens = {
         <div class="wave">${bars}<div class="playhead" style="left:${14 + 50 * 4}px"></div></div>
         <div class="ruler mono"><span>05</span><span>06</span><span>07</span><span>08</span><span>09</span><span>10</span><span>11</span><b>12</b><span>13</span><span>14</span><span>15</span><span>16</span></div>
         <div class="recstate">
-          <div><div class="label mono"><span class="dot"></span>Gravant · 3 veus</div><div class="timer mono">00:12:34</div></div>
-          <div class="who">Català + castellà<br>Més gent a la sala</div>
+          <div><div class="label"><span class="dot"></span>Gravant · Català + castellà</div><div class="timer mono">00:12:34</div></div>
         </div>
       </div>
       <div class="seg"><span class="on">Transcripció</span><span>Notes · 2</span></div>
@@ -695,7 +794,7 @@ Object.assign(screens, {
       <div class="date">Dissabte, 15 de novembre</div>
       <div class="clock">10:12</div>
       <div class="activity big">
-        <div class="tp"><div class="lg">${icon.logo}</div><div class="tt">Reunió de les 10:00<small>Gravant · 3 veus · Català + castellà</small></div></div>
+        <div class="tp"><div class="lg">${icon.logo}</div><div class="tt">Reunió de les 10:00<small>Gravant · Català + castellà</small></div></div>
         <div class="bigtime"><span class="mono">12:34</span><span class="levels">${[12,22,16,26,10].map((x) => `<i style="height:${x}px;background:#D4FF3A"></i>`).join("")}</span></div>
         <div class="said"><b style="color:#fff;font-weight:600">Laia</b> · …si tot va bé, publiquem el dimarts 18 al matí, i deixarem la versió antiga desada per si de cas.</div>
         <div class="acts"><span>${icon.flag} Marca</span><span>${icon.pause} Pausa</span><span class="stopb"><i></i> Atura</span></div>
@@ -723,8 +822,10 @@ Object.assign(screens, {
         <h1>Configuració</h1>
         <div class="group-t">Ordinador</div>
         <div class="group">
-          <div class="cell"><span class="ci">${icon.laptop}</span><span class="lbl">MacBook de Quico<small><span class="okdot"></span> Connectat · sincronitzat fa 5 min</small></span><span class="val">›</span></div>
-          <div class="cell"><span class="ci">${icon.plus.replace('width:26px;height:26px;stroke-width:2.2','')}</span><span class="lbl">Connecta un altre ordinador</span></div>
+          <div class="cell"><span class="ci">${icon.laptop}</span><span class="lbl">MacBook de Quico<small>Sincronitzat fa 5 min · Per enviar: 1</small></span></div>
+          <div class="cell"><span class="ci">${icon.sync}</span><span class="lbl">Sincronitza ara</span></div>
+          <div class="cell"><span class="lbl">Envia les reunions soles<small>Quan són a la mateixa xarxa i Murmur és obert a tots dos</small></span><span class="switch"></span></div>
+          <div class="cell danger"><span class="lbl">Desconnecta l'ordinador</span></div>
         </div>
         <div class="group-t">Transcripció</div>
         <div class="group">
@@ -734,6 +835,7 @@ Object.assign(screens, {
         </div>
         <div class="group-t">Àudio</div>
         <div class="group">
+          <div class="cell"><span class="ci">${icon.mic}</span><span class="lbl">Micròfon</span><span class="val">Automàtic ›</span></div>
           <div class="cell"><span class="lbl">Desa l'àudio<small>L'ordinador el necessita per refer la reunió</small></span><span class="switch"></span></div>
         </div>
         <div class="group-t">Aparença</div>
@@ -747,6 +849,106 @@ Object.assign(screens, {
     <div class="fade" style="bottom:0;background:linear-gradient(transparent, var(--mm-background) 70%)"></div>
     ${dock({ active: "settings" })}`,
 });
+
+const meetingHead = (title = "Reunió de les 10:00") => `
+      <div class="nav"><div class="circle">${icon.back}</div><div class="t"></div><div class="circle">${icon.more}</div></div>
+      <div class="meeting">
+        <div class="meta">${icon.phone} Avui · 10:00 · <span class="tab">34 min</span></div>
+        <h1>${title}</h1>
+      </div>`;
+
+const localLines = `
+      <div class="lines">
+        <div class="line"><div class="head"><span class="chip you">Tu</span><span class="ts mono">0:04</span></div><p>bon dia a tothom avui la idea és tancar el calendari del llançament</p></div>
+        <div class="line"><div class="head"><span class="chip s1">Parlant 2</span><span class="ts mono">0:12</span></div><p>perfecte jo he portat les captures de l'última versió les comparteixo ara</p></div>
+        <div class="line"><div class="head"><span class="chip s2">Laia</span><span class="ts mono">0:33</span></div><p>els textos en anglès els tinc gairebé llestos me'ls podria mirar algú</p></div>
+      </div>`;
+
+const listCards = `
+      <div class="section">Avui</div>
+      <div class="card"><div class="ic">${icon.phone}</div><div class="body"><div class="top"><div class="title">Seguiment setmanal</div><span class="dur tab">25 min</span></div><div class="meta">8:30</div><div class="snippet">Els preus els tanquem dilluns amb direcció.</div></div></div>
+      <div class="card"><div class="ic">${icon.laptop}</div><div class="body"><div class="top"><div class="title">Entrevista amb la Núria</div><span class="dur tab">45 min</span></div><div class="meta">16:00 · revisada a l'ordinador</div><div class="snippet">M'interessa molt la part de recerca d'usuaris.</div></div></div>`;
+
+const variants = {
+  // 11: the speaker's label is a menu; "Canvia el nom…" asks for the name.
+  speakers: [
+    () => `<div class="content">${meetingHead()}<div class="seg"><span class="on">Transcripció</span><span>Notes</span></div>${localLines}</div>
+      <div class="dim"></div>
+      <div class="content" style="z-index:41;pointer-events:none"><div style="position:absolute;top:283px;left:20px;right:20px"><div class="line" style="margin:0"><div class="head"><span class="chip s1">Parlant 2</span><span class="ts mono">0:12</span></div><p>perfecte jo he portat les captures de l'última versió les comparteixo ara</p></div></div></div>
+      <div class="menu" style="top:430px;left:20px">
+        <div>Canvia el nom…${icon.pencil}</div>
+        <div class="gap">Aquesta frase és de${icon.right}</div>
+        <div>Totes les frases de «Parlant 2» són de${icon.right}</div>
+      </div>
+      <div class="menu" style="top:572px;left:110px;width:200px">
+        <div class="mhead">Totes les frases són de</div>
+        <div>Tu</div>
+        <div>Laia</div>
+      </div>`,
+    () => `<div class="content">${meetingHead()}<div class="seg"><span class="on">Transcripció</span><span>Notes</span></div>${localLines}</div>
+      <div class="dim"></div>
+      <div class="alert"><b>Nom del parlant</b><div class="field">Jordi<span class="caret"></span></div><div class="btns"><span>Cancel·la</span><span>Desa</span></div></div>`,
+  ],
+  // 12: holding a meeting in the list, and swiping it.
+  meetingmenu: [
+    () => `<div class="content">${brandbar()}${listCards}</div>
+      <div class="dim"></div>
+      <div class="lifted" style="top:174px"><div class="card"><div class="ic">${icon.phone}</div><div class="body"><div class="top"><div class="title">Seguiment setmanal</div><span class="dur tab">25 min</span></div><div class="meta">8:30</div><div class="snippet">Els preus els tanquem dilluns amb direcció.</div></div></div></div>
+      <div class="menu" style="top:300px;left:16px">
+        <div>Canvia el nom${icon.pencil}</div>
+        <div class="danger">Elimina${icon.trash}</div>
+      </div>
+      ${dock()}`,
+    () => `<div class="content">${brandbar()}
+      <div class="section">Avui</div>
+      <div class="swiperow"><div class="card"><div class="ic">${icon.phone}</div><div class="body"><div class="top"><div class="title">Seguiment setmanal</div><span class="dur tab">25 min</span></div><div class="meta">8:30</div><div class="snippet">Els preus els tanquem dilluns amb direcció.</div></div></div><div class="act" data-theme="acid" data-mode="light">${icon.trash}Elimina</div></div>
+      <div class="card"><div class="ic">${icon.laptop}</div><div class="body"><div class="top"><div class="title">Entrevista amb la Núria</div><span class="dur tab">45 min</span></div><div class="meta">16:00 · revisada a l'ordinador</div><div class="snippet">M'interessa molt la part de recerca d'usuaris.</div></div></div>
+      </div>${dock()}`,
+  ],
+  // 13: Atura asks twice, in the app and on the lock screen.
+  stop: [
+    () => screens.rec().replace('<div class="btn primary"><span class="stopsq"></span> Atura</div>', '<div class="btn primary stopconfirm" data-theme="acid" data-mode="light"><span class="stopsq"></span> Toca per aturar</div>').replace('<div class="btn round" aria-label="Fes una foto">' + icon.camera + '</div>', ''),
+    () => screens.lock().replace('<span class="stopb"><i></i> Atura</span>', '<span class="stopb" style="flex:1.7"><i></i> Toca per aturar</span>'),
+  ],
+  // 14: the microphone: on the card only when it isn't the iPhone's, and the choice in Configuració.
+  mic: [
+    () => screens.rec().replace('<div class="timer mono">00:12:34</div>', `<div class="timer mono">00:12:34</div><div class="micline">${icon.headphones} AirPods de Quico</div>`),
+    () => `<div class="content"><div class="settings">
+      <div class="nav"><div class="circle">${icon.back}</div><div class="t">Micròfon</div><div style="width:44px"></div></div>
+      <div class="group" style="margin-top:12px">
+        <div class="cell"><span class="lbl">Automàtic</span><span class="tickmark">${icon.check}</span></div>
+        <div class="cell"><span class="lbl">Micròfon de l'iPhone</span></div>
+        <div class="cell"><span class="lbl">AirPods de Quico</span></div>
+        <div class="cell"><span class="lbl">Micròfon USB</span></div>
+      </div>
+      <div class="gnote" style="display:block">Automàtic fa servir el micròfon connectat per cable o USB i, si no n'hi ha, el de l'iPhone. Els auriculars Bluetooth només si els tries: només senten qui els porta, no la sala.</div>
+      <div class="gnote" style="display:block;margin-top:10px">Si el micròfon canvia a mitja reunió, la gravació continua amb el nou.</div>
+    </div></div>`,
+  ],
+  // 15: what a finished meeting says about the computer, in its three moments.
+  banners: [
+    () => `<div class="content">${meetingHead()}
+      <div class="banner-k">Sense ordinador</div>
+      <div class="pending-sync" style="align-items:flex-start">${icon.laptop}<span>Ara és la transcripció ràpida del telèfon. Connecta l'ordinador a Configuració i hi passarà sola: la tornarà a escoltar amb Whisper i en farà el resum.</span></div>
+      <div class="banner-k">Emparellat, encara no l'ha trobat</div>
+      <div class="pending-sync" style="align-items:flex-start">${icon.laptop}<span>Quan el telèfon trobi l'ordinador, hi afegirà el títol, el resum i la passada de Whisper. Ara és la transcripció ràpida.</span></div>
+      <div class="banner-k">Ja és a l'ordinador</div>
+      <div class="pending-sync" style="align-items:flex-start">${icon.laptop}<span>Ja és a l'ordinador, que la tornarà a escoltar amb Whisper. Quan acabi, la versió revisada arribarà aquí.</span></div>
+      <div class="banner-k">Revisada</div>
+      <div class="pending-sync"><span class="okdot"></span><span>Revisada al MacBook de Quico, fa 5 min: Whisper, parlants i resum.</span></div>
+    </div>`,
+  ],
+  // 16: the Dynamic Island with the brand, small and held open.
+  island: [
+    () => screens.lock().replace(/<div class="activity big">[\s\S]*?<\/div>\s*<div class="lock-bottom">/, '<div class="lock-bottom">'),
+    () => screens.lock().replace(/<div class="activity big">[\s\S]*?<\/div>\s*<div class="lock-bottom">/, '<div class="lock-bottom">') + `
+      <div class="dynexp">
+        <div class="row1"><div class="lg">${icon.logo}</div><div class="tt">Reunió de les 10:00<small>Gravant · Català + castellà</small></div><div class="tm">12:34</div></div>
+        <div class="said"><b style="color:#fff;font-weight:600">Laia</b> · …si tot va bé, publiquem el dimarts 18 al matí</div>
+        <div class="acts"><span>${icon.flag} Marca</span><span>${icon.pause} Pausa</span><span class="stopb"><i></i> Atura</span></div>
+      </div>`,
+  ],
+};
 
 const androidChrome = `<div class="island"></div><div class="status"><span class="tab">9:41</span><span class="icons">
   <svg width="16" height="12" viewBox="0 0 16 12"><path d="M8 11.5 5.6 9a3.4 3.4 0 0 1 4.8 0zM3.4 6.8a6.5 6.5 0 0 1 9.2 0l-1.3 1.3a4.7 4.7 0 0 0-6.6 0zM1.2 4.6a9.6 9.6 0 0 1 13.6 0l-1.3 1.3a7.8 7.8 0 0 0-11 0z" fill="currentColor"/></svg>
@@ -779,7 +981,7 @@ const duo = () => `
 const duofold = (typing) => `
   <div class="fold-top">
     <div style="display:flex;justify-content:space-between;align-items:flex-end">
-      <div><div class="label mono"><span class="dot"></span>Gravant · 3 veus</div><div class="timer mono" style="font-size:48px">00:12:34</div></div>
+      <div><div class="label"><span class="dot"></span>Gravant · Català + castellà</div><div class="timer mono" style="font-size:48px">00:12:34</div></div>
       <span class="levels" style="height:30px;gap:4px">${[12,22,16,28,10,20].map((x) => `<i style="height:${x}px;width:5px"></i>`).join("")}</span>
     </div>
     <div style="margin-top:22px"><div class="head" style="display:flex;gap:8px;align-items:center"><span class="chip you">Tu</span><span class="ts mono">12:02</span></div>
@@ -824,6 +1026,19 @@ for (const [key, renders, cls, column] of [["duov", [duov, duov], "duo", false],
   const pair = document.getElementById(`s-${key}`);
   if (column) pair.style.flexDirection = "column";
   ["light", "dark"].forEach((mode, i) => pair.insertAdjacentHTML("beforeend", `<div class="phone ${cls}" data-theme="acid" data-mode="${mode}">${chrome}${renders[i]()}</div>`));
+}
+for (const [key, renders] of Object.entries(variants)) {
+  const pair = document.getElementById(`s-${key}`);
+  if (!pair) continue;
+  const onDark = key === "island" || (key === "stop");
+  ["light", "dark"].forEach((mode, i) => {
+    const render = renders[i] ?? renders[0];
+    const lockish = key === "island" || (key === "stop" && i === 1);
+    let shell = lockish ? chrome.replace('<div class="home-indicator"></div>', '<div class="home-indicator" style="background:#fff"></div>') : chrome;
+    if (key === "island" && i === 0) shell = shell.replace('<div class="island"></div>', `<div class="island markd"><span class="lg">${icon.logo.replace('width="26" height="26"', 'width="18" height="18"')}</span><span>12:34</span></div>`);
+    if (key === "stop" && i === 1) shell = shell.replace('<div class="island"></div>', `<div class="island markd"><span class="lg">${icon.logo.replace('width="26" height="26"', 'width="18" height="18"')}</span><span>12:34</span></div>`);
+    pair.insertAdjacentHTML("beforeend", `<div class="phone" data-theme="acid" data-mode="${mode}" style="${lockish ? "color:#fff" : ""}">${shell}${render()}</div>`);
+  });
 }
 for (const [key, render] of Object.entries(screens)) {
   const pair = document.getElementById(`s-${key}`);

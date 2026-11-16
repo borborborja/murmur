@@ -6,6 +6,16 @@
   "dontShow": "No volver a mostrar",
   "ok": "Entendido",
   "releases": {
+    "0.15.0": [
+      {
+        "title": "La tarjeta gráfica, también en Windows y Linux",
+        "text": "La pasada final de Whisper y el resumen usan la gráfica del ordenador (NVIDIA, AMD o Intel), como ya pasaba en el Mac. No hace falta configurar nada: si no hay, o el modelo no cabe, Murmur usa el procesador como hasta ahora."
+      },
+      {
+        "title": "Murmur para PC con ARM",
+        "text": "Hay una versión para los PC con Snapdragon, como los Surface y los Copilot+ PC, que va más rápida que la emulada. Si ya tienes Murmur en uno de estos PC, descarga el instalador para ARM una vez; después se actualiza sola."
+      }
+    ],
     "0.14.0": [
       {
         "title": "Guarda las reuniones en Notion",

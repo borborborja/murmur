@@ -6,6 +6,16 @@
   "dontShow": "No ho tornis a mostrar",
   "ok": "Entesos",
   "releases": {
+    "0.15.0": [
+      {
+        "title": "La targeta gràfica, també a Windows i Linux",
+        "text": "La passada final de Whisper i el resum fan servir la gràfica de l'ordinador (NVIDIA, AMD o Intel), com ja passava al Mac. No cal configurar res: si no n'hi ha, o el model no hi cap, Murmur fa servir el processador com fins ara."
+      },
+      {
+        "title": "Murmur per a PC amb ARM",
+        "text": "Hi ha una versió per als PC amb Snapdragon, com els Surface i els Copilot+ PC, que va més ràpida que l'emulada. Si ja tens Murmur en un d'aquests PC, baixa'n l'instal·lador per a ARM una vegada; després s'actualitza sola."
+      }
+    ],
     "0.14.0": [
       {
         "title": "Desa les reunions a Notion",

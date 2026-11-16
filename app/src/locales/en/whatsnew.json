@@ -6,6 +6,16 @@
   "dontShow": "Don't show this again",
   "ok": "Got It",
   "releases": {
+    "0.15.0": [
+      {
+        "title": "The graphics card, on Windows and Linux too",
+        "text": "Whisper's final pass and the summary use your computer's graphics card (NVIDIA, AMD or Intel), as they already did on the Mac. Nothing to set up: without one, or if the model doesn't fit, Murmur uses the processor as before."
+      },
+      {
+        "title": "Murmur for ARM PCs",
+        "text": "There's a version for PCs with a Snapdragon, such as the Surface and Copilot+ PCs, that runs faster than the emulated one. If you already have Murmur on one of these PCs, download the ARM installer once; after that it updates itself."
+      }
+    ],
     "0.14.0": [
       {
         "title": "Save meetings to Notion",

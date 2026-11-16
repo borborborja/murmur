@@ -46,6 +46,7 @@ struct RootView: View {
     /// The first time: the onboarding (Onboarding.swift), after the splash.
     @AppStorage("onboarded") private var onboarded = false
     @State private var onboarding = false
+    @State private var enrolling = false
 
     var body: some View {
         NavigationStack(path: $path) {
@@ -82,6 +83,8 @@ struct RootView: View {
             }
         }
         .tint(palette.textPrimary)
+        // `-enrollVoice` (development, with -simulate): records "La teva veu" at once.
+        .fullScreenCover(isPresented: $enrolling) { VoiceEnrollView(autoStart: true) }
         .fullScreenCover(isPresented: $onboarding) {
             OnboardingView {
                 onboarded = true
@@ -93,6 +96,10 @@ struct RootView: View {
             let args = ProcessInfo.processInfo.arguments
             // `-onboarding` (development): shows it again.
             if args.contains("-onboarding") { onboarded = false }
+            if args.contains("-enrollVoice") {
+                try? await Task.sleep(for: .seconds(2))
+                enrolling = true
+            }
             if args.contains("-autostart") { record() }
             if args.contains("-search") { path = [.search] }
             // `-openLatest` (development): opens the newest meeting, to see it without touching the screen.

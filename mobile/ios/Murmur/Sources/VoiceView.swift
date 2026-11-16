@@ -79,6 +79,10 @@ struct VoiceEnrollView: View {
     @Environment(\.dismiss) private var dismiss
     /// Called once it's saved (the onboarding goes on).
     var saved: () -> Void = {}
+    /// Starts listening as soon as it opens: "Llegeix la frase" was already tapped to get here (a
+    /// second button that does the same looked like nothing happened). After a failure, the
+    /// button reads it again.
+    var autoStart = true
 
     private enum Phase: Equatable { case ready, listening, saving, failed(String) }
     @State private var phase: Phase = .ready
@@ -160,6 +164,7 @@ struct VoiceEnrollView: View {
         .background(palette.background.ignoresSafeArea())
         .foregroundStyle(palette.textPrimary)
         .onDisappear { microphone?.stop() }
+        .task { if autoStart { listen() } }
     }
 
     private func primary() {
@@ -172,7 +177,7 @@ struct VoiceEnrollView: View {
 
     private func listen() {
         Task {
-            guard await AVAudioApplication.requestRecordPermission() else {
+            guard Microphone.simulated != nil ? true : await AVAudioApplication.requestRecordPermission() else {
                 phase = .failed(L("mic.denied"))
                 return
             }
@@ -194,6 +199,9 @@ struct VoiceEnrollView: View {
                 let samples = buffer.snapshot
                 let now = await store.voiceProgress(sentence, samples)
                 said = max(said, now)
+                #if DEBUG
+                print("voice: \(samples.count) samples, \(said)/\(words.count) words")
+                #endif
                 if said >= words.count, finishAt == nil { finishAt = samples.count + 16_000 * 6 / 10 }
                 if Double(samples.count) / 16_000 >= Self.limit || finishAt.map({ samples.count >= $0 }) ?? false { break }
             }
@@ -213,6 +221,9 @@ struct VoiceEnrollView: View {
                 saved()
                 dismiss()
             } catch {
+                #if DEBUG
+                print("voice: enroll failed: \(error)")
+                #endif
                 phase = .failed(error.localizedDescription)
             }
         }

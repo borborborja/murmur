@@ -9,86 +9,81 @@ struct OnboardingView: View {
     @Environment(\.murmur) private var palette
     var finish: () -> Void
 
-    private enum Step: Hashable { case welcome, features, setup, microphone, voice, computer }
-    @State private var step: Step = .welcome
-    @State private var page = 0
+    /// The screens in order: the welcome, the four of what it does, how you record, the
+    /// microphone, your voice, the computer. One page stays; only its content changes.
+    @State private var index = 0
+    /// Which way the content goes (forward: in from the right).
+    @State private var forward = true
     @State private var micDenied = false
     @State private var readingVoice = false
     @State private var pairing = false
     @AppStorage("language") private var language = "ca-es"
     @AppStorage("moreInRoom") private var moreInRoom = true
+    private static let features = 1...4
+    private static let last = 8
 
     var body: some View {
         ZStack {
             palette.background.ignoresSafeArea()
-            switch step {
-            case .welcome:
-                OnboardingPage(art: { LogoTile(size: 112) },
-                               title: L("onboarding.welcomeTitle"), text: L("onboarding.welcomeTagline"),
-                               note: (L("onboarding.welcomePrivate"), "lock"),
-                               primary: (L("onboarding.start"), { go(.features) }))
-            case .features:
-                features
-            case .setup:
-                OnboardingPage(art: { setupArt }, kicker: L("onboarding.setupKicker"), title: L("onboarding.setupTitle"),
-                               note: (L("onboarding.consent"), "person"),
-                               primary: (L("onboarding.next"), { go(.microphone) }))
-            case .microphone:
-                OnboardingPage(art: { micArt }, kicker: L("onboarding.micKicker"), title: L("onboarding.micTitle"),
-                               text: micDenied ? L("onboarding.micDenied") : L("onboarding.micText"),
-                               primary: (micDenied ? L("onboarding.next") : L("onboarding.micAllow"), askMicrophone))
-            case .voice:
-                OnboardingPage(art: { voiceArt }, kicker: L("onboarding.voiceKicker"), title: L("onboarding.voiceTitle"),
-                               note: (L("onboarding.voiceText"), "lock"),
-                               primary: (L("onboarding.voiceGo"), { readingVoice = true }),
-                               topAction: (L("onboarding.notNow"), { go(.computer) }))
-            case .computer:
-                OnboardingPage(art: { computerArt }, kicker: L("onboarding.computerKicker"), title: L("onboarding.computerTitle"),
-                               text: L("onboarding.computerText"), note: (L("onboarding.computerDownload"), "laptopcomputer"),
-                               primary: (L("onboarding.computerGo"), { pairing = true }),
-                               topAction: (L("onboarding.notNow"), finish))
-            }
+            OnboardingPage(spec: spec(index), id: index, forward: forward)
         }
         .foregroundStyle(palette.textPrimary)
+        // The four pages of what it does also go by swiping.
+        .simultaneousGesture(DragGesture(minimumDistance: 30).onEnded { drag in
+            guard Self.features.contains(index), abs(drag.translation.width) > abs(drag.translation.height) else { return }
+            if drag.translation.width < -50 { go(index + 1) } else if drag.translation.width > 50, index > Self.features.lowerBound { go(index - 1) }
+        })
         .fullScreenCover(isPresented: $readingVoice) {
-            VoiceEnrollView(saved: { go(.computer) })
+            VoiceEnrollView(saved: { go(index + 1) })
         }
         .fullScreenCover(isPresented: $pairing, onDismiss: { if store.computer != nil { finish() } }) {
             PairView()
         }
     }
 
-    private func go(_ next: Step) {
-        withAnimation(.easeInOut(duration: 0.3)) { step = next }
+    private func go(_ next: Int) {
+        guard next != index else { return }
+        if next > Self.last { return finish() }
+        forward = next > index
+        withAnimation(.spring(duration: 0.45, bounce: 0.15)) { index = next }
     }
 
     private func askMicrophone() {
-        if micDenied { return go(.voice) }
+        if micDenied { return go(index + 1) }
         Task {
             let allowed = Microphone.simulated != nil ? true : await AVAudioApplication.requestRecordPermission()
-            if allowed { go(.voice) } else { withAnimation { micDenied = true } }
+            if allowed { go(index + 1) } else { withAnimation { micDenied = true } }
         }
     }
 
-    // MARK: What it does: four pages, swiped or with Continua.
-
-    private var features: some View {
-        let pages: [(kicker: String, title: String, text: String)] = [
-            (L("onboarding.f1Kicker"), L("onboarding.f1Title"), L("onboarding.f1Text")),
-            (L("onboarding.f2Kicker"), L("onboarding.f2Title"), L("onboarding.f2Text")),
-            (L("onboarding.f3Kicker"), L("onboarding.f3Title"), L("onboarding.f3Text")),
-            (L("onboarding.f4Kicker"), L("onboarding.f4Title"), L("onboarding.f4Text")),
-        ]
-        return TabView(selection: $page) {
-            ForEach(pages.indices, id: \.self) { i in
-                OnboardingPage(art: { featureArt(i) }, kicker: pages[i].kicker, title: pages[i].title, text: pages[i].text,
-                               dots: (i, pages.count),
-                               primary: (L("onboarding.next"), { i < pages.count - 1 ? withAnimation { page = i + 1 } : go(.setup) }),
-                               topAction: (L("onboarding.skip"), { go(.setup) }))
-                    .tag(i)
-            }
+    /// What screen `i` shows.
+    private func spec(_ i: Int) -> OnboardingPage.Spec {
+        let next = (L("onboarding.next"), { go(i + 1) })
+        switch i {
+        case 0:
+            return .init(art: AnyView(LogoTile(size: 112)), title: L("onboarding.welcomeTitle"), text: L("onboarding.welcomeTagline"),
+                         note: (L("onboarding.welcomePrivate"), "lock"), primary: (L("onboarding.start"), { go(1) }))
+        case Self.features:
+            let n = i - Self.features.lowerBound + 1
+            return .init(art: AnyView(featureArt(n - 1)), kicker: L("onboarding.f\(n)Kicker"), title: L("onboarding.f\(n)Title"),
+                         text: L("onboarding.f\(n)Text"), dots: (n - 1, Self.features.count), primary: next,
+                         top: (L("onboarding.skip"), { go(Self.features.upperBound + 1) }))
+        case 5:
+            return .init(art: AnyView(setupArt), kicker: L("onboarding.setupKicker"), title: L("onboarding.setupTitle"),
+                         note: (L("onboarding.consent"), "person"), primary: next)
+        case 6:
+            return .init(art: AnyView(micArt), kicker: L("onboarding.micKicker"), title: L("onboarding.micTitle"),
+                         text: micDenied ? L("onboarding.micDenied") : L("onboarding.micText"),
+                         primary: (micDenied ? L("onboarding.next") : L("onboarding.micAllow"), askMicrophone))
+        case 7:
+            return .init(art: AnyView(voiceArt), kicker: L("onboarding.voiceKicker"), title: L("onboarding.voiceTitle"),
+                         note: (L("onboarding.voiceText"), "lock"), primary: (L("onboarding.voiceGo"), { readingVoice = true }),
+                         top: (L("onboarding.notNow"), { go(i + 1) }))
+        default:
+            return .init(art: AnyView(computerArt), kicker: L("onboarding.computerKicker"), title: L("onboarding.computerTitle"),
+                         text: L("onboarding.computerText"), note: (L("onboarding.computerDownload"), "laptopcomputer"),
+                         primary: (L("onboarding.computerGo"), { pairing = true }), top: (L("onboarding.notNow"), finish))
         }
-        .tabViewStyle(.page(indexDisplayMode: .never))
     }
 
     @ViewBuilder private func featureArt(_ i: Int) -> some View {
@@ -275,63 +270,83 @@ struct OnboardingView: View {
     }
 }
 
-/// One page of the onboarding: its art in the middle, then the kicker, title, text and a note,
-/// the dots, the button; "Omet" or "Ara no" at the top.
-private struct OnboardingPage<Art: View>: View {
+/// The onboarding's page. It stays from screen to screen: the art and the words change (they come
+/// in from the side they're going to and fade), the dots and the button stay where they are, and
+/// the dot slides to the next one.
+private struct OnboardingPage: View {
+    struct Spec {
+        var art: AnyView
+        var kicker: String? = nil
+        var title: String
+        var text: String? = nil
+        var note: (String, String)? = nil
+        var dots: (Int, Int)? = nil
+        var primary: (String, () -> Void)
+        var top: (String, () -> Void)? = nil
+    }
+
     @Environment(\.murmur) private var palette
-    @ViewBuilder var art: () -> Art
-    var kicker: String? = nil
-    var title: String
-    var text: String? = nil
-    var note: (String, String)? = nil
-    var dots: (Int, Int)? = nil
-    var primary: (String, () -> Void)
-    var topAction: (String, () -> Void)? = nil
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    var spec: Spec
+    var id: Int
+    var forward: Bool
+
+    private var change: AnyTransition {
+        if reduceMotion { return .opacity }
+        let shift: CGFloat = 36
+        return .asymmetric(insertion: .offset(x: forward ? shift : -shift).combined(with: .opacity),
+                           removal: .offset(x: forward ? -shift : shift).combined(with: .opacity))
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             HStack {
                 Spacer()
-                if let topAction {
-                    Button(topAction.0, action: topAction.1).font(.system(size: 16)).foregroundStyle(palette.textSecondary)
-                        .frame(minHeight: 44)
+                if let top = spec.top {
+                    Button(top.0, action: top.1).font(.system(size: 16)).foregroundStyle(palette.textSecondary).frame(minHeight: 44)
+                        .transition(.opacity)
                 }
             }
             .frame(height: 44)
-            Spacer(minLength: 12)
-            art().frame(maxWidth: .infinity)
-            Spacer(minLength: 12)
-            if let kicker { Text(kicker).font(.system(size: 13, weight: .semibold)).foregroundStyle(palette.textSecondary) }
-            Text(title).font(.system(size: 30, weight: .bold)).tracking(-0.6).padding(.top, 6).padding(.bottom, 10)
-                .fixedSize(horizontal: false, vertical: true)
-                .accessibilityAddTraits(.isHeader)
-            if let text {
-                Text(text).font(.system(size: 17)).foregroundStyle(palette.textSecondary).fixedSize(horizontal: false, vertical: true)
-                    .padding(.bottom, 8)
+            ZStack {
+                spec.art.id(id).transition(change)
             }
-            if let note {
-                Label(note.0, systemImage: note.1).font(.system(size: 13)).foregroundStyle(palette.textTertiary)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
-            Group {
-                if let dots {
-                    HStack(spacing: 7) {
-                        ForEach(0..<dots.1, id: \.self) { i in
-                            Capsule().fill(i == dots.0 ? palette.textPrimary : palette.separator).frame(width: i == dots.0 ? 20 : 7, height: 7)
-                        }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            ZStack(alignment: .topLeading) {
+                VStack(alignment: .leading, spacing: 0) {
+                    if let kicker = spec.kicker { Text(kicker).font(.system(size: 13, weight: .semibold)).foregroundStyle(palette.textSecondary) }
+                    Text(spec.title).font(.system(size: 30, weight: .bold)).tracking(-0.6).padding(.top, 6).padding(.bottom, 10)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .accessibilityAddTraits(.isHeader)
+                    if let text = spec.text {
+                        Text(text).font(.system(size: 17)).foregroundStyle(palette.textSecondary).fixedSize(horizontal: false, vertical: true)
+                            .padding(.bottom, 8)
                     }
-                    .frame(maxWidth: .infinity)
-                    .accessibilityHidden(true)
-                } else {
-                    Color.clear.frame(height: 7)
+                    if let note = spec.note {
+                        Label(note.0, systemImage: note.1).font(.system(size: 13)).foregroundStyle(palette.textTertiary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .id(id).transition(change)
+            }
+            // The dots: the current one, long, slides to the next.
+            HStack(spacing: 7) {
+                if let dots = spec.dots {
+                    ForEach(0..<dots.1, id: \.self) { i in
+                        Capsule().fill(i == dots.0 ? palette.textPrimary : palette.separator).frame(width: i == dots.0 ? 20 : 7, height: 7)
+                    }
                 }
             }
+            .frame(maxWidth: .infinity, minHeight: 7)
             .padding(.vertical, 18)
-            Button(action: primary.1) {
-                Text(primary.0).font(.system(size: 17, weight: .semibold))
+            .accessibilityHidden(true)
+            Button(action: spec.primary.1) {
+                Text(spec.primary.0).font(.system(size: 17, weight: .semibold))
                     .frame(maxWidth: .infinity, minHeight: 56)
                     .background(palette.newMeeting, in: Capsule())
                     .foregroundStyle(palette.onNewMeeting)
+                    .contentTransition(.opacity)
             }
             .buttonStyle(.plain)
         }

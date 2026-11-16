@@ -188,6 +188,13 @@ impl Murmur {
             .collect())
     }
 
+    /// Saves a whole meeting as the computer stores it (JSON): the sample meetings of the App
+    /// Store's screenshots (`-demo`, development only).
+    pub fn put_meeting(&self, json: String) -> Result<()> {
+        let meeting: Value = serde_json::from_str(&json).map_err(|e| MurmurError::Failed(e.to_string()))?;
+        lock(&self.db).put(&meeting).map_err(Into::into)
+    }
+
     /// A meeting as the computer stores it (JSON), or None.
     pub fn meeting_json(&self, id: String) -> Result<Option<String>> {
         Ok(lock(&self.db).get(&id)?.map(|m| m.to_string()))

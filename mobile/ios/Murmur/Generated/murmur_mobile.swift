@@ -665,6 +665,12 @@ public protocol MurmurProtocol: AnyObject, Sendable {
     func push(samples: [Float]) throws  -> LiveUpdate
     
     /**
+     * Saves a whole meeting as the computer stores it (JSON): the sample meetings of the App
+     * Store's screenshots (`-demo`, development only).
+     */
+    func putMeeting(json: String) throws 
+    
+    /**
      * A new title for a meeting (empty: left as it was).
      */
     func renameMeeting(id: String, title: String) throws 
@@ -933,6 +939,19 @@ open func push(samples: [Float])throws  -> LiveUpdate  {
         FfiConverterSequenceFloat.lower(samples),uniffiCallStatus
     )
 })
+}
+    
+    /**
+     * Saves a whole meeting as the computer stores it (JSON): the sample meetings of the App
+     * Store's screenshots (`-demo`, development only).
+     */
+open func putMeeting(json: String)throws   {try rustCallWithError(FfiConverterTypeMurmurError_lift) {
+        uniffiCallStatus in
+    uniffi_murmur_mobile_fn_method_murmur_put_meeting(
+            self.uniffiCloneHandle(),
+        FfiConverterString.lower(json),uniffiCallStatus
+    )
+}
 }
     
     /**
@@ -2109,6 +2128,9 @@ private let initializationResult: InitializationResult = {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_murmur_mobile_checksum_method_murmur_push() != 881) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_murmur_mobile_checksum_method_murmur_put_meeting() != 57142) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_murmur_mobile_checksum_method_murmur_rename_meeting() != 2007) {

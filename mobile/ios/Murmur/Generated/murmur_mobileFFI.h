@@ -308,6 +308,11 @@ void uniffi_murmur_mobile_fn_method_murmur_prepare(uint64_t ptr, RustCallStatus 
 RustBuffer uniffi_murmur_mobile_fn_method_murmur_push(uint64_t ptr, RustBuffer samples, RustCallStatus *_Nonnull out_status
 );
 #endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_MURMUR_MOBILE_FN_METHOD_MURMUR_PUT_MEETING
+#define UNIFFI_FFIDEF_UNIFFI_MURMUR_MOBILE_FN_METHOD_MURMUR_PUT_MEETING
+void uniffi_murmur_mobile_fn_method_murmur_put_meeting(uint64_t ptr, RustBuffer json, RustCallStatus *_Nonnull out_status
+);
+#endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_MURMUR_MOBILE_FN_METHOD_MURMUR_RENAME_MEETING
 #define UNIFFI_FFIDEF_UNIFFI_MURMUR_MOBILE_FN_METHOD_MURMUR_RENAME_MEETING
 void uniffi_murmur_mobile_fn_method_murmur_rename_meeting(uint64_t ptr, RustBuffer id, RustBuffer title, RustCallStatus *_Nonnull out_status
@@ -723,6 +728,12 @@ uint16_t uniffi_murmur_mobile_checksum_method_murmur_prepare(void
 #ifndef UNIFFI_FFIDEF_UNIFFI_MURMUR_MOBILE_CHECKSUM_METHOD_MURMUR_PUSH
 #define UNIFFI_FFIDEF_UNIFFI_MURMUR_MOBILE_CHECKSUM_METHOD_MURMUR_PUSH
 uint16_t uniffi_murmur_mobile_checksum_method_murmur_push(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_MURMUR_MOBILE_CHECKSUM_METHOD_MURMUR_PUT_MEETING
+#define UNIFFI_FFIDEF_UNIFFI_MURMUR_MOBILE_CHECKSUM_METHOD_MURMUR_PUT_MEETING
+uint16_t uniffi_murmur_mobile_checksum_method_murmur_put_meeting(void
     
 );
 #endif

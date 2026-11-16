@@ -104,6 +104,16 @@ struct RootView: View {
             let args = ProcessInfo.processInfo.arguments
             // `-onboarding` (development): shows it again.
             if args.contains("-onboarding") { onboarded = false }
+            #if DEBUG
+            // `-demo`: the App Store screenshots' sample meetings; `-open <id> [-tab summary|transcript|notes]` opens one.
+            if args.contains("-demo") { DemoData.load(into: store) }
+            if let i = args.firstIndex(of: "-open"), i + 1 < args.count {
+                let tabs: [String: MeetingTab] = ["summary": .summary, "transcript": .transcript, "notes": .notes]
+                let tab = args.firstIndex(of: "-tab").flatMap { $0 + 1 < args.count ? tabs[args[$0 + 1]] : nil }
+                try? await Task.sleep(for: .seconds(2))
+                path = [tab.map { .meetingAt(args[i + 1], $0) } ?? .meeting(args[i + 1])]
+            }
+            #endif
             if args.contains("-enrollVoice") {
                 try? await Task.sleep(for: .seconds(2))
                 enrolling = true

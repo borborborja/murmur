@@ -43,6 +43,14 @@ targets:
       - name: Rust (murmur-mobile)
         script: ./build-rust.sh
         basedOnDependencyAnalysis: false
+    postBuildScripts:
+      # sherpa-onnx comes prebuilt with no dSYM, and App Store Connect asks for one per framework.
+      # It has no debug info, so this only carries its UUID: enough for the upload, not for names.
+      - name: dSYM (SherpaOnnxC)
+        script: |
+          [ "$ACTION" = install ] || exit 0
+          dsymutil "$TARGET_BUILD_DIR/$FRAMEWORKS_FOLDER_PATH/SherpaOnnxC.framework/SherpaOnnxC" -o "$DWARF_DSYM_FOLDER_PATH/SherpaOnnxC.framework.dSYM" 2>/dev/null || true
+        basedOnDependencyAnalysis: false
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.quicodomingo.murmur.ios

@@ -87,7 +87,7 @@ jobs:
         shell: bash
         run: |
           mkdir -p dist
-          b=app/src-tauri/target/release/bundle
+          b="${{ env.CARGO_TARGET_DIR || 'app/src-tauri/target' }}/release/bundle"
           if [ "$RUNNER_OS" = "Windows" ]; then
             cp $b/nsis/*-setup.exe $b/nsis/*-setup.exe.sig dist/
           else

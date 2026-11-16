@@ -198,9 +198,9 @@ jobs:
         with:
           name: installadors-${{ matrix.os }}
           path: |
-            app/src-tauri/target/release/bundle/nsis/*-setup.exe
-            app/src-tauri/target/release/bundle/appimage/*.AppImage
-            app/src-tauri/target/release/bundle/deb/*.deb
+            ${{ env.CARGO_TARGET_DIR || 'app/src-tauri/target' }}/release/bundle/nsis/*-setup.exe
+            ${{ env.CARGO_TARGET_DIR || 'app/src-tauri/target' }}/release/bundle/appimage/*.AppImage
+            ${{ env.CARGO_TARGET_DIR || 'app/src-tauri/target' }}/release/bundle/deb/*.deb
           retention-days: 30
       - name: Model de transcripció (memòria cau)
         id: models
@@ -221,7 +221,7 @@ jobs:
         if: runner.os == 'Linux'
         shell: bash
         run: |
-          b=app/src-tauri/target/release/bundle
+          b=${{ env.CARGO_TARGET_DIR || 'app/src-tauri/target' }}/release/bundle
           ls -la $b/deb $b/rpm $b/appimage
           ls $b/deb/*.deb.sig $b/appimage/*.AppImage.sig
           sudo apt-get install -y ./$b/deb/*.deb
@@ -233,7 +233,7 @@ jobs:
         if: runner.os == 'Linux'
         shell: bash
         run: |
-          image=$(ls $PWD/app/src-tauri/target/release/bundle/appimage/*.AppImage)
+          image=$(ls $PWD/${{ env.CARGO_TARGET_DIR || 'app/src-tauri/target' }}/release/bundle/appimage/*.AppImage)
           chmod +x "$image"
           printf '#!/bin/sh\nexec "%s" --appimage-extract-and-run "$@"\n' "$image" > "$RUNNER_TEMP/murmur-appimage"
           chmod +x "$RUNNER_TEMP/murmur-appimage"
@@ -242,8 +242,8 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          $setup = Get-ChildItem app/src-tauri/target/release/bundle/nsis/*-setup.exe | Select-Object -First 1
-          Get-ChildItem app/src-tauri/target/release/bundle/nsis/*-setup.exe.sig | Out-Null
+          $setup = Get-ChildItem ${{ env.CARGO_TARGET_DIR || 'app/src-tauri/target' }}/release/bundle/nsis/*-setup.exe | Select-Object -First 1
+          Get-ChildItem ${{ env.CARGO_TARGET_DIR || 'app/src-tauri/target' }}/release/bundle/nsis/*-setup.exe.sig | Out-Null
           Start-Process $setup.FullName -ArgumentList "/S" -Wait
           $dir = Join-Path $env:LOCALAPPDATA "Murmur"
           Get-ChildItem $dir | Format-Table Name, Length

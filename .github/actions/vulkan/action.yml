@@ -32,7 +32,9 @@ runs:
         "MURMUR_VULKAN=1" | Out-File -FilePath $env:GITHUB_ENV -Append
         # Una carpeta curta per compilar murmur-whisper: els camins del generador de shaders de
         # ggml-vulkan passen dels 260 caràcters de Windows (scripts/build-whisper.mjs).
+        # El mateix per a l'app (llama.cpp): els instal·ladors queden a C:/mt/release/bundle.
         "MURMUR_WHISPER_TARGET_DIR=C:\mw" | Out-File -FilePath $env:GITHUB_ENV -Append
+        "CARGO_TARGET_DIR=C:/mt" | Out-File -FilePath $env:GITHUB_ENV -Append
         "$sdk\Bin" | Out-File -FilePath $env:GITHUB_PATH -Append
         # Ninja en comptes de MSBuild: amb MSBuild, el generador dels shaders no es compila.
         & "$env:GITHUB_WORKSPACE\.github\scripts\msvc-ninja.ps1" x64

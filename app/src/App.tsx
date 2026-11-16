@@ -189,6 +189,10 @@ export default function App() {
     setSettingsTab("calendar");
     setShowSettings(true);
   };
+  const openMobileSettings = () => {
+    setSettingsTab("mobile");
+    setShowSettings(true);
+  };
   // The calendar sync went on with the settings closed: say how it ended.
   const wasSyncing = useRef(false);
   useEffect(() => {
@@ -1254,6 +1258,7 @@ export default function App() {
             englishReady={englishReady}
             onSettings={() => setShowSettings(true)}
             onCalendarSettings={openCalendarSettings}
+            onMobileSettings={openMobileSettings}
             onDelete={removeById}
             tagFilter={tagFilter}
             onTagFilter={setTagFilter}

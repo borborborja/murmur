@@ -14,6 +14,7 @@ import { shortcut } from "@/lib/platform";
 import { activeShares } from "@/lib/share";
 import { cn } from "@/lib/utils";
 import { MarkerBackground, useMarker } from "@/lib/motion";
+import { MobileSync } from "./MobileSync";
 import { StartOptionsCompact, type StartChoice } from "./StartOptions";
 import { hasTag, tagCounts, type TagCount } from "./Tags";
 
@@ -36,6 +37,8 @@ type Props = {
   onSettings: () => void;
   /** The Calendari tab, from the sync indicator. */
   onCalendarSettings: () => void;
+  /** The Mòbil tab, from the phone's sync indicator. */
+  onMobileSettings: () => void;
   /** Right click › Delete meeting… (asks for confirmation). */
   onDelete: (id: string) => void;
   /** Only the meetings with this tag (list and search). */
@@ -59,7 +62,7 @@ const HITS_PER_MEETING = 3;
 const TAGS_SHOWN = 5;
 const TAGS_OPEN_KEY = "murmur.sidebar.tagsOpen";
 
-export function Sidebar({ meetings, selectedId, canCreate, starting, importingId, search, onSelect, onOpenHit, onNew, startChoice, onStartChoice, englishReady, onSettings, onCalendarSettings, onDelete, tagFilter, onTagFilter, onRenameTag, onDeleteTag }: Props) {
+export function Sidebar({ meetings, selectedId, canCreate, starting, importingId, search, onSelect, onOpenHit, onNew, startChoice, onStartChoice, englishReady, onSettings, onCalendarSettings, onMobileSettings, onDelete, tagFilter, onTagFilter, onRenameTag, onDeleteTag }: Props) {
   const { t } = useTranslation("sidebar");
   const { t: tt } = useTranslation("tags");
   const calendarSync = useCalendarSync();
@@ -240,6 +243,8 @@ export function Sidebar({ meetings, selectedId, canCreate, starting, importingId
         ) : (
           <span className="flex-1 text-[11px]">{t("localOnly")}</span>
         )}
+        {/* Mòbil: only in development until there's a phone app to pair, like its settings tab. */}
+        {import.meta.env.DEV && <MobileSync meetings={meetings} onSettings={onMobileSettings} />}
         <button type="button" onClick={onSettings} aria-label={t("settings")} title={t("settingsShortcut")} className="grid size-7 place-items-center rounded-md text-muted-foreground hover:bg-black/5 hover:text-foreground dark:hover:bg-white/10">
           <Settings className="size-4" />
         </button>

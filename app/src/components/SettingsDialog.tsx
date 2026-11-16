@@ -1570,7 +1570,12 @@ function MobileTab({ open }: { open: boolean }) {
       toast(t("mobile.paired", { name: phone.name }));
       void refresh();
     });
-    return () => void unlisten.then((f) => f());
+    // A phone synced: its "Sincronitzat el…" moves on with the tab open.
+    const unlistenStatus = backend.onMobileStatus(setStatus);
+    return () => {
+      void unlisten.then((f) => f());
+      void unlistenStatus.then((f) => f());
+    };
   }, []);
   // The code's countdown; it goes away when it expires.
   useEffect(() => {

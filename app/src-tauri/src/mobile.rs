@@ -38,13 +38,26 @@ pub struct Phone {
     pub last_seen: Option<f64>,
 }
 
-/// What the settings show.
+/// What the settings and the sidebar show ("mobile-status" event, whenever it changes).
 #[derive(Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Status {
     pub computer: String,
     pub phones: Vec<Phone>,
     pub pairing: bool,
+    /// A phone connected right now (it only stays while syncing, a few seconds).
+    pub activity: Option<Activity>,
+    /// Why phones can't reach this computer: "offline" (no local network) or "listen" (the port
+    /// couldn't be opened).
+    pub problem: Option<&'static str>,
+}
+
+/// A phone syncing now, and the meeting it's sending, if any.
+#[derive(Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Activity {
+    pub phone: String,
+    pub receiving: Option<String>,
 }
 
 /// A code on screen, waiting for a phone.
@@ -73,6 +86,11 @@ struct Inner {
     phones: Option<Vec<Phone>>,
     pairing: Option<Pairing>,
     server: Option<Server>,
+    /// The phones connected now, by connection.
+    sessions: Vec<(u64, Activity)>,
+    next_session: u64,
+    /// The last time listening was tried, it failed.
+    cant_listen: bool,
 }
 
 #[derive(Default)]
@@ -158,6 +176,47 @@ impl Mobile {
         let inner = self.0.lock().unwrap();
         inner.pairing.as_ref().filter(|p| p.until > Instant::now()).map(|p| p.secret)
     }
+
+    /// A phone connected: it shows as syncing until the returned guard is dropped.
+    fn begin(&self, app: &AppHandle, phone: &str) -> Syncing {
+        let id = {
+            let mut inner = self.0.lock().unwrap();
+            inner.next_session += 1;
+            let id = inner.next_session;
+            inner.sessions.push((id, Activity { phone: phone.to_string(), receiving: None }));
+            id
+        };
+        changed(app);
+        Syncing { app: app.clone(), id }
+    }
+}
+
+/// While a phone is connected; dropping it (the connection ends, however it ends) clears it.
+struct Syncing {
+    app: AppHandle,
+    id: u64,
+}
+
+impl Syncing {
+    /// The meeting being received now, or `None` once it's stored.
+    fn receiving(&self, title: Option<String>) {
+        if let Some((_, a)) = self.app.state::<Mobile>().0.lock().unwrap().sessions.iter_mut().find(|(id, _)| *id == self.id) {
+            a.receiving = title;
+        }
+        changed(&self.app);
+    }
+}
+
+impl Drop for Syncing {
+    fn drop(&mut self) {
+        self.app.state::<Mobile>().0.lock().unwrap().sessions.retain(|(id, _)| *id != self.id);
+        changed(&self.app);
+    }
+}
+
+/// Tells the interface (the sidebar, the settings) that something in `status` changed.
+fn changed(app: &AppHandle) {
+    let _ = app.emit("mobile-status", status(app));
 }
 
 /// At startup: listen if there are phones.
@@ -169,7 +228,22 @@ pub fn init(app: &AppHandle) {
 
 pub fn status(app: &AppHandle) -> Status {
     let mobile = app.state::<Mobile>();
-    Status { computer: computer_name(), phones: mobile.phones(app), pairing: mobile.pairing_secret().is_some() }
+    let phones = mobile.phones(app);
+    let pairing = mobile.pairing_secret().is_some();
+    let (activity, cant_listen) = {
+        let inner = mobile.0.lock().unwrap();
+        (inner.sessions.first().map(|(_, a)| a.clone()), inner.cant_listen)
+    };
+    let problem = if phones.is_empty() {
+        None
+    } else if cant_listen {
+        Some("listen")
+    } else if local_address().is_none() {
+        Some("offline")
+    } else {
+        None
+    };
+    Status { computer: computer_name(), phones, pairing, activity, problem }
 }
 
 /// "Connecta un mòbil": a new one-time code, valid for a few minutes.
@@ -222,6 +296,13 @@ pub fn unpair(app: &AppHandle, id: &str) -> Result<()> {
 /// Starts or stops listening (and announcing) to match: on while there are phones or a code on
 /// screen. Returns the port when listening.
 fn refresh(app: &AppHandle) -> Result<Option<u16>> {
+    let result = listen(app);
+    app.state::<Mobile>().0.lock().unwrap().cant_listen = result.is_err();
+    changed(app);
+    result
+}
+
+fn listen(app: &AppHandle) -> Result<Option<u16>> {
     let mobile = app.state::<Mobile>();
     let wanted = !mobile.phones(app).is_empty() || mobile.pairing_secret().is_some();
     let mut inner = mobile.0.lock().unwrap();
@@ -315,6 +396,7 @@ fn handle(app: &AppHandle, stream: TcpStream) -> Result<()> {
     }
     mobile.save_phones(app, phones)?;
     let device = json!({ "id": id, "name": session.remote_name });
+    let syncing = mobile.begin(app, &session.remote_name);
 
     loop {
         match session.recv() {
@@ -325,6 +407,7 @@ fn handle(app: &AppHandle, stream: TcpStream) -> Result<()> {
                     continue;
                 }
                 let dir = data_dir(app)?.join("incoming").join(&meeting_id);
+                syncing.receiving(Some(meeting.get("title").and_then(Value::as_str).unwrap_or_default().to_string()));
                 let receiving = Receiving::new(dir.clone(), files)?;
                 session.send(&Msg::Have { meeting_id: meeting_id.clone(), files: receiving.progress() })?;
                 while !receiving.finish()? {
@@ -333,7 +416,9 @@ fn handle(app: &AppHandle, stream: TcpStream) -> Result<()> {
                         Incoming::Msg(m) => return Err(anyhow!("expected a file chunk, got {m:?}")),
                     }
                 }
-                match place(app, meeting, &dir, &device) {
+                let placed = place(app, meeting, &dir, &device);
+                syncing.receiving(None);
+                match placed {
                     Ok(fresh) => {
                         session.send(&Msg::Stored { meeting_id: meeting_id.clone() })?;
                         if fresh {

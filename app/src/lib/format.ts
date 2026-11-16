@@ -10,6 +10,17 @@ export function clock(seconds: number): string {
   return h ? `${h}:${String(m).padStart(2, "0")}:${sec}` : `${m}:${sec}`;
 }
 
+/** "fa 5 minuts", "hace 2 horas", "yesterday": how long ago, in the interface's language. */
+export function ago(ms: number, now = Date.now()): string {
+  const seconds = Math.round((ms - now) / 1000);
+  const rtf = new Intl.RelativeTimeFormat(locale(), { numeric: "auto" });
+  const units: [Intl.RelativeTimeFormatUnit, number][] = [["day", 86400], ["hour", 3600], ["minute", 60]];
+  for (const [unit, size] of units) {
+    if (Math.abs(seconds) >= size) return rtf.format(Math.round(seconds / size), unit);
+  }
+  return rtf.format(0, "minute");
+}
+
 /** BCP 47 tag of a language other than the interface's (`locale()` is the interface's). */
 const tagOf = (lng?: UiLanguage) => (lng ? { ca: "ca-ES", es: "es-ES", en: "en-US" }[lng] : locale());
 

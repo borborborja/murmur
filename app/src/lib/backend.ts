@@ -279,12 +279,23 @@ export const notionExport = (title: string, summary: string, transcript: string,
 
 // --- Phones (mobile.rs, docs/EMPARELLAR.md) ---
 export type Phone = { id: string; name: string; pairedAt: number; lastSeen: number | null };
-export type MobileStatus = { computer: string; phones: Phone[]; pairing: boolean };
+/** A phone syncing now (it only connects for a few seconds), and the meeting it's sending. */
+export type MobileActivity = { phone: string; receiving: string | null };
+export type MobileStatus = {
+  computer: string;
+  phones: Phone[];
+  pairing: boolean;
+  activity: MobileActivity | null;
+  /** Why phones can't reach this computer: no local network, or the port couldn't be opened. */
+  problem: "offline" | "listen" | null;
+};
 export type PairingCode = { uri: string; svg: string; expiresIn: number };
 export const mobileStatus = () => invoke<MobileStatus>("mobile_status");
 export const mobileStartPairing = () => invoke<PairingCode>("mobile_start_pairing");
 export const mobileCancelPairing = () => invoke<void>("mobile_cancel_pairing");
 export const mobileUnpair = (id: string) => invoke<void>("mobile_unpair", { id });
+/** Something in `mobileStatus` changed: a phone connected, a meeting started or finished arriving. */
+export const onMobileStatus = (fn: (status: MobileStatus) => void) => listen<MobileStatus>("mobile-status", (e) => fn(e.payload));
 /** A phone paired with the code on screen. */
 export const onMobilePaired = (fn: (phone: { id: string; name: string }) => void) =>
   listen<{ id: string; name: string }>("mobile-paired", (e) => fn(e.payload));

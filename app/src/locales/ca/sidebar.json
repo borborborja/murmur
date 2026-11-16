@@ -14,5 +14,27 @@
   "results": "Resultats de la cerca",
   "note": "nota",
   "moreHits_one": "i {{count}} més",
-  "moreHits_other": "i {{count}} més"
+  "moreHits_other": "i {{count}} més",
+  "mobile": {
+    "label": "Mòbil: {{state}}",
+    "upToDate": "Al dia",
+    "syncing": "Sincronitzant…",
+    "receiving": "Rebent «{{title}}»…",
+    "receivingUntitled": "Rebent una reunió…",
+    "waitingShort_one": "{{count}} reunió per passar",
+    "waitingShort_other": "{{count}} reunions per passar",
+    "problem": {
+      "offline": "Sense xarxa: el mòbil no pot trobar aquest ordinador.",
+      "listen": "No es pot obrir la connexió amb el mòbil en aquest ordinador."
+    },
+    "phones_one": "{{count}} mòbil",
+    "phones_other": "{{count}} mòbils",
+    "waiting": "Esperant la passada final",
+    "meetings_one": "{{count}} reunió",
+    "meetings_other": "{{count}} reunions",
+    "none": "Cap",
+    "lastSync": "Última sincronització",
+    "never": "Encara no",
+    "settings": "Configuració del mòbil"
+  }
 }

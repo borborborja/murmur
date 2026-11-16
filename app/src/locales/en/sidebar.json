@@ -14,5 +14,27 @@
   "results": "Search results",
   "note": "note",
   "moreHits_one": "and {{count}} more",
-  "moreHits_other": "and {{count}} more"
+  "moreHits_other": "and {{count}} more",
+  "mobile": {
+    "label": "Phone: {{state}}",
+    "upToDate": "Up to date",
+    "syncing": "Syncing…",
+    "receiving": "Receiving “{{title}}”…",
+    "receivingUntitled": "Receiving a meeting…",
+    "waitingShort_one": "{{count}} meeting to process",
+    "waitingShort_other": "{{count}} meetings to process",
+    "problem": {
+      "offline": "No network: the phone can't find this computer.",
+      "listen": "Can't open the connection for the phone on this computer."
+    },
+    "phones_one": "{{count}} phone",
+    "phones_other": "{{count}} phones",
+    "waiting": "Waiting for the final pass",
+    "meetings_one": "{{count}} meeting",
+    "meetings_other": "{{count}} meetings",
+    "none": "None",
+    "lastSync": "Last sync",
+    "never": "Not yet",
+    "settings": "Phone settings"
+  }
 }

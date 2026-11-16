@@ -18,6 +18,7 @@ struct MeetingView: View {
     @FocusState private var editing: UUID?
     /// The tab chosen by hand; until then, the summary if there is one.
     @State private var chosen: MeetingTab?
+    @State private var editingTags = false
 
     init(id: String, initialTab: MeetingTab? = nil) {
         self.id = id
@@ -30,6 +31,15 @@ struct MeetingView: View {
             HStack {
                 CircleButton(systemImage: "chevron.left", label: L("rec.back")) { dismiss() }
                 Spacer()
+                // Share it as text (the system's sheet): the summary, the notes and the transcript.
+                if let m {
+                    ShareLink(item: m.markdown, subject: Text(m.title)) {
+                        Image(systemName: "square.and.arrow.up").font(.system(size: 17, weight: .medium)).frame(width: 44, height: 44)
+                            .background(palette.fillSubtle, in: Circle())
+                    }
+                    .accessibilityLabel(L("meeting.share"))
+                    .padding(.trailing, 4)
+                }
                 Menu {
                     Button(L("meeting.rename"), systemImage: "pencil") { startRename(m?.title) }
                     Button(L("meeting.delete"), systemImage: "trash", role: .destructive) { confirmDelete = true }
@@ -57,6 +67,16 @@ struct MeetingView: View {
                         .accessibilityHint(L("meeting.rename"))
                         .padding(.top, 6)
 
+                        // The tags, and "+ Etiqueta" (they open the sheet to change them).
+                        Button { editingTags = true } label: {
+                            FlowTags(tags: m.tags)
+                        }
+                        .buttonStyle(.plain)
+                        .padding(.top, 8)
+                        .sheet(isPresented: $editingTags) {
+                            TagsSheet(id: id, tags: m.tags).presentationDetents([.medium, .large])
+                        }
+
                         HStack(alignment: .top, spacing: 10) {
                             Image(systemName: m.revised ? "checkmark.seal" : "laptopcomputer")
                             // No computer yet; waiting to find it; on the computer, waiting for its
@@ -75,7 +95,8 @@ struct MeetingView: View {
 
                         VStack(alignment: .leading, spacing: 14) {
                             if tab == .summary, let cover = m.cover {
-                                CoverView(cover: cover, talk: m.talk, speakerNames: m.speakerNames)
+                                CoverView(cover: cover, talk: m.talk, speakerNames: m.speakerNames,
+                                          toggleTask: { store.setTaskDone($0, $1, in: id) })
                             } else if tab == .transcript {
                                 if m.utterances.isEmpty { Text(L("meeting.empty")).foregroundStyle(palette.textTertiary) }
                                 let actions = SpeakerActions(

@@ -65,7 +65,8 @@
     "pendingUnpaired": "Ahora es la transcripción rápida del teléfono. Conecta el ordenador en Ajustes y pasará sola: la volverá a escuchar con Whisper y hará el resumen.",
     "sent": "Ya está en el ordenador, que la volverá a escuchar con Whisper. Cuando acabe, la versión revisada llegará aquí.",
     "summary": "Resumen",
-    "revised": "Revisada en el ordenador: Whisper, hablantes y resumen."
+    "revised": "Revisada en el ordenador: Whisper, hablantes y resumen.",
+    "share": "Compartir"
   },
   "settings": {
     "title": "Ajustes",
@@ -165,5 +166,13 @@
     "hint": "Busca en los títulos, en lo que se ha dicho y en las notas.",
     "empty": "Ninguna reunión dice «{{query}}».",
     "close": "Cerrar la búsqueda"
+  },
+  "tags": {
+    "add": "Etiqueta",
+    "title": "Etiquetas",
+    "new": "Etiqueta nueva",
+    "create": "Añadir «{{tag}}»",
+    "hint": "Para ordenar las reuniones por cliente o proyecto. Son las mismas que en el ordenador.",
+    "done": "Hecho"
   }
 }

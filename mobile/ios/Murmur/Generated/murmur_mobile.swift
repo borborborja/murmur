@@ -680,6 +680,16 @@ public protocol MurmurProtocol: AnyObject, Sendable {
     func setSpeakerName(id: String, speaker: Int64, name: String) throws 
     
     /**
+     * A meeting's tags (by client, project…), the same as the computer's.
+     */
+    func setTags(id: String, tags: [String]) throws 
+    
+    /**
+     * A task of the cover done (or not), by its place in the list.
+     */
+    func setTaskDone(id: String, task: UInt32, done: Bool) throws 
+    
+    /**
      * Starts recording a meeting: `title` as the phone shows it until the computer names it,
      * `language` ("ca", "es", "ca-es", "en"), whether there are more people in the room (or
      * it's only the user: one speaker), and how often the provisional text is redone (0: never).
@@ -933,6 +943,33 @@ open func setSpeakerName(id: String, speaker: Int64, name: String)throws   {try 
         FfiConverterString.lower(id),
         FfiConverterInt64.lower(speaker),
         FfiConverterString.lower(name),uniffiCallStatus
+    )
+}
+}
+    
+    /**
+     * A meeting's tags (by client, project…), the same as the computer's.
+     */
+open func setTags(id: String, tags: [String])throws   {try rustCallWithError(FfiConverterTypeMurmurError_lift) {
+        uniffiCallStatus in
+    uniffi_murmur_mobile_fn_method_murmur_set_tags(
+            self.uniffiCloneHandle(),
+        FfiConverterString.lower(id),
+        FfiConverterSequenceString.lower(tags),uniffiCallStatus
+    )
+}
+}
+    
+    /**
+     * A task of the cover done (or not), by its place in the list.
+     */
+open func setTaskDone(id: String, task: UInt32, done: Bool)throws   {try rustCallWithError(FfiConverterTypeMurmurError_lift) {
+        uniffiCallStatus in
+    uniffi_murmur_mobile_fn_method_murmur_set_task_done(
+            self.uniffiCloneHandle(),
+        FfiConverterString.lower(id),
+        FfiConverterUInt32.lower(task),
+        FfiConverterBool.lower(done),uniffiCallStatus
     )
 }
 }
@@ -1967,6 +2004,12 @@ private let initializationResult: InitializationResult = {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_murmur_mobile_checksum_method_murmur_set_speaker_name() != 44142) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_murmur_mobile_checksum_method_murmur_set_tags() != 17568) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_murmur_mobile_checksum_method_murmur_set_task_done() != 64685) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_murmur_mobile_checksum_method_murmur_start() != 65183) {

@@ -65,7 +65,8 @@
     "pendingUnpaired": "Ara és la transcripció ràpida del telèfon. Connecta l'ordinador a Configuració i hi passarà sola: la tornarà a escoltar amb Whisper i en farà el resum.",
     "sent": "Ja és a l'ordinador, que la tornarà a escoltar amb Whisper. Quan acabi, la versió revisada arribarà aquí.",
     "summary": "Resum",
-    "revised": "Revisada a l'ordinador: Whisper, parlants i resum."
+    "revised": "Revisada a l'ordinador: Whisper, parlants i resum.",
+    "share": "Comparteix"
   },
   "settings": {
     "title": "Configuració",
@@ -165,5 +166,13 @@
     "hint": "Busca en els títols, en el que s'ha dit i en les notes.",
     "empty": "Cap reunió no diu «{{query}}».",
     "close": "Tanca la cerca"
+  },
+  "tags": {
+    "add": "Etiqueta",
+    "title": "Etiquetes",
+    "new": "Etiqueta nova",
+    "create": "Afegeix «{{tag}}»",
+    "hint": "Per ordenar les reunions per client o projecte. Són les mateixes que a l'ordinador.",
+    "done": "Fet"
   }
 }

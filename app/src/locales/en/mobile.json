@@ -65,7 +65,8 @@
     "pendingUnpaired": "This is the phone's quick transcript. Connect your computer in Settings and it'll go there on its own: it listens to it again with Whisper and writes the summary.",
     "sent": "It's on the computer now, which will listen to it again with Whisper. When it's done, the revised version will arrive here.",
     "summary": "Summary",
-    "revised": "Revised on the computer: Whisper, speakers and summary."
+    "revised": "Revised on the computer: Whisper, speakers and summary.",
+    "share": "Share"
   },
   "settings": {
     "title": "Settings",
@@ -165,5 +166,13 @@
     "hint": "Searches titles, what was said and the notes.",
     "empty": "No meeting says “{{query}}”.",
     "close": "Close Search"
+  },
+  "tags": {
+    "add": "Tag",
+    "title": "Tags",
+    "new": "New tag",
+    "create": "Add “{{tag}}”",
+    "hint": "To sort meetings by client or project. They're the same as on the computer.",
+    "done": "Done"
   }
 }

@@ -296,6 +296,15 @@ impl Murmur {
             meeting["title"] = mine["title"].clone();
             meeting["speakerNames"] = mine["speakerNames"].clone();
             meeting["notesDoc"] = mine["notesDoc"].clone();
+            meeting["tags"] = mine["tags"].clone();
+            // Tasks ticked on the phone stay ticked.
+            if let (Some(theirs), Some(ours)) = (meeting.pointer_mut("/cover/tasks").and_then(Value::as_array_mut), mine.pointer("/cover/tasks").and_then(Value::as_array)) {
+                for task in theirs.iter_mut() {
+                    if ours.iter().any(|o| o["text"] == task["text"] && o["done"] == Value::Bool(true)) {
+                        task["done"] = Value::Bool(true);
+                    }
+                }
+            }
         }
         meeting["status"] = Value::from("done");
         db.put(&meeting)?;

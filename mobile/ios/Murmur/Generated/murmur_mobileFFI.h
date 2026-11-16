@@ -318,6 +318,16 @@ void uniffi_murmur_mobile_fn_method_murmur_set_notes(uint64_t ptr, RustBuffer id
 void uniffi_murmur_mobile_fn_method_murmur_set_speaker_name(uint64_t ptr, RustBuffer id, int64_t speaker, RustBuffer name, RustCallStatus *_Nonnull out_status
 );
 #endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_MURMUR_MOBILE_FN_METHOD_MURMUR_SET_TAGS
+#define UNIFFI_FFIDEF_UNIFFI_MURMUR_MOBILE_FN_METHOD_MURMUR_SET_TAGS
+void uniffi_murmur_mobile_fn_method_murmur_set_tags(uint64_t ptr, RustBuffer id, RustBuffer tags, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_MURMUR_MOBILE_FN_METHOD_MURMUR_SET_TASK_DONE
+#define UNIFFI_FFIDEF_UNIFFI_MURMUR_MOBILE_FN_METHOD_MURMUR_SET_TASK_DONE
+void uniffi_murmur_mobile_fn_method_murmur_set_task_done(uint64_t ptr, RustBuffer id, uint32_t task, int8_t done, RustCallStatus *_Nonnull out_status
+);
+#endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_MURMUR_MOBILE_FN_METHOD_MURMUR_START
 #define UNIFFI_FFIDEF_UNIFFI_MURMUR_MOBILE_FN_METHOD_MURMUR_START
 RustBuffer uniffi_murmur_mobile_fn_method_murmur_start(uint64_t ptr, RustBuffer title, RustBuffer language, int8_t more_in_room, float partial_every, RustCallStatus *_Nonnull out_status
@@ -700,6 +710,18 @@ uint16_t uniffi_murmur_mobile_checksum_method_murmur_set_notes(void
 #ifndef UNIFFI_FFIDEF_UNIFFI_MURMUR_MOBILE_CHECKSUM_METHOD_MURMUR_SET_SPEAKER_NAME
 #define UNIFFI_FFIDEF_UNIFFI_MURMUR_MOBILE_CHECKSUM_METHOD_MURMUR_SET_SPEAKER_NAME
 uint16_t uniffi_murmur_mobile_checksum_method_murmur_set_speaker_name(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_MURMUR_MOBILE_CHECKSUM_METHOD_MURMUR_SET_TAGS
+#define UNIFFI_FFIDEF_UNIFFI_MURMUR_MOBILE_CHECKSUM_METHOD_MURMUR_SET_TAGS
+uint16_t uniffi_murmur_mobile_checksum_method_murmur_set_tags(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_MURMUR_MOBILE_CHECKSUM_METHOD_MURMUR_SET_TASK_DONE
+#define UNIFFI_FFIDEF_UNIFFI_MURMUR_MOBILE_CHECKSUM_METHOD_MURMUR_SET_TASK_DONE
+uint16_t uniffi_murmur_mobile_checksum_method_murmur_set_task_done(void
     
 );
 #endif

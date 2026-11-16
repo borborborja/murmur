@@ -212,6 +212,26 @@ impl Murmur {
         self.edit(&id, |m| m["title"] = json!(title))
     }
 
+    /// A task of the cover done (or not), by its place in the list.
+    pub fn set_task_done(&self, id: String, task: u32, done: bool) -> Result<()> {
+        self.edit(&id, |m| {
+            if let Some(t) = m.pointer_mut(&format!("/cover/tasks/{task}")) {
+                t["done"] = json!(done);
+            }
+        })
+    }
+
+    /// A meeting's tags (by client, project…), the same as the computer's.
+    pub fn set_tags(&self, id: String, tags: Vec<String>) -> Result<()> {
+        let mut clean: Vec<String> = vec![];
+        for tag in tags.iter().map(|t| t.trim()).filter(|t| !t.is_empty()) {
+            if !clean.iter().any(|c| c.to_lowercase() == tag.to_lowercase()) {
+                clean.push(tag.to_owned());
+            }
+        }
+        self.edit(&id, |m| m["tags"] = json!(clean))
+    }
+
     /// The notes of a finished meeting, as the computer's editor stores them (a TipTap document).
     pub fn set_notes(&self, id: String, doc: String) -> Result<()> {
         let doc: Value = serde_json::from_str(&doc).map_err(|e| MurmurError::Failed(e.to_string()))?;

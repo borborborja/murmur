@@ -360,6 +360,17 @@ final class Store: ObservableObject {
         }
     }
 
+    func setTaskDone(_ task: Int, _ done: Bool, in meeting: String) {
+        try? engine?.setTaskDone(id: meeting, task: UInt32(task), done: done)
+        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+        reload()
+    }
+
+    func setTags(_ tags: [String], in meeting: String) {
+        try? engine?.setTags(id: meeting, tags: tags)
+        reload()
+    }
+
     /// A finished meeting's notes, as they're edited.
     func saveNotes(_ blocks: [NoteBlock], in meeting: String) {
         let doc = NotesDoc.encode(blocks) ?? ["type": "doc", "content": [["type": "paragraph"]]]
@@ -450,6 +461,7 @@ struct MeetingDetail {
     var utterances: [Utterance] = []
     var notes: [NoteBlock] = []
     var speakerNames: [Int: String] = [:]
+    var tags: [String] = []
     /// The computer has it, and has sent back the revised version.
     var sent = false
     var revised = false
@@ -461,6 +473,7 @@ struct MeetingDetail {
         title = m["title"] as? String ?? ""
         createdAt = Date(timeIntervalSince1970: (m["createdAt"] as? Double ?? 0) / 1000)
         duration = m["duration"] as? Double ?? 0
+        tags = m["tags"] as? [String] ?? []
         for (k, v) in m["speakerNames"] as? [String: Any] ?? [:] {
             if let i = Int(k), let name = v as? String, !name.isEmpty { speakerNames[i] = name }
         }

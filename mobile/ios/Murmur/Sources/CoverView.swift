@@ -51,6 +51,7 @@ struct CoverView: View {
     var cover: Cover
     var talk: [(speaker: Int, seconds: Double)]
     var speakerNames: [Int: String]
+    var toggleTask: (Int, Bool) -> Void = { _, _ in }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -99,18 +100,23 @@ struct CoverView: View {
             if cover.tasks.isEmpty {
                 Text(L("cover.noTasks")).font(.system(size: 15)).foregroundStyle(palette.textSecondary)
             }
-            ForEach(cover.tasks) { task in
-                HStack(alignment: .firstTextBaseline, spacing: 12) {
-                    Image(systemName: task.done ? "checkmark.square.fill" : "square")
-                        .foregroundStyle(task.done ? palette.toggleOn : palette.textTertiary)
-                        .accessibilityHidden(true)
-                    (Text(task.text) + Text(task.owner.map { " · \($0)" } ?? "").foregroundColor(palette.textSecondary))
-                        .strikethrough(task.done, color: palette.textTertiary)
-                        .fixedSize(horizontal: false, vertical: true)
+            // Tapping a task ticks it (or unticks it).
+            ForEach(Array(cover.tasks.enumerated()), id: \.element.id) { i, task in
+                Button { toggleTask(i, !task.done) } label: {
+                    HStack(alignment: .firstTextBaseline, spacing: 12) {
+                        Image(systemName: task.done ? "checkmark.square.fill" : "square")
+                            .foregroundStyle(task.done ? palette.toggleOn : palette.textTertiary)
+                            .accessibilityHidden(true)
+                        (Text(task.text) + Text(task.owner.map { " · \($0)" } ?? "").foregroundColor(palette.textSecondary))
+                            .strikethrough(task.done, color: palette.textTertiary)
+                            .fixedSize(horizontal: false, vertical: true)
+                        Spacer(minLength: 0)
+                    }
+                    .contentShape(Rectangle())
                 }
+                .buttonStyle(.plain)
                 .font(.system(size: 16)).padding(.bottom, 10)
-                .accessibilityElement(children: .combine)
-                .accessibilityValue(task.done ? "✓" : "")
+                .accessibilityAddTraits(task.done ? .isSelected : [])
             }
 
             if !cover.parts.isEmpty {

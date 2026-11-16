@@ -506,19 +506,21 @@ impl Db {
         for u in &utterances {
             upsert_utterance(&tx, id, u)?;
         }
-        // Notes from older versions were single lines; index them too.
-        let blocks: Vec<NoteBlock> = match meeting.get("notes") {
-            Some(Value::Array(notes)) => notes
-                .iter()
-                .filter_map(|n| {
-                    Some(NoteBlock {
-                        t: n.get("t")?.as_f64()?,
-                        text: n.get("text")?.as_str()?.into(),
-                    })
+        // The rich notes (a TipTap document, as the phone saves them and a meeting arrives from
+        // it); notes from older versions were single lines, searched when there's no document
+        // (an edited old meeting has both, the document made from the lines).
+        let mut blocks: Vec<NoteBlock> = meeting
+            .get("notesDoc")
+            .map(doc_blocks)
+            .unwrap_or_default();
+        if let (None, Some(Value::Array(notes))) = (meeting.get("notesDoc"), meeting.get("notes")) {
+            blocks.extend(notes.iter().filter_map(|n| {
+                Some(NoteBlock {
+                    t: n.get("t")?.as_f64()?,
+                    text: n.get("text")?.as_str()?.into(),
                 })
-                .collect(),
-            _ => vec![],
-        };
+            }));
+        }
         index_notes(&tx, id, &blocks)?;
         set_tags(&tx, id, &tags)?;
         prune_tags(&tx)?;
@@ -766,6 +768,42 @@ fn prune_tags(tx: &Transaction) -> Result<()> {
     Ok(())
 }
 
+/// The text blocks of a TipTap document with their meeting time (`attrs.t`), as the desktop's
+/// notes editor stamps them (lib/notes.ts notesFromDoc): headings, paragraphs and list items.
+fn doc_blocks(doc: &Value) -> Vec<NoteBlock> {
+    fn text(node: &Value) -> String {
+        if let Some(s) = node.get("text").and_then(Value::as_str) {
+            return s.to_owned();
+        }
+        let parts: Vec<String> = node
+            .get("content")
+            .and_then(Value::as_array)
+            .map(|c| c.iter().map(text).collect())
+            .unwrap_or_default();
+        parts.join(if node.get("type").and_then(Value::as_str) == Some("paragraph") { "" } else { " " })
+    }
+    fn walk(node: &Value, inside_item: bool, out: &mut Vec<NoteBlock>) {
+        let kind = node.get("type").and_then(Value::as_str).unwrap_or_default();
+        let stamped = matches!(kind, "paragraph" | "heading" | "listItem" | "taskItem");
+        // A paragraph inside an item is covered by the item.
+        let covered = inside_item && matches!(kind, "paragraph" | "heading");
+        if stamped && !covered {
+            let body = text(node);
+            if !body.trim().is_empty() {
+                let t = node.pointer("/attrs/t").and_then(Value::as_f64).unwrap_or(0.0);
+                out.push(NoteBlock { t, text: body.trim().to_owned() });
+            }
+        }
+        let item = matches!(kind, "listItem" | "taskItem");
+        for child in node.get("content").and_then(Value::as_array).into_iter().flatten() {
+            walk(child, inside_item || item, out);
+        }
+    }
+    let mut out = vec![];
+    walk(doc, false, &mut out);
+    out
+}
+
 fn upsert_utterance(tx: &Transaction, meeting_id: &str, u: &Utterance) -> Result<()> {
     tx.execute(
         "INSERT INTO utterances (id, meeting_id, start, end, speaker, text, edited, speaker_locked)
@@ -1007,6 +1045,21 @@ mod tests {
                 .as_bool()
                 .unwrap()
         );
+    }
+
+    #[test]
+    fn rich_notes_are_searched_when_a_meeting_is_saved_whole() {
+        let mut db = Db::in_memory().unwrap();
+        let mut m = meeting();
+        m["notesDoc"] = json!({ "type": "doc", "content": [
+            { "type": "heading", "attrs": { "level": 2, "t": 3.0 }, "content": [{ "type": "text", "text": "Llançament" }] },
+            { "type": "taskList", "content": [{ "type": "taskItem", "attrs": { "checked": false, "t": 9.0 },
+                "content": [{ "type": "paragraph", "content": [{ "type": "text", "text": "Preus definitius" }] }] }] },
+        ]});
+        db.put(&m).unwrap();
+        let hits = db.search("definitius", 10).unwrap();
+        assert_eq!((hits[0].kind.as_str(), hits[0].t), ("note", 9.0));
+        assert_eq!(db.search("llançament", 10).unwrap().iter().filter(|h| h.kind == "note").count(), 1);
     }
 
     #[test]

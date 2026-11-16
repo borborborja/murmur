@@ -13,6 +13,11 @@ settings:
     # The team that signs it (Xcode › Signing & Capabilities): kept here so regenerating the
     # project doesn't drop it.
     DEVELOPMENT_TEAM: NYQHV4FSKC
+packages:
+  # Anonymous usage statistics, as the desktop (Sources/Analytics.swift).
+  Aptabase:
+    url: https://github.com/aptabase/aptabase-swift.git
+    from: 0.4.0
 targets:
   Murmur:
     type: application
@@ -33,6 +38,7 @@ targets:
         codeSign: true
       - target: MurmurWidgets
         embed: true
+      - package: Aptabase
     preBuildScripts:
       - name: Rust (murmur-mobile)
         script: ./build-rust.sh

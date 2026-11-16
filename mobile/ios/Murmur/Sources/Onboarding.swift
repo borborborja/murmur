@@ -19,6 +19,7 @@ struct OnboardingView: View {
     @State private var pairing = false
     @AppStorage("language") private var language = "ca-es"
     @AppStorage("moreInRoom") private var moreInRoom = true
+    @AppStorage("analytics") private var analytics = true
     private static let features = 1...4
     private static let last = 8
 
@@ -236,6 +237,17 @@ struct OnboardingView: View {
             .background(palette.fillSubtle, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
             Text(L("onboarding.setupRoom")).font(.system(size: 13)).foregroundStyle(palette.textSecondary).padding(.leading, 16).padding(.top, 10)
             Segmented(options: [(false, L("start.onlyMe")), (true, L("start.moreInRoom"))], selection: $moreInRoom)
+            // The anonymous statistics, said and switchable here, as on the desktop's onboarding.
+            Toggle(isOn: $analytics) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(L("settings.analytics")).font(.system(size: 15))
+                    Text(L("settings.analyticsHint")).font(.system(size: 12)).foregroundStyle(palette.textTertiary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
+            .tint(palette.toggleOn)
+            .padding(.top, 14)
+            .onChange(of: analytics) { _, on in if on { Analytics.start() } }
         }
     }
 

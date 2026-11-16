@@ -284,6 +284,7 @@ final class Store: ObservableObject {
                 Task { @MainActor in self?.inputName = Microphone.currentName }
             }
             startActivity(title: title)
+            Analytics.track("recording_started", ["language": language, "room": room, "voice": engine.voiceSaved() != nil])
             return true
         } catch {
             self.error = error.localizedDescription
@@ -395,6 +396,7 @@ final class Store: ObservableObject {
         } else {
             nameLiveSpeaker(speaker, name)
         }
+        Analytics.track("speaker_introduced")
         toast = Toast(text: L("intro.named", before, name)) { [weak self] in
             // Back as it was: the names and the joins of before this line.
             self?.live?.speakerNames = previous.speakerNames
@@ -417,6 +419,7 @@ final class Store: ObservableObject {
     func enrollVoice(_ samples: [Float]) async throws {
         guard let engine else { return }
         _ = try await onQueue { try engine.enrollVoice(samples: samples) }
+        Analytics.track("voice_saved")
         objectWillChange.send()
     }
 
@@ -443,6 +446,7 @@ final class Store: ObservableObject {
         stopArmed = false
         endActivity()
         try? await onQueue { try engine.discard() }
+        Analytics.track("recording_discarded")
         live = nil
         reload()
     }
@@ -467,6 +471,14 @@ final class Store: ObservableObject {
         let extra = Self.extra(current)
         do {
             let id = try await onQueue { try engine.stop(extra: extra) }
+            // Only sizes, in ranges (CLAUDE.md): how long, how many lines, notes and photos.
+            Analytics.track("recording_finished", [
+                "minutes": Analytics.minutesBucket(meter.seconds), "language": language,
+                "lines": Analytics.countBucket(current.lines.count),
+                "notes": Analytics.countBucket(current.notes.filter { $0.isText && !$0.isEmpty }.count),
+                "photos": Analytics.countBucket(current.notes.filter { $0.kind == .photo }.count),
+                "marks": Analytics.countBucket(current.notes.filter { $0.kind == .mark }.count),
+            ])
             live = nil
             reload()
             // Straight to the computer, if it's around.

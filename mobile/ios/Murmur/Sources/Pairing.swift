@@ -138,6 +138,7 @@ extension Store {
             self.computer = computer
             syncProblem = nil
             reload()
+            Analytics.track("mobile_paired")
             autoSync(force: true)
             return paired.name
         } catch let error as MurmurError {
@@ -190,6 +191,9 @@ extension Store {
             self.computer = computer
             syncProblem = nil
             lastSync = Date()
+            if report.sent + report.revised > 0 {
+                Analytics.track("mobile_synced", ["sent": Analytics.countBucket(Int(report.sent)), "revised": Analytics.countBucket(Int(report.revised))])
+            }
             UserDefaults.standard.set(lastSync, forKey: "lastSync")
         } catch let error as MurmurError {
             switch error {

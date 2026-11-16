@@ -14,6 +14,7 @@ struct SettingsView: View {
     @State private var inputs: [(uid: String, name: String, bluetooth: Bool)] = []
     @AppStorage("autoSync") private var autoSync = true
     @AppStorage("keepAudio") private var keepAudio = true
+    @AppStorage("analytics") private var analytics = true
     @AppStorage("theme") private var theme = MurmurTheme.acid.rawValue
     @AppStorage("appearance") private var appearance = "system"
     @State private var pairing = false
@@ -153,9 +154,18 @@ struct SettingsView: View {
             .listRowBackground(palette.fillSubtle)
 
             Section {
+                Toggle(L("settings.analytics"), isOn: $analytics).tint(palette.toggleOn)
+                    .onChange(of: analytics) { _, on in if on { Analytics.start() } }
+            } header: {
+                Text(L("settings.privacySection"))
             } footer: {
-                Label(L("settings.privacy"), systemImage: "lock").font(.system(size: 13))
+                VStack(alignment: .leading, spacing: 10) {
+                    Text(L("settings.analyticsHint"))
+                    Label(L("settings.privacy"), systemImage: "lock")
+                }
+                .font(.system(size: 13))
             }
+            .listRowBackground(palette.fillSubtle)
         }
         .scrollContentBackground(.hidden)
         .background(palette.background)

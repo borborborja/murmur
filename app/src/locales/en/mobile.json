@@ -91,7 +91,10 @@
     "mode": "Mode",
     "modeSystem": "System",
     "modeLight": "Light",
-    "modeDark": "Dark"
+    "modeDark": "Dark",
+    "analytics": "Send Anonymous Usage Statistics",
+    "analyticsHint": "Which features are used, how long meetings last and which version and system you have, with no identifier. Never titles, text, names, notes or audio. They help us decide what to improve.",
+    "privacySection": "Privacy"
   },
   "mic": {
     "denied": "Murmur needs the microphone to record. Turn it on in Settings › Murmur."

@@ -202,6 +202,7 @@ Entre reunions (bloc 5):
   - [x] «La teva veu» al mòbil (l'empremta, només al telèfon), «Murmur, sóc…» en directe, el «…» mentre graves (nom, micròfon, descartar) i les veus de la reunió.
   - [x] El splash (l'eco es desdobla i la marca vola a la capçalera) i l'onboarding (benvinguda, què fa, com graves, el micròfon, la teva veu i l'ordinador).
   - [x] L'ordinador torna a llegir el «Murmur, sóc…» de les reunions del mòbil després de verificar els parlants.
+  - [x] Estadístiques d'ús anònimes al mòbil (Aptabase, com l'ordinador), desactivables a l'onboarding i a Configuració.
   - [x] Emparellar i sincronitzar amb l'ordinador, la part del mòbil: el QR amb la càmera, Bonjour, l'enviament amb l'àudio i la versió revisada de tornada. Provat al simulador amb `fake_computer`.
   - [ ] Provar l'emparellament amb l'app de l'ordinador i un iPhone de debò.
   - [ ] Les edicions després de revisar en tots dos sentits (avui el mòbil només conserva el títol i els noms que hi canvies).

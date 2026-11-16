@@ -3451,6 +3451,52 @@
         }
       }
     },
+    "settings.analytics": {
+      "extractionState": "manual",
+      "localizations": {
+        "ca": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Envia estadístiques d'ús anònimes"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enviar estadísticas de uso anónimas"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Send Anonymous Usage Statistics"
+          }
+        }
+      }
+    },
+    "settings.analyticsHint": {
+      "extractionState": "manual",
+      "localizations": {
+        "ca": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quines funcions es fan servir, quant duren les reunions i quina versió i sistema tens, sense cap identificador. Mai títols, text, noms, notes ni àudio. Ens ajuden a decidir què millorar."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Qué funciones se usan, cuánto duran las reuniones y qué versión y sistema tienes, sin ningún identificador. Nunca títulos, texto, nombres, notas ni audio. Nos ayudan a decidir qué mejorar."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Which features are used, how long meetings last and which version and system you have, with no identifier. Never titles, text, names, notes or audio. They help us decide what to improve."
+          }
+        }
+      }
+    },
     "settings.appearance": {
       "extractionState": "manual",
       "localizations": {
@@ -3907,6 +3953,29 @@
           "stringUnit": {
             "state": "translated",
             "value": "Meetings stay on your phone and on the computer you connect. They never go through any server."
+          }
+        }
+      }
+    },
+    "settings.privacySection": {
+      "extractionState": "manual",
+      "localizations": {
+        "ca": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Privadesa"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Privacidad"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Privacy"
           }
         }
       }

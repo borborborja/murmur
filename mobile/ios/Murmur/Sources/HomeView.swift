@@ -17,6 +17,13 @@ struct MurmurApp: App {
     /// Configuració › Aparença: the theme (the desktop's three) and the mode.
     @AppStorage("theme") private var theme = MurmurTheme.acid.rawValue
     @AppStorage("appearance") private var appearance = "system"
+
+    init() {
+        // As early as possible, as Aptabase asks (only if the statistics are on).
+        Analytics.start()
+        Analytics.track("app_opened")
+    }
+
     var body: some Scene {
         WindowGroup {
             RootView().environmentObject(store).murmurTheme(MurmurTheme(rawValue: theme) ?? .acid)
@@ -87,6 +94,7 @@ struct RootView: View {
         .fullScreenCover(isPresented: $enrolling) { VoiceEnrollView(autoStart: true) }
         .fullScreenCover(isPresented: $onboarding) {
             OnboardingView {
+                Analytics.track("onboarding_finished", ["voice": store.voiceSavedAt != nil, "computer": store.computer != nil])
                 onboarded = true
                 onboarding = false
             }

@@ -91,7 +91,10 @@
     "mode": "Mode",
     "modeSystem": "Sistema",
     "modeLight": "Clar",
-    "modeDark": "Fosc"
+    "modeDark": "Fosc",
+    "analytics": "Envia estadístiques d'ús anònimes",
+    "analyticsHint": "Quines funcions es fan servir, quant duren les reunions i quina versió i sistema tens, sense cap identificador. Mai títols, text, noms, notes ni àudio. Ens ajuden a decidir què millorar.",
+    "privacySection": "Privadesa"
   },
   "mic": {
     "denied": "Murmur necessita el micròfon per gravar. Activa'l a Configuració › Murmur."

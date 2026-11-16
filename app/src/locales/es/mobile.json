@@ -91,7 +91,10 @@
     "mode": "Modo",
     "modeSystem": "Sistema",
     "modeLight": "Claro",
-    "modeDark": "Oscuro"
+    "modeDark": "Oscuro",
+    "analytics": "Enviar estadísticas de uso anónimas",
+    "analyticsHint": "Qué funciones se usan, cuánto duran las reuniones y qué versión y sistema tienes, sin ningún identificador. Nunca títulos, texto, nombres, notas ni audio. Nos ayudan a decidir qué mejorar.",
+    "privacySection": "Privacidad"
   },
   "mic": {
     "denied": "Murmur necesita el micrófono para grabar. Actívalo en Ajustes › Murmur."

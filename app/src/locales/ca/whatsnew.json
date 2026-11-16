@@ -6,6 +6,26 @@
   "dontShow": "No ho tornis a mostrar",
   "ok": "Entesos",
   "releases": {
+    "0.16.0": [
+      {
+        "title": "Murmur per a iPhone",
+        "text": "Grava i transcriu al telèfon, sense connexió, quan no tens l'ordinador a mà. Connecta'l aquí amb un codi QR: les reunions hi passen soles per la xarxa local, xifrades, l'ordinador en fa la passada final i el resum, i tornen al telèfon revisades. Busca Murmur a l'App Store.",
+        "link": "mobile",
+        "linkLabel": "Connecta un mòbil",
+        "image": "/whatsnew/mobil-ca.png",
+        "imageDark": "/whatsnew/mobil-ca-fosc.png"
+      },
+      {
+        "title": "El resum, també amb Gemini o OpenRouter",
+        "text": "A més de Claude i OpenAI, ara pots fer escriure el resum a Gemini o a qualsevol dels models d'OpenRouter, amb la teva clau. El model es tria amb un buscador.",
+        "link": "intelligence",
+        "linkLabel": "Configuració › Intel·ligència"
+      },
+      {
+        "title": "Cap reunió a mitges",
+        "text": "Mentre grava, l'ordinador ja no s'adorm. I si el micròfon deixa d'enviar so (un canvi de dispositiu, uns auriculars que es desconnecten), Murmur t'ho diu de seguida i el torna a obrir."
+      }
+    ],
     "0.15.0": [
       {
         "title": "La targeta gràfica, també a Windows i Linux",

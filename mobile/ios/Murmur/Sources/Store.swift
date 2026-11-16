@@ -128,6 +128,15 @@ final class Store: ObservableObject {
     @Published var surging = false
     /// The microphone in use, as iOS names it, shown on the recording card.
     @Published var inputName: String?
+    /// The computer this phone is paired with (docs/EMPARELLAR.md).
+    @Published var computer: PairedComputer? = PairedComputer.load()
+    @Published var syncing = false
+    /// Why the last sync didn't go through (shown under the computer in Configuració).
+    @Published var syncProblem: String?
+    @Published var lastSync: Date? = UserDefaults.standard.object(forKey: "lastSync") as? Date
+    @Published var unsent = 0
+    /// Sync runs on its own queue: it can take a while (the audio), and the recording can't wait.
+    let syncQueue = DispatchQueue(label: "murmur.sync", qos: .utility)
     /// The lock screen's Atura was tapped once: a second tap within 4 s stops.
     private var stopArmed = false
     private var routeObserver: NSObjectProtocol?
@@ -238,6 +247,7 @@ final class Store: ObservableObject {
 
     func reload() {
         meetings = (try? engine?.meetings()) ?? []
+        unsent = meetings.filter { $0.status == "done" && !$0.sent }.count
     }
 
     var language: String { UserDefaults.standard.string(forKey: "language") ?? "ca-es" }
@@ -357,6 +367,8 @@ final class Store: ObservableObject {
             let id = try await onQueue { try engine.stop(extra: extra) }
             live = nil
             reload()
+            // Straight to the computer, if it's around.
+            autoSync()
             return id
         } catch {
             self.error = error.localizedDescription
@@ -376,8 +388,11 @@ final class Store: ObservableObject {
     }
 
     func meeting(_ id: String) -> MeetingDetail? {
-        guard let json = try? engine?.meetingJson(id: id), let data = json.data(using: .utf8) else { return nil }
-        return MeetingDetail(json: data)
+        guard let json = try? engine?.meetingJson(id: id), let data = json.data(using: .utf8), var detail = MeetingDetail(json: data) else { return nil }
+        let row = meetings.first { $0.id == id }
+        detail.sent = row?.sent ?? false
+        detail.revised = row?.revised ?? false
+        return detail
     }
 
     private func apply(_ u: LiveUpdate) {
@@ -424,6 +439,8 @@ struct MeetingDetail {
     var utterances: [Utterance] = []
     var notes: [NoteItem] = []
     var speakerNames: [Int: String] = [:]
+    /// The computer has it, and has sent back the revised version.
+    var sent = false
     var revised = false
 
     init?(json: Data) {
@@ -431,7 +448,6 @@ struct MeetingDetail {
         title = m["title"] as? String ?? ""
         createdAt = Date(timeIntervalSince1970: (m["createdAt"] as? Double ?? 0) / 1000)
         duration = m["duration"] as? Double ?? 0
-        revised = !(m["cover"] is NSNull) && m["cover"] != nil
         for (k, v) in m["speakerNames"] as? [String: Any] ?? [:] {
             if let i = Int(k), let name = v as? String, !name.isEmpty { speakerNames[i] = name }
         }

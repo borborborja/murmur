@@ -465,6 +465,22 @@ fileprivate final class UniffiHandleMap<T>: @unchecked Sendable {
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
+fileprivate struct FfiConverterUInt32: FfiConverterPrimitive {
+    typealias FfiType = UInt32
+    typealias SwiftType = UInt32
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> UInt32 {
+        return try lift(readInt(&buf))
+    }
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        writeInt(&buf, lower(value))
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 fileprivate struct FfiConverterInt64: FfiConverterPrimitive {
     typealias FfiType = Int64
     typealias SwiftType = Int64
@@ -580,6 +596,24 @@ fileprivate struct FfiConverterString: FfiConverter {
     }
 }
 
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterData: FfiConverterRustBuffer {
+    typealias SwiftType = Data
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> Data {
+        let len: Int32 = try readInt(&buf)
+        return Data(try readBytes(&buf, count: Int(len)))
+    }
+
+    public static func write(_ value: Data, into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        writeBytes(&buf, value)
+    }
+}
+
 
 
 
@@ -647,6 +681,29 @@ public protocol MurmurProtocol: AnyObject, Sendable {
      * (`notesDoc`), its photos (`screens`) and the moments marked as important (`marks`).
      */
     func stop(extra: String) throws  -> String
+    
+    /**
+     * Unpaired on the phone: what was sent is forgotten (pairing again sends it all; the computer
+     * knows what it already has). What came back revised stays revised.
+     */
+    func forgetComputer() throws 
+    
+    /**
+     * Pairs with the computer of the QR's `uri`. `extra` are more addresses to try (the ones
+     * Bonjour found), after the code's own. Returns the computer, to remember.
+     */
+    func pair(uri: String, extra: [String], privateKey: Data, phoneName: String) throws  -> Computer
+    
+    /**
+     * Sends the computer every finished meeting it doesn't have yet (with its audio, resuming a
+     * cut one), then picks up what it has revised. One sync at a time.
+     */
+    func sync(candidates: [String], privateKey: Data, computerKey: Data, phoneName: String) throws  -> SyncReport
+    
+    /**
+     * Finished meetings the computer doesn't have yet.
+     */
+    func unsentCount() throws  -> UInt32
     
 }
 open class Murmur: MurmurProtocol, @unchecked Sendable {
@@ -875,6 +932,64 @@ open func stop(extra: String)throws  -> String  {
 })
 }
     
+    /**
+     * Unpaired on the phone: what was sent is forgotten (pairing again sends it all; the computer
+     * knows what it already has). What came back revised stays revised.
+     */
+open func forgetComputer()throws   {try rustCallWithError(FfiConverterTypeMurmurError_lift) {
+        uniffiCallStatus in
+    uniffi_murmur_mobile_fn_method_murmur_forget_computer(
+            self.uniffiCloneHandle(),uniffiCallStatus
+    )
+}
+}
+    
+    /**
+     * Pairs with the computer of the QR's `uri`. `extra` are more addresses to try (the ones
+     * Bonjour found), after the code's own. Returns the computer, to remember.
+     */
+open func pair(uri: String, extra: [String], privateKey: Data, phoneName: String)throws  -> Computer  {
+    return try  FfiConverterTypeComputer_lift(try rustCallWithError(FfiConverterTypeMurmurError_lift) {
+        uniffiCallStatus in
+    uniffi_murmur_mobile_fn_method_murmur_pair(
+            self.uniffiCloneHandle(),
+        FfiConverterString.lower(uri),
+        FfiConverterSequenceString.lower(extra),
+        FfiConverterData.lower(privateKey),
+        FfiConverterString.lower(phoneName),uniffiCallStatus
+    )
+})
+}
+    
+    /**
+     * Sends the computer every finished meeting it doesn't have yet (with its audio, resuming a
+     * cut one), then picks up what it has revised. One sync at a time.
+     */
+open func sync(candidates: [String], privateKey: Data, computerKey: Data, phoneName: String)throws  -> SyncReport  {
+    return try  FfiConverterTypeSyncReport_lift(try rustCallWithError(FfiConverterTypeMurmurError_lift) {
+        uniffiCallStatus in
+    uniffi_murmur_mobile_fn_method_murmur_sync(
+            self.uniffiCloneHandle(),
+        FfiConverterSequenceString.lower(candidates),
+        FfiConverterData.lower(privateKey),
+        FfiConverterData.lower(computerKey),
+        FfiConverterString.lower(phoneName),uniffiCallStatus
+    )
+})
+}
+    
+    /**
+     * Finished meetings the computer doesn't have yet.
+     */
+open func unsentCount()throws  -> UInt32  {
+    return try  FfiConverterUInt32.lift(try rustCallWithError(FfiConverterTypeMurmurError_lift) {
+        uniffiCallStatus in
+    uniffi_murmur_mobile_fn_method_murmur_unsent_count(
+            self.uniffiCloneHandle(),uniffiCallStatus
+    )
+})
+}
+    
 
     
 }
@@ -921,6 +1036,79 @@ public func FfiConverterTypeMurmur_lower(_ value: Murmur) -> UInt64 {
 }
 
 
+
+
+/**
+ * The computer this phone is paired with.
+ */
+public struct Computer: Equatable, Hashable {
+    public var name: String
+    /**
+     * Its public key (not secret): to know it again.
+     */
+    public var key: Data
+    /**
+     * The address that answered, to try first next time.
+     */
+    public var address: String
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(name: String, 
+        /**
+         * Its public key (not secret): to know it again.
+         */key: Data, 
+        /**
+         * The address that answered, to try first next time.
+         */address: String) {
+        self.name = name
+        self.key = key
+        self.address = address
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension Computer: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeComputer: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> Computer {
+        return
+            try Computer(
+                name: FfiConverterString.read(from: &buf), 
+                key: FfiConverterData.read(from: &buf), 
+                address: FfiConverterString.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: Computer, into buf: inout [UInt8]) {
+        FfiConverterString.write(value.name, into: &buf)
+        FfiConverterData.write(value.key, into: &buf)
+        FfiConverterString.write(value.address, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeComputer_lift(_ buf: RustBuffer) throws -> Computer {
+    return try FfiConverterTypeComputer.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeComputer_lower(_ value: Computer) -> RustBuffer {
+    return FfiConverterTypeComputer.lower(value)
+}
 
 
 /**
@@ -1076,6 +1264,10 @@ public struct MeetingRow: Equatable, Hashable {
      */
     public var lastLine: String?
     /**
+     * The computer has it (stored whole).
+     */
+    public var sent: Bool
+    /**
      * The computer has revised it (Whisper, speakers, summary).
      */
     public var revised: Bool
@@ -1090,6 +1282,9 @@ public struct MeetingRow: Equatable, Hashable {
          * The last thing said, to recognise it in the list.
          */lastLine: String?, 
         /**
+         * The computer has it (stored whole).
+         */sent: Bool, 
+        /**
          * The computer has revised it (Whisper, speakers, summary).
          */revised: Bool) {
         self.id = id
@@ -1099,6 +1294,7 @@ public struct MeetingRow: Equatable, Hashable {
         self.status = status
         self.tags = tags
         self.lastLine = lastLine
+        self.sent = sent
         self.revised = revised
     }
 
@@ -1125,6 +1321,7 @@ public struct FfiConverterTypeMeetingRow: FfiConverterRustBuffer {
                 status: FfiConverterString.read(from: &buf), 
                 tags: FfiConverterSequenceString.read(from: &buf), 
                 lastLine: FfiConverterOptionString.read(from: &buf), 
+                sent: FfiConverterBool.read(from: &buf), 
                 revised: FfiConverterBool.read(from: &buf)
         )
     }
@@ -1137,6 +1334,7 @@ public struct FfiConverterTypeMeetingRow: FfiConverterRustBuffer {
         FfiConverterString.write(value.status, into: &buf)
         FfiConverterSequenceString.write(value.tags, into: &buf)
         FfiConverterOptionString.write(value.lastLine, into: &buf)
+        FfiConverterBool.write(value.sent, into: &buf)
         FfiConverterBool.write(value.revised, into: &buf)
     }
 }
@@ -1157,6 +1355,156 @@ public func FfiConverterTypeMeetingRow_lower(_ value: MeetingRow) -> RustBuffer 
 }
 
 
+/**
+ * What's in a pairing code, to show before pairing.
+ */
+public struct PairingCodeInfo: Equatable, Hashable {
+    public var computerName: String
+    /**
+     * Where the computer was listening when it showed the code ("host:port").
+     */
+    public var addresses: [String]
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(computerName: String, 
+        /**
+         * Where the computer was listening when it showed the code ("host:port").
+         */addresses: [String]) {
+        self.computerName = computerName
+        self.addresses = addresses
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension PairingCodeInfo: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypePairingCodeInfo: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> PairingCodeInfo {
+        return
+            try PairingCodeInfo(
+                computerName: FfiConverterString.read(from: &buf), 
+                addresses: FfiConverterSequenceString.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: PairingCodeInfo, into buf: inout [UInt8]) {
+        FfiConverterString.write(value.computerName, into: &buf)
+        FfiConverterSequenceString.write(value.addresses, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypePairingCodeInfo_lift(_ buf: RustBuffer) throws -> PairingCodeInfo {
+    return try FfiConverterTypePairingCodeInfo.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypePairingCodeInfo_lower(_ value: PairingCodeInfo) -> RustBuffer {
+    return FfiConverterTypePairingCodeInfo.lower(value)
+}
+
+
+/**
+ * What a sync did.
+ */
+public struct SyncReport: Equatable, Hashable {
+    public var address: String
+    public var computerName: String
+    /**
+     * Meetings the computer stored now.
+     */
+    public var sent: UInt32
+    /**
+     * Meetings that came back revised now.
+     */
+    public var revised: UInt32
+    /**
+     * Meetings the computer refused (they'll be tried again next time).
+     */
+    public var failed: UInt32
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(address: String, computerName: String, 
+        /**
+         * Meetings the computer stored now.
+         */sent: UInt32, 
+        /**
+         * Meetings that came back revised now.
+         */revised: UInt32, 
+        /**
+         * Meetings the computer refused (they'll be tried again next time).
+         */failed: UInt32) {
+        self.address = address
+        self.computerName = computerName
+        self.sent = sent
+        self.revised = revised
+        self.failed = failed
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension SyncReport: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeSyncReport: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SyncReport {
+        return
+            try SyncReport(
+                address: FfiConverterString.read(from: &buf), 
+                computerName: FfiConverterString.read(from: &buf), 
+                sent: FfiConverterUInt32.read(from: &buf), 
+                revised: FfiConverterUInt32.read(from: &buf), 
+                failed: FfiConverterUInt32.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: SyncReport, into buf: inout [UInt8]) {
+        FfiConverterString.write(value.address, into: &buf)
+        FfiConverterString.write(value.computerName, into: &buf)
+        FfiConverterUInt32.write(value.sent, into: &buf)
+        FfiConverterUInt32.write(value.revised, into: &buf)
+        FfiConverterUInt32.write(value.failed, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeSyncReport_lift(_ buf: RustBuffer) throws -> SyncReport {
+    return try FfiConverterTypeSyncReport.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeSyncReport_lower(_ value: SyncReport) -> RustBuffer {
+    return FfiConverterTypeSyncReport.lower(value)
+}
+
+
 public 
 enum MurmurError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
 
@@ -1164,6 +1512,26 @@ enum MurmurError: Swift.Error, Equatable, Hashable, Foundation.LocalizedError {
     
     case Failed(String
     )
+    /**
+     * The QR isn't a Murmur pairing code.
+     */
+    case NotACode
+    /**
+     * The code answered no more (it expired, or it was closed on the computer).
+     */
+    case CodeExpired
+    /**
+     * No computer answered: not on the same network, or Murmur closed.
+     */
+    case Unreachable
+    /**
+     * The computer answered but doesn't know this phone any more (it unpaired it).
+     */
+    case NotPaired
+    /**
+     * A sync is already running.
+     */
+    case Busy
 
     
 
@@ -1196,6 +1564,11 @@ public struct FfiConverterTypeMurmurError: FfiConverterRustBuffer {
         case 1: return .Failed(
             try FfiConverterString.read(from: &buf)
             )
+        case 2: return .NotACode
+        case 3: return .CodeExpired
+        case 4: return .Unreachable
+        case 5: return .NotPaired
+        case 6: return .Busy
 
          default: throw UniffiInternalError.unexpectedEnumCase
         }
@@ -1212,6 +1585,26 @@ public struct FfiConverterTypeMurmurError: FfiConverterRustBuffer {
             writeInt(&buf, Int32(1))
             FfiConverterString.write(v1, into: &buf)
             
+        
+        case .NotACode:
+            writeInt(&buf, Int32(2))
+        
+        
+        case .CodeExpired:
+            writeInt(&buf, Int32(3))
+        
+        
+        case .Unreachable:
+            writeInt(&buf, Int32(4))
+        
+        
+        case .NotPaired:
+            writeInt(&buf, Int32(5))
+        
+        
+        case .Busy:
+            writeInt(&buf, Int32(6))
+        
         }
     }
 }
@@ -1354,6 +1747,27 @@ fileprivate struct FfiConverterSequenceTypeMeetingRow: FfiConverterRustBuffer {
         return seq
     }
 }
+/**
+ * A new private key for this phone, for the keychain.
+ */
+public func newSyncKey()throws  -> Data  {
+    return try  FfiConverterData.lift(try rustCallWithError(FfiConverterTypeMurmurError_lift) {
+        uniffiCallStatus in
+    uniffi_murmur_mobile_fn_func_new_sync_key(uniffiCallStatus
+    )
+})
+}
+/**
+ * Reads the QR's text. Fails if it isn't a Murmur pairing code (or one from another version).
+ */
+public func readPairingCode(uri: String)throws  -> PairingCodeInfo  {
+    return try  FfiConverterTypePairingCodeInfo_lift(try rustCallWithError(FfiConverterTypeMurmurError_lift) {
+        uniffiCallStatus in
+    uniffi_murmur_mobile_fn_func_read_pairing_code(
+        FfiConverterString.lower(uri),uniffiCallStatus
+    )
+})
+}
 
 private enum InitializationResult {
     case ok
@@ -1369,6 +1783,12 @@ private let initializationResult: InitializationResult = {
     let scaffolding_contract_version = ffi_murmur_mobile_uniffi_contract_version()
     if bindings_contract_version != scaffolding_contract_version {
         return InitializationResult.contractVersionMismatch
+    }
+    if (uniffi_murmur_mobile_checksum_func_new_sync_key() != 53049) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_murmur_mobile_checksum_func_read_pairing_code() != 22571) {
+        return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_murmur_mobile_checksum_method_murmur_delete_meeting() != 57961) {
         return InitializationResult.apiChecksumMismatch
@@ -1404,6 +1824,18 @@ private let initializationResult: InitializationResult = {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_murmur_mobile_checksum_method_murmur_stop() != 8302) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_murmur_mobile_checksum_method_murmur_forget_computer() != 62072) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_murmur_mobile_checksum_method_murmur_pair() != 10970) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_murmur_mobile_checksum_method_murmur_sync() != 46887) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_murmur_mobile_checksum_method_murmur_unsent_count() != 16442) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_murmur_mobile_checksum_constructor_murmur_new() != 31344) {

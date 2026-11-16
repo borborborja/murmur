@@ -530,6 +530,29 @@
         }
       }
     },
+    "meeting.pendingUnpaired": {
+      "extractionState": "manual",
+      "localizations": {
+        "ca": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ara és la transcripció ràpida del telèfon. Connecta l'ordinador a Configuració i hi passarà sola: la tornarà a escoltar amb Whisper i en farà el resum."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ahora es la transcripción rápida del teléfono. Conecta el ordenador en Ajustes y pasará sola: la volverá a escuchar con Whisper y hará el resumen."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This is the phone's quick transcript. Connect your computer in Settings and it'll go there on its own: it listens to it again with Whisper and writes the summary."
+          }
+        }
+      }
+    },
     "meeting.rename": {
       "extractionState": "manual",
       "localizations": {
@@ -599,6 +622,29 @@
         }
       }
     },
+    "meeting.sent": {
+      "extractionState": "manual",
+      "localizations": {
+        "ca": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ja és a l'ordinador, que la tornarà a escoltar amb Whisper. Quan acabi, la versió revisada arribarà aquí."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ya está en el ordenador, que la volverá a escuchar con Whisper. Cuando acabe, la versión revisada llegará aquí."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "It's on the computer now, which will listen to it again with Whisper. When it's done, the revised version will arrive here."
+          }
+        }
+      }
+    },
     "mic.denied": {
       "extractionState": "manual",
       "localizations": {
@@ -664,6 +710,305 @@
           "stringUnit": {
             "state": "translated",
             "value": "Write a note…"
+          }
+        }
+      }
+    },
+    "pair.after": {
+      "extractionState": "manual",
+      "localizations": {
+        "ca": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Després, cada reunió que facis amb el mòbil passarà a l'ordinador quan siguin a la mateixa xarxa, xifrada. L'ordinador la tornarà a escoltar i et tornarà el resum."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Después, cada reunión que hagas con el móvil pasará al ordenador cuando estén en la misma red, cifrada. El ordenador la volverá a escuchar y te devolverá el resumen."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Then every meeting you record on the phone goes to the computer, encrypted, when both are on the same network. The computer listens to it again and sends you back the summary."
+          }
+        }
+      }
+    },
+    "pair.connecting": {
+      "extractionState": "manual",
+      "localizations": {
+        "ca": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Connectant amb %@…"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Conectando con %@…"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Connecting to %@…"
+          }
+        }
+      }
+    },
+    "pair.done": {
+      "extractionState": "manual",
+      "localizations": {
+        "ca": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Connectat amb %@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Conectado con %@"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Connected to %@"
+          }
+        }
+      }
+    },
+    "pair.expired": {
+      "extractionState": "manual",
+      "localizations": {
+        "ca": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El codi ja no és a la pantalla de l'ordinador. Torna a obrir Connecta un mòbil."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El código ya no está en la pantalla del ordenador. Vuelve a abrir Conectar un móvil."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The code isn't on the computer's screen any more. Open Connect a Phone again."
+          }
+        }
+      }
+    },
+    "pair.heading": {
+      "extractionState": "manual",
+      "localizations": {
+        "ca": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Escaneja el codi de l'ordinador"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Escanea el código del ordenador"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Scan the code on your computer"
+          }
+        }
+      }
+    },
+    "pair.noCamera": {
+      "extractionState": "manual",
+      "localizations": {
+        "ca": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Murmur necessita la càmera per llegir el codi. Pots donar-li permís a la Configuració de l'iPhone."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Murmur necesita la cámara para leer el código. Puedes darle permiso en los Ajustes del iPhone."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Murmur needs the camera to read the code. You can allow it in the iPhone's Settings."
+          }
+        }
+      }
+    },
+    "pair.notACode": {
+      "extractionState": "manual",
+      "localizations": {
+        "ca": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aquest codi no és de Murmur."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Este código no es de Murmur."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This isn't a Murmur code."
+          }
+        }
+      }
+    },
+    "pair.openSettings": {
+      "extractionState": "manual",
+      "localizations": {
+        "ca": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Obre la Configuració"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Abrir Ajustes"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open Settings"
+          }
+        }
+      }
+    },
+    "pair.step1": {
+      "extractionState": "manual",
+      "localizations": {
+        "ca": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Obre Murmur a l'ordinador."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Abre Murmur en el ordenador."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open Murmur on your computer."
+          }
+        }
+      }
+    },
+    "pair.step2": {
+      "extractionState": "manual",
+      "localizations": {
+        "ca": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ves a Configuració › Mòbil › Connecta un mòbil."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ve a Ajustes › Móvil › Conectar un móvil."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Go to Settings › Phone › Connect a Phone."
+          }
+        }
+      }
+    },
+    "pair.step3": {
+      "extractionState": "manual",
+      "localizations": {
+        "ca": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apunta-hi el telèfon."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apunta el teléfono hacia él."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Point your phone at it."
+          }
+        }
+      }
+    },
+    "pair.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "ca": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Connecta l'ordinador"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Conectar el ordenador"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Connect your computer"
+          }
+        }
+      }
+    },
+    "pair.unreachable": {
+      "extractionState": "manual",
+      "localizations": {
+        "ca": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No trobo l'ordinador. Comprova que tots dos són a la mateixa wifi."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No encuentro el ordenador. Comprueba que los dos están en la misma wifi."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Can't find the computer. Check both are on the same Wi-Fi."
           }
         }
       }
@@ -1082,25 +1427,25 @@
         }
       }
     },
-    "settings.computerSoon": {
+    "settings.computerHint": {
       "extractionState": "manual",
       "localizations": {
         "ca": {
           "stringUnit": {
             "state": "translated",
-            "value": "Connectar amb l'ordinador arribarà aviat: les reunions hi passaran per refer-les amb Whisper i fer-ne el resum."
+            "value": "Les reunions hi passaran soles quan siguin a la mateixa xarxa: l'ordinador les torna a escoltar amb Whisper i en fa el resum."
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Conectar con el ordenador llegará pronto: las reuniones pasarán a él para rehacerlas con Whisper y hacer el resumen."
+            "value": "Las reuniones pasarán solas cuando estén en la misma red: el ordenador las vuelve a escuchar con Whisper y hace el resumen."
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Connecting to your computer is coming soon: meetings will go there to be redone with Whisper and summarised."
+            "value": "Meetings go to it on their own when both are on the same network: the computer listens to them again with Whisper and writes the summary."
           }
         }
       }
@@ -1193,6 +1538,29 @@
           "stringUnit": {
             "state": "translated",
             "value": "Microphone"
+          }
+        }
+      }
+    },
+    "settings.pairComputer": {
+      "extractionState": "manual",
+      "localizations": {
+        "ca": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Connecta l'ordinador"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Conectar el ordenador"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Connect your computer"
           }
         }
       }
@@ -1561,6 +1929,282 @@
           "stringUnit": {
             "state": "translated",
             "value": "At the microphone"
+          }
+        }
+      }
+    },
+    "sync.auto": {
+      "extractionState": "manual",
+      "localizations": {
+        "ca": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Envia les reunions soles"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enviar las reuniones solas"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Send meetings on their own"
+          }
+        }
+      }
+    },
+    "sync.autoHint": {
+      "extractionState": "manual",
+      "localizations": {
+        "ca": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quan el telèfon i l'ordinador són a la mateixa xarxa i Murmur és obert a tots dos."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cuando el teléfono y el ordenador están en la misma red y Murmur está abierto en los dos."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "When the phone and the computer are on the same network and Murmur is open on both."
+          }
+        }
+      }
+    },
+    "sync.failed": {
+      "extractionState": "manual",
+      "localizations": {
+        "ca": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No s'ha pogut sincronitzar: %@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No se ha podido sincronizar: %@"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn't sync: %@"
+          }
+        }
+      }
+    },
+    "sync.never": {
+      "extractionState": "manual",
+      "localizations": {
+        "ca": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Encara no s'ha sincronitzat"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Todavía no se ha sincronizado"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not synced yet"
+          }
+        }
+      }
+    },
+    "sync.notPaired": {
+      "extractionState": "manual",
+      "localizations": {
+        "ca": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aquest ordinador ja no està connectat. Torna'l a connectar amb el codi QR."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Este ordenador ya no está conectado. Vuelve a conectarlo con el código QR."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This computer isn't connected any more. Connect it again with the QR code."
+          }
+        }
+      }
+    },
+    "sync.now": {
+      "extractionState": "manual",
+      "localizations": {
+        "ca": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sincronitza ara"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sincronizar ahora"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sync now"
+          }
+        }
+      }
+    },
+    "sync.synced": {
+      "extractionState": "manual",
+      "localizations": {
+        "ca": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sincronitzat %@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sincronizado %@"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Synced %@"
+          }
+        }
+      }
+    },
+    "sync.syncing": {
+      "extractionState": "manual",
+      "localizations": {
+        "ca": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sincronitzant…"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sincronizando…"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Syncing…"
+          }
+        }
+      }
+    },
+    "sync.toSend": {
+      "extractionState": "manual",
+      "localizations": {
+        "ca": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Per enviar: %@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Por enviar: %@"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "To send: %@"
+          }
+        }
+      }
+    },
+    "sync.unpair": {
+      "extractionState": "manual",
+      "localizations": {
+        "ca": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Desconnecta l'ordinador"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Desconectar el ordenador"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Disconnect the computer"
+          }
+        }
+      }
+    },
+    "sync.unpairConfirm": {
+      "extractionState": "manual",
+      "localizations": {
+        "ca": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Les reunions que ja hi són s'hi queden. Per tornar-lo a connectar caldrà el codi QR."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Las reuniones que ya están ahí se quedan. Para volver a conectarlo hará falta el código QR."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Meetings already there stay there. To connect it again you'll need the QR code."
+          }
+        }
+      }
+    },
+    "sync.unreachable": {
+      "extractionState": "manual",
+      "localizations": {
+        "ca": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No el trobo a la xarxa. Comprova que és a la mateixa wifi i que Murmur hi és obert."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No lo encuentro en la red. Comprueba que está en la misma wifi y que Murmur está abierto."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Can't find it on the network. Check it's on the same Wi-Fi and Murmur is open."
           }
         }
       }

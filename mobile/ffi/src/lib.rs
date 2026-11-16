@@ -166,7 +166,7 @@ impl Murmur {
 
     pub fn delete_meeting(&self, id: String) -> Result<()> {
         if let Some(m) = lock(&self.db).get(&id)? {
-            if let Some(path) = m["audioPath"].as_str() {
+            if let Some(path) = self.audio_of(&m) {
                 let _ = std::fs::remove_file(path);
             }
         }
@@ -302,6 +302,17 @@ impl Murmur {
 }
 
 impl Murmur {
+    /// A meeting's audio on this phone. By its place in the data folder, not the path stored with
+    /// it: iOS moves the app's folder when the app is reinstalled or updated.
+    pub(crate) fn audio_of(&self, meeting: &Value) -> Option<PathBuf> {
+        let id = meeting["id"].as_str()?;
+        let here = self.data_dir.join("recordings").join(format!("{id}.ogg"));
+        if here.exists() {
+            return Some(here);
+        }
+        meeting["audioPath"].as_str().map(PathBuf::from).filter(|p| p.exists())
+    }
+
     /// Reads a meeting, changes it and saves it back (nothing if it isn't there).
     fn edit(&self, id: &str, change: impl FnOnce(&mut Value)) -> Result<()> {
         let mut db = lock(&self.db);
@@ -440,8 +451,9 @@ mod tests {
         let m = Murmur::new("/nowhere".into(), dir.to_string_lossy().into_owned()).unwrap();
         let audio = dir.join("recordings/phone-1.ogg");
         std::fs::write(&audio, vec![7u8; 300_000]).unwrap();
+        // Stored with the app's folder of an older install: iOS moves it on reinstalls and updates.
         let meeting = json!({ "id": "phone-1", "title": "Reunió de les 10:00", "createdAt": 0.0, "duration": 3.0, "status": "done",
-            "audioPath": audio.to_string_lossy(), "utterances": [line("phone-1-0", 0)] });
+            "audioPath": "/old/container/recordings/phone-1.ogg", "utterances": [line("phone-1-0", 0)] });
         lock(&m.db).put(&meeting).unwrap();
         assert_eq!(m.unsent_count().unwrap(), 1);
 

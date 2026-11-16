@@ -53,12 +53,13 @@
     "rename": "Rename",
     "renameTitle": "Meeting name",
     "save": "Save",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "pendingUnpaired": "This is the phone's quick transcript. Connect your computer in Settings and it'll go there on its own: it listens to it again with Whisper and writes the summary.",
+    "sent": "It's on the computer now, which will listen to it again with Whisper. When it's done, the revised version will arrive here."
   },
   "settings": {
     "title": "Settings",
     "computer": "Computer",
-    "computerSoon": "Connecting to your computer is coming soon: meetings will go there to be redone with Whisper and summarised.",
     "transcription": "Transcription",
     "language": "Language",
     "partials": "Text as you speak",
@@ -69,13 +70,17 @@
     "audio": "Audio",
     "microphone": "Microphone",
     "micAuto": "Automatic",
-    "micHint": "Automatic uses a wired or USB microphone if there is one, otherwise the iPhone's. Bluetooth headphones only if you pick them: they only hear whoever is wearing them, not the room."
+    "micHint": "Automatic uses a wired or USB microphone if there is one, otherwise the iPhone's. Bluetooth headphones only if you pick them: they only hear whoever is wearing them, not the room.",
+    "pairComputer": "Connect your computer",
+    "computerHint": "Meetings go to it on their own when both are on the same network: the computer listens to them again with Whisper and writes the summary."
   },
   "mic": {
     "denied": "Murmur needs the microphone to record. Turn it on in Settings › Murmur."
   },
   "infoPlist": {
-    "NSMicrophoneUsageDescription": "Murmur listens to the microphone to transcribe the meeting. Everything stays on your phone."
+    "NSMicrophoneUsageDescription": "Murmur listens to the microphone to transcribe the meeting. Everything stays on your phone.",
+    "NSLocalNetworkUsageDescription": "Murmur looks for your computer on the local network to pass it your meetings, encrypted.",
+    "NSCameraUsageDescription": "Murmur uses the camera only to read your computer's QR code."
   },
   "start": {
     "languageTitle": "Meeting language",
@@ -89,5 +94,34 @@
     "namePlaceholder": "For example, Laia",
     "thisLine": "This line is from",
     "allLines": "All of “{{name}}”'s lines are from"
+  },
+  "sync": {
+    "synced": "Synced {{ago}}",
+    "never": "Not synced yet",
+    "syncing": "Syncing…",
+    "toSend": "To send: {{count}}",
+    "now": "Sync now",
+    "auto": "Send meetings on their own",
+    "autoHint": "When the phone and the computer are on the same network and Murmur is open on both.",
+    "unpair": "Disconnect the computer",
+    "unpairConfirm": "Meetings already there stay there. To connect it again you'll need the QR code.",
+    "unreachable": "Can't find it on the network. Check it's on the same Wi-Fi and Murmur is open.",
+    "notPaired": "This computer isn't connected any more. Connect it again with the QR code.",
+    "failed": "Couldn't sync: {{reason}}"
+  },
+  "pair": {
+    "title": "Connect your computer",
+    "heading": "Scan the code on your computer",
+    "step1": "Open Murmur on your computer.",
+    "step2": "Go to Settings › Phone › Connect a Phone.",
+    "step3": "Point your phone at it.",
+    "after": "Then every meeting you record on the phone goes to the computer, encrypted, when both are on the same network. The computer listens to it again and sends you back the summary.",
+    "connecting": "Connecting to {{name}}…",
+    "done": "Connected to {{name}}",
+    "notACode": "This isn't a Murmur code.",
+    "expired": "The code isn't on the computer's screen any more. Open Connect a Phone again.",
+    "unreachable": "Can't find the computer. Check both are on the same Wi-Fi.",
+    "noCamera": "Murmur needs the camera to read the code. You can allow it in the iPhone's Settings.",
+    "openSettings": "Open Settings"
   }
 }

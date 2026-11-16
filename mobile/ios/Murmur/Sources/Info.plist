@@ -24,6 +24,12 @@
 	<string>1</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>Murmur escolta el micròfon per transcriure la reunió. Tot es queda al telèfon.</string>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>Murmur busca el teu ordinador a la xarxa local per passar-hi les reunions, xifrades.</string>
+	<key>NSBonjourServices</key>
+	<array><string>_murmur._tcp</string></array>
+	<key>NSCameraUsageDescription</key>
+	<string>Murmur fa servir la càmera només per llegir el codi QR de l'ordinador.</string>
 	<key>NSSupportsLiveActivities</key>
 	<true/>
 	<key>UIBackgroundModes</key>

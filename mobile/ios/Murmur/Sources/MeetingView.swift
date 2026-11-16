@@ -50,7 +50,9 @@ struct MeetingView: View {
                         if !m.revised {
                             HStack(alignment: .top, spacing: 10) {
                                 Image(systemName: "laptopcomputer")
-                                Text(L("meeting.pending"))
+                                // No computer yet; on the computer, waiting for its final pass; or
+                                // waiting to find it.
+                                Text(store.computer == nil ? L("meeting.pendingUnpaired") : m.sent ? L("meeting.sent") : L("meeting.pending"))
                             }
                             .font(.system(size: 13)).foregroundStyle(palette.textSecondary)
                             .padding(.horizontal, 14).padding(.vertical, 11)

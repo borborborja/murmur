@@ -1,6 +1,52 @@
 {
   "sourceLanguage": "ca",
   "strings": {
+    "NSCameraUsageDescription": {
+      "extractionState": "manual",
+      "localizations": {
+        "ca": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Murmur fa servir la càmera només per llegir el codi QR de l'ordinador."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Murmur usa la cámara solo para leer el código QR del ordenador."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Murmur uses the camera only to read your computer's QR code."
+          }
+        }
+      }
+    },
+    "NSLocalNetworkUsageDescription": {
+      "extractionState": "manual",
+      "localizations": {
+        "ca": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Murmur busca el teu ordinador a la xarxa local per passar-hi les reunions, xifrades."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Murmur busca tu ordenador en la red local para pasarle las reuniones, cifradas."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Murmur looks for your computer on the local network to pass it your meetings, encrypted."
+          }
+        }
+      }
+    },
     "NSMicrophoneUsageDescription": {
       "extractionState": "manual",
       "localizations": {

@@ -84,4 +84,15 @@ Només dos esdeveniments nous, sense contingut ni identificadors (CLAUDE.md): `m
 3. [x] Configuració › Mòbil (interfície, textos en tres idiomes, `DESIGN.md`). Només es veu en desenvolupament fins que hi hagi l'app del mòbil.
 4. [x] `examples/fake_phone.rs`, que fa de mòbil: `pair <codi>`, `send <fitxer.wav> [títol]` i `results`.
 5. [x] Provat de punta a punta amb l'app i `fake_phone` (15/11/2026).
-6. [ ] Provar-ho amb l'app d'iOS.
+6. [x] La part del mòbil (`mobile/ffi/src/pairing.rs` i `Sources/Pairing.swift`), provada al simulador amb `mobile/ffi/examples/fake_computer.rs`, que fa d'ordinador.
+7. [ ] Provar-ho amb l'app de l'ordinador i un iPhone de debò.
+
+## La part del mòbil
+
+- **La clau** del mòbil és al clauer de l'iPhone (`kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly`: no surt de l'aparell ni va a iCloud). La de l'ordinador (pública) i el seu nom van a la configuració de l'app.
+- **Trobar l'ordinador:** Bonjour (`NWBrowser`) dona totes les adreces que anuncien `_murmur._tcp`, en IPv4; s'hi afegeixen l'última que va respondre i les del QR. El nom que anuncia l'ordinador és aleatori, així que es proven totes: la presentació només es completa amb el nostre.
+- **Quan se sincronitza:** en acabar una reunió, en tornar a l'app, estirant la llista i amb «Sincronitza ara». Mai a mitja gravació. «Envia les reunions soles» (Configuració › Ordinador) ho pot aturar.
+- **Què s'ha enviat:** `sync.json` a la carpeta de dades (les reunions que l'ordinador té senceres, les que han tornat revisades i des de quan cal preguntar), perquè la reunió es quedi amb el format de l'ordinador.
+- **De tornada:** la versió de l'ordinador substitueix la del mòbil (frases de Whisper, parlants, resum, traduccions). El mòbil conserva el seu àudio i, si després d'enviar-la hi has canviat el títol o el nom d'un parlant, aquests noms.
+- **L'àudio** es busca a `recordings/<id>.ogg` de la carpeta de dades, no pel camí desat amb la reunió: iOS canvia la carpeta de l'app quan es reinstal·la o s'actualitza.
+- **Per provar-ho sense l'ordinador:** `cargo run --release --example fake_computer` a `mobile/ffi` mostra un codi; l'app el pren amb `-pair <codi>` (el simulador no té càmera). Al simulador, l'app s'ha de signar (encara que sigui en local) perquè pugui fer servir el clauer.

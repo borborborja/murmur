@@ -53,12 +53,13 @@
     "rename": "Canvia el nom",
     "renameTitle": "Nom de la reunió",
     "save": "Desa",
-    "cancel": "Cancel·la"
+    "cancel": "Cancel·la",
+    "pendingUnpaired": "Ara és la transcripció ràpida del telèfon. Connecta l'ordinador a Configuració i hi passarà sola: la tornarà a escoltar amb Whisper i en farà el resum.",
+    "sent": "Ja és a l'ordinador, que la tornarà a escoltar amb Whisper. Quan acabi, la versió revisada arribarà aquí."
   },
   "settings": {
     "title": "Configuració",
     "computer": "Ordinador",
-    "computerSoon": "Connectar amb l'ordinador arribarà aviat: les reunions hi passaran per refer-les amb Whisper i fer-ne el resum.",
     "transcription": "Transcripció",
     "language": "Idioma",
     "partials": "Text mentre parles",
@@ -69,13 +70,17 @@
     "audio": "Àudio",
     "microphone": "Micròfon",
     "micAuto": "Automàtic",
-    "micHint": "Automàtic fa servir el micròfon connectat per cable o USB i, si no n'hi ha, el de l'iPhone. Els auriculars Bluetooth només si els tries: només senten qui els porta, no la sala."
+    "micHint": "Automàtic fa servir el micròfon connectat per cable o USB i, si no n'hi ha, el de l'iPhone. Els auriculars Bluetooth només si els tries: només senten qui els porta, no la sala.",
+    "pairComputer": "Connecta l'ordinador",
+    "computerHint": "Les reunions hi passaran soles quan siguin a la mateixa xarxa: l'ordinador les torna a escoltar amb Whisper i en fa el resum."
   },
   "mic": {
     "denied": "Murmur necessita el micròfon per gravar. Activa'l a Configuració › Murmur."
   },
   "infoPlist": {
-    "NSMicrophoneUsageDescription": "Murmur escolta el micròfon per transcriure la reunió. Tot es queda al telèfon."
+    "NSMicrophoneUsageDescription": "Murmur escolta el micròfon per transcriure la reunió. Tot es queda al telèfon.",
+    "NSLocalNetworkUsageDescription": "Murmur busca el teu ordinador a la xarxa local per passar-hi les reunions, xifrades.",
+    "NSCameraUsageDescription": "Murmur fa servir la càmera només per llegir el codi QR de l'ordinador."
   },
   "start": {
     "languageTitle": "Idioma de la reunió",
@@ -89,5 +94,34 @@
     "namePlaceholder": "Per exemple, Laia",
     "thisLine": "Aquesta frase és de",
     "allLines": "Totes les frases de «{{name}}» són de"
+  },
+  "sync": {
+    "synced": "Sincronitzat {{ago}}",
+    "never": "Encara no s'ha sincronitzat",
+    "syncing": "Sincronitzant…",
+    "toSend": "Per enviar: {{count}}",
+    "now": "Sincronitza ara",
+    "auto": "Envia les reunions soles",
+    "autoHint": "Quan el telèfon i l'ordinador són a la mateixa xarxa i Murmur és obert a tots dos.",
+    "unpair": "Desconnecta l'ordinador",
+    "unpairConfirm": "Les reunions que ja hi són s'hi queden. Per tornar-lo a connectar caldrà el codi QR.",
+    "unreachable": "No el trobo a la xarxa. Comprova que és a la mateixa wifi i que Murmur hi és obert.",
+    "notPaired": "Aquest ordinador ja no està connectat. Torna'l a connectar amb el codi QR.",
+    "failed": "No s'ha pogut sincronitzar: {{reason}}"
+  },
+  "pair": {
+    "title": "Connecta l'ordinador",
+    "heading": "Escaneja el codi de l'ordinador",
+    "step1": "Obre Murmur a l'ordinador.",
+    "step2": "Ves a Configuració › Mòbil › Connecta un mòbil.",
+    "step3": "Apunta-hi el telèfon.",
+    "after": "Després, cada reunió que facis amb el mòbil passarà a l'ordinador quan siguin a la mateixa xarxa, xifrada. L'ordinador la tornarà a escoltar i et tornarà el resum.",
+    "connecting": "Connectant amb {{name}}…",
+    "done": "Connectat amb {{name}}",
+    "notACode": "Aquest codi no és de Murmur.",
+    "expired": "El codi ja no és a la pantalla de l'ordinador. Torna a obrir Connecta un mòbil.",
+    "unreachable": "No trobo l'ordinador. Comprova que tots dos són a la mateixa wifi.",
+    "noCamera": "Murmur necessita la càmera per llegir el codi. Pots donar-li permís a la Configuració de l'iPhone.",
+    "openSettings": "Obre la Configuració"
   }
 }

@@ -318,6 +318,37 @@ RustBuffer uniffi_murmur_mobile_fn_method_murmur_start(uint64_t ptr, RustBuffer 
 RustBuffer uniffi_murmur_mobile_fn_method_murmur_stop(uint64_t ptr, RustBuffer extra, RustCallStatus *_Nonnull out_status
 );
 #endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_MURMUR_MOBILE_FN_METHOD_MURMUR_FORGET_COMPUTER
+#define UNIFFI_FFIDEF_UNIFFI_MURMUR_MOBILE_FN_METHOD_MURMUR_FORGET_COMPUTER
+void uniffi_murmur_mobile_fn_method_murmur_forget_computer(uint64_t ptr, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_MURMUR_MOBILE_FN_METHOD_MURMUR_PAIR
+#define UNIFFI_FFIDEF_UNIFFI_MURMUR_MOBILE_FN_METHOD_MURMUR_PAIR
+RustBuffer uniffi_murmur_mobile_fn_method_murmur_pair(uint64_t ptr, RustBuffer uri, RustBuffer extra, RustBuffer private_key, RustBuffer phone_name, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_MURMUR_MOBILE_FN_METHOD_MURMUR_SYNC
+#define UNIFFI_FFIDEF_UNIFFI_MURMUR_MOBILE_FN_METHOD_MURMUR_SYNC
+RustBuffer uniffi_murmur_mobile_fn_method_murmur_sync(uint64_t ptr, RustBuffer candidates, RustBuffer private_key, RustBuffer computer_key, RustBuffer phone_name, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_MURMUR_MOBILE_FN_METHOD_MURMUR_UNSENT_COUNT
+#define UNIFFI_FFIDEF_UNIFFI_MURMUR_MOBILE_FN_METHOD_MURMUR_UNSENT_COUNT
+uint32_t uniffi_murmur_mobile_fn_method_murmur_unsent_count(uint64_t ptr, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_MURMUR_MOBILE_FN_FUNC_NEW_SYNC_KEY
+#define UNIFFI_FFIDEF_UNIFFI_MURMUR_MOBILE_FN_FUNC_NEW_SYNC_KEY
+RustBuffer uniffi_murmur_mobile_fn_func_new_sync_key(RustCallStatus *_Nonnull out_status
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_MURMUR_MOBILE_FN_FUNC_READ_PAIRING_CODE
+#define UNIFFI_FFIDEF_UNIFFI_MURMUR_MOBILE_FN_FUNC_READ_PAIRING_CODE
+RustBuffer uniffi_murmur_mobile_fn_func_read_pairing_code(RustBuffer uri, RustCallStatus *_Nonnull out_status
+);
+#endif
 #ifndef UNIFFI_FFIDEF_FFI_MURMUR_MOBILE_RUSTBUFFER_ALLOC
 #define UNIFFI_FFIDEF_FFI_MURMUR_MOBILE_RUSTBUFFER_ALLOC
 RustBuffer ffi_murmur_mobile_rustbuffer_alloc(uint64_t size, RustCallStatus *_Nonnull out_status
@@ -578,6 +609,18 @@ void ffi_murmur_mobile_rust_future_free_void(uint64_t handle
 void ffi_murmur_mobile_rust_future_complete_void(uint64_t handle, RustCallStatus *_Nonnull out_status
 );
 #endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_MURMUR_MOBILE_CHECKSUM_FUNC_NEW_SYNC_KEY
+#define UNIFFI_FFIDEF_UNIFFI_MURMUR_MOBILE_CHECKSUM_FUNC_NEW_SYNC_KEY
+uint16_t uniffi_murmur_mobile_checksum_func_new_sync_key(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_MURMUR_MOBILE_CHECKSUM_FUNC_READ_PAIRING_CODE
+#define UNIFFI_FFIDEF_UNIFFI_MURMUR_MOBILE_CHECKSUM_FUNC_READ_PAIRING_CODE
+uint16_t uniffi_murmur_mobile_checksum_func_read_pairing_code(void
+    
+);
+#endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_MURMUR_MOBILE_CHECKSUM_METHOD_MURMUR_DELETE_MEETING
 #define UNIFFI_FFIDEF_UNIFFI_MURMUR_MOBILE_CHECKSUM_METHOD_MURMUR_DELETE_MEETING
 uint16_t uniffi_murmur_mobile_checksum_method_murmur_delete_meeting(void
@@ -647,6 +690,30 @@ uint16_t uniffi_murmur_mobile_checksum_method_murmur_start(void
 #ifndef UNIFFI_FFIDEF_UNIFFI_MURMUR_MOBILE_CHECKSUM_METHOD_MURMUR_STOP
 #define UNIFFI_FFIDEF_UNIFFI_MURMUR_MOBILE_CHECKSUM_METHOD_MURMUR_STOP
 uint16_t uniffi_murmur_mobile_checksum_method_murmur_stop(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_MURMUR_MOBILE_CHECKSUM_METHOD_MURMUR_FORGET_COMPUTER
+#define UNIFFI_FFIDEF_UNIFFI_MURMUR_MOBILE_CHECKSUM_METHOD_MURMUR_FORGET_COMPUTER
+uint16_t uniffi_murmur_mobile_checksum_method_murmur_forget_computer(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_MURMUR_MOBILE_CHECKSUM_METHOD_MURMUR_PAIR
+#define UNIFFI_FFIDEF_UNIFFI_MURMUR_MOBILE_CHECKSUM_METHOD_MURMUR_PAIR
+uint16_t uniffi_murmur_mobile_checksum_method_murmur_pair(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_MURMUR_MOBILE_CHECKSUM_METHOD_MURMUR_SYNC
+#define UNIFFI_FFIDEF_UNIFFI_MURMUR_MOBILE_CHECKSUM_METHOD_MURMUR_SYNC
+uint16_t uniffi_murmur_mobile_checksum_method_murmur_sync(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_MURMUR_MOBILE_CHECKSUM_METHOD_MURMUR_UNSENT_COUNT
+#define UNIFFI_FFIDEF_UNIFFI_MURMUR_MOBILE_CHECKSUM_METHOD_MURMUR_UNSENT_COUNT
+uint16_t uniffi_murmur_mobile_checksum_method_murmur_unsent_count(void
     
 );
 #endif

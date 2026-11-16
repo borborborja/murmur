@@ -234,7 +234,7 @@ impl Murmur {
     /// One meeting and its audio. True when the computer has it whole; false when it refused it.
     fn send_meeting(&self, session: &mut Session<TcpStream>, id: &str) -> Result<bool> {
         let Some(mut meeting) = lock(&self.db).get(id)? else { return Ok(true) };
-        let audio = meeting["audioPath"].as_str().map(std::path::PathBuf::from).filter(|p| p.exists());
+        let audio = self.audio_of(&meeting);
         // The phone's own paths mean nothing on the computer.
         if let Some(m) = meeting.as_object_mut() {
             m.remove("audioPath");
@@ -273,7 +273,10 @@ impl Murmur {
         let id = meeting["id"].as_str().unwrap_or_default().to_owned();
         let mut db = lock(&self.db);
         let Some(mine) = db.get(&id)? else { return Ok(false) };
-        meeting["audioPath"] = mine["audioPath"].clone();
+        meeting["audioPath"] = match self.audio_of(&mine) {
+            Some(path) => Value::from(path.to_string_lossy().into_owned()),
+            None => mine["audioPath"].clone(),
+        };
         if state.edited.contains(&id) {
             meeting["title"] = mine["title"].clone();
             meeting["speakerNames"] = mine["speakerNames"].clone();

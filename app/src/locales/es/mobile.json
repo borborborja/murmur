@@ -53,12 +53,13 @@
     "rename": "Cambiar el nombre",
     "renameTitle": "Nombre de la reunión",
     "save": "Guardar",
-    "cancel": "Cancelar"
+    "cancel": "Cancelar",
+    "pendingUnpaired": "Ahora es la transcripción rápida del teléfono. Conecta el ordenador en Ajustes y pasará sola: la volverá a escuchar con Whisper y hará el resumen.",
+    "sent": "Ya está en el ordenador, que la volverá a escuchar con Whisper. Cuando acabe, la versión revisada llegará aquí."
   },
   "settings": {
     "title": "Ajustes",
     "computer": "Ordenador",
-    "computerSoon": "Conectar con el ordenador llegará pronto: las reuniones pasarán a él para rehacerlas con Whisper y hacer el resumen.",
     "transcription": "Transcripción",
     "language": "Idioma",
     "partials": "Texto mientras hablas",
@@ -69,13 +70,17 @@
     "audio": "Audio",
     "microphone": "Micrófono",
     "micAuto": "Automático",
-    "micHint": "Automático usa el micrófono conectado por cable o USB y, si no hay, el del iPhone. Los auriculares Bluetooth solo si los eliges: solo oyen a quien los lleva, no la sala."
+    "micHint": "Automático usa el micrófono conectado por cable o USB y, si no hay, el del iPhone. Los auriculares Bluetooth solo si los eliges: solo oyen a quien los lleva, no la sala.",
+    "pairComputer": "Conectar el ordenador",
+    "computerHint": "Las reuniones pasarán solas cuando estén en la misma red: el ordenador las vuelve a escuchar con Whisper y hace el resumen."
   },
   "mic": {
     "denied": "Murmur necesita el micrófono para grabar. Actívalo en Ajustes › Murmur."
   },
   "infoPlist": {
-    "NSMicrophoneUsageDescription": "Murmur escucha el micrófono para transcribir la reunión. Todo se queda en el teléfono."
+    "NSMicrophoneUsageDescription": "Murmur escucha el micrófono para transcribir la reunión. Todo se queda en el teléfono.",
+    "NSLocalNetworkUsageDescription": "Murmur busca tu ordenador en la red local para pasarle las reuniones, cifradas.",
+    "NSCameraUsageDescription": "Murmur usa la cámara solo para leer el código QR del ordenador."
   },
   "start": {
     "languageTitle": "Idioma de la reunión",
@@ -89,5 +94,34 @@
     "namePlaceholder": "Por ejemplo, Laia",
     "thisLine": "Esta frase es de",
     "allLines": "Todas las frases de «{{name}}» son de"
+  },
+  "sync": {
+    "synced": "Sincronizado {{ago}}",
+    "never": "Todavía no se ha sincronizado",
+    "syncing": "Sincronizando…",
+    "toSend": "Por enviar: {{count}}",
+    "now": "Sincronizar ahora",
+    "auto": "Enviar las reuniones solas",
+    "autoHint": "Cuando el teléfono y el ordenador están en la misma red y Murmur está abierto en los dos.",
+    "unpair": "Desconectar el ordenador",
+    "unpairConfirm": "Las reuniones que ya están ahí se quedan. Para volver a conectarlo hará falta el código QR.",
+    "unreachable": "No lo encuentro en la red. Comprueba que está en la misma wifi y que Murmur está abierto.",
+    "notPaired": "Este ordenador ya no está conectado. Vuelve a conectarlo con el código QR.",
+    "failed": "No se ha podido sincronizar: {{reason}}"
+  },
+  "pair": {
+    "title": "Conectar el ordenador",
+    "heading": "Escanea el código del ordenador",
+    "step1": "Abre Murmur en el ordenador.",
+    "step2": "Ve a Ajustes › Móvil › Conectar un móvil.",
+    "step3": "Apunta el teléfono hacia él.",
+    "after": "Después, cada reunión que hagas con el móvil pasará al ordenador cuando estén en la misma red, cifrada. El ordenador la volverá a escuchar y te devolverá el resumen.",
+    "connecting": "Conectando con {{name}}…",
+    "done": "Conectado con {{name}}",
+    "notACode": "Este código no es de Murmur.",
+    "expired": "El código ya no está en la pantalla del ordenador. Vuelve a abrir Conectar un móvil.",
+    "unreachable": "No encuentro el ordenador. Comprueba que los dos están en la misma wifi.",
+    "noCamera": "Murmur necesita la cámara para leer el código. Puedes darle permiso en los Ajustes del iPhone.",
+    "openSettings": "Abrir Ajustes"
   }
 }

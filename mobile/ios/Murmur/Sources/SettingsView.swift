@@ -12,14 +12,72 @@ struct SettingsView: View {
     @EnvironmentObject private var store: Store
     /// The microphones there are now (uid, name, Bluetooth or not).
     @State private var inputs: [(uid: String, name: String, bluetooth: Bool)] = []
+    @AppStorage("autoSync") private var autoSync = true
+    @State private var pairing = false
+    @State private var confirmUnpair = false
+
+    /// The computer: connect one, or the one connected, how it's syncing, and what to do with it.
+    @ViewBuilder private var computerSection: some View {
+        if let computer = store.computer {
+            Section {
+                HStack(spacing: 12) {
+                    Image(systemName: "laptopcomputer").font(.system(size: 17)).frame(width: 28)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(computer.name).font(.system(size: 17))
+                        syncLine.font(.system(size: 13)).foregroundStyle(palette.textSecondary)
+                    }
+                    Spacer(minLength: 0)
+                    if store.syncing { ProgressView() }
+                }
+                .padding(.vertical, 2)
+                Button(L("sync.now"), systemImage: "arrow.triangle.2.circlepath") { Task { await store.sync() } }
+                    .disabled(store.syncing || store.live != nil)
+                Toggle(isOn: $autoSync) {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(L("sync.auto"))
+                        Text(L("sync.autoHint")).font(.system(size: 13)).foregroundStyle(palette.textSecondary)
+                    }
+                }
+                .tint(palette.toggleOn)
+                Button(L("sync.unpair"), role: .destructive) { confirmUnpair = true }
+            } header: {
+                Text(L("settings.computer"))
+            } footer: {
+                if let problem = store.syncProblem {
+                    Label(problem, systemImage: "exclamationmark.triangle").font(.system(size: 13))
+                }
+            }
+            .listRowBackground(palette.fillSubtle)
+        } else {
+            Section {
+                Button { pairing = true } label: {
+                    Label(L("settings.pairComputer"), systemImage: "qrcode.viewfinder")
+                }
+            } header: {
+                Text(L("settings.computer"))
+            } footer: {
+                Text(L("settings.computerHint")).font(.system(size: 13))
+            }
+            .listRowBackground(palette.fillSubtle)
+        }
+    }
+
+    /// "Sincronitzat fa 5 min · Per enviar: 2", or what's happening now.
+    private var syncLine: Text {
+        if store.syncing { return Text(L("sync.syncing")) }
+        var parts: [String] = []
+        if let last = store.lastSync {
+            parts.append(L("sync.synced", last.formatted(.relative(presentation: .named))))
+        } else {
+            parts.append(L("sync.never"))
+        }
+        if store.unsent > 0 { parts.append(L("sync.toSend", "\(store.unsent)")) }
+        return Text(parts.joined(separator: " · "))
+    }
 
     var body: some View {
         List {
-            Section(L("settings.computer")) {
-                Label(L("settings.computerSoon"), systemImage: "laptopcomputer")
-                    .font(.system(size: 15)).foregroundStyle(palette.textSecondary)
-            }
-            .listRowBackground(palette.fillSubtle)
+            computerSection
 
             Section {
                 Picker(L("settings.microphone"), selection: $micInput) {
@@ -80,6 +138,11 @@ struct SettingsView: View {
                 .background(palette.background)
         }
         .contentMargins(.bottom, 110, for: .scrollContent)
+        .fullScreenCover(isPresented: $pairing) { PairView() }
+        .confirmationDialog(L("sync.unpairConfirm"), isPresented: $confirmUnpair, titleVisibility: .visible) {
+            Button(L("sync.unpair"), role: .destructive) { store.unpair() }
+            Button(L("meeting.cancel"), role: .cancel) {}
+        }
         .onAppear {
             // Asking iOS for the microphones touches the audio session: not while recording.
             guard store.live == nil, Microphone.simulated == nil else { return }

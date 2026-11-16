@@ -10,9 +10,21 @@ enum Tab { case meetings, settings }
 @main
 struct MurmurApp: App {
     @StateObject private var store = Store()
+    @Environment(\.scenePhase) private var scenePhase
     var body: some Scene {
         WindowGroup {
             RootView().environmentObject(store).murmurTheme(.acid)
+                .task {
+                    // `-pair <code>` (development): pairs without the camera, as in the simulator.
+                    let args = ProcessInfo.processInfo.arguments
+                    if let i = args.firstIndex(of: "-pair"), i + 1 < args.count {
+                        do { _ = try await store.pair(code: args[i + 1]) } catch { store.error = error.localizedDescription }
+                    }
+                }
+        }
+        // Back in the app: what's pending goes to the computer, what it revised comes back.
+        .onChange(of: scenePhase) { _, phase in
+            if phase == .active { store.autoSync() }
         }
     }
 }
@@ -169,6 +181,8 @@ struct HomeView: View {
                 }
                 .listStyle(.plain)
                 .scrollContentBackground(.hidden)
+                // Pull to sync with the computer, if there's one.
+                .refreshable { if store.computer != nil { await store.sync() } }
             }
         }
         .foregroundStyle(palette.textPrimary)

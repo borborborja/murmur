@@ -196,7 +196,9 @@ Entre reunions (bloc 5):
   - [ ] La Live Activity i la Dynamic Island (Marca, Pausa i Atura des de la pantalla bloquejada): feta i compilada, falta veure-la a l'iPhone.
   - [x] Posar nom als parlants (el menú de l'etiqueta: canvia el nom, aquesta frase és d'un altre, totes les frases són d'un altre), mentre graves i a la reunió acabada.
   - [ ] Fotos amb el minut; l'editor de notes amb format.
-  - [ ] Emparellar i sincronitzar amb l'ordinador (la part del mòbil de `core/src/sync.rs`).
+  - [x] Emparellar i sincronitzar amb l'ordinador, la part del mòbil: el QR amb la càmera, Bonjour, l'enviament amb l'àudio i la versió revisada de tornada. Provat al simulador amb `fake_computer`.
+  - [ ] Provar l'emparellament amb l'app de l'ordinador i un iPhone de debò.
+  - [ ] Les edicions després de revisar en tots dos sentits (avui el mòbil només conserva el títol i els noms que hi canvies).
   - [ ] iPad, iPhone Duo i Android.
   - [x] Provar l'emparellament de punta a punta amb `fake_phone` i l'app: emparellar, enviar una reunió de 3 minuts, passada final (Whisper i dos parlants trobats) i recollir-ne el resultat.
   - [ ] La prova d'una tarda a l'iPhone (cal Xcode): velocitat, qualitat i bateria del Conformer.

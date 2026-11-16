@@ -199,7 +199,9 @@ Entre reunions (bloc 5):
   - [x] La portada que torna de l'ordinador (pestanya Resum): l'entradeta, el to, qui ha parlat, el resum, les decisions, les tasques i les parts.
   - [x] Marcar tasques fetes des del mòbil (es conserven quan la reunió torna revisada).
   - [x] El cercador, les etiquetes, compartir una reunió en text, i Configuració › Aparença (tema i mode) i «Desa l'àudio al telèfon».
-  - [ ] «La teva veu» al mòbil (l'empremta, només al telèfon).
+  - [x] «La teva veu» al mòbil (l'empremta, només al telèfon), «Murmur, sóc…» en directe, el «…» mentre graves (nom, micròfon, descartar) i les veus de la reunió.
+  - [x] El splash (l'eco es desdobla i la marca vola a la capçalera) i l'onboarding (benvinguda, què fa, com graves, el micròfon, la teva veu i l'ordinador).
+  - [x] L'ordinador torna a llegir el «Murmur, sóc…» de les reunions del mòbil després de verificar els parlants.
   - [x] Emparellar i sincronitzar amb l'ordinador, la part del mòbil: el QR amb la càmera, Bonjour, l'enviament amb l'àudio i la versió revisada de tornada. Provat al simulador amb `fake_computer`.
   - [ ] Provar l'emparellament amb l'app de l'ordinador i un iPhone de debò.
   - [ ] Les edicions després de revisar en tots dos sentits (avui el mòbil només conserva el títol i els noms que hi canvies).

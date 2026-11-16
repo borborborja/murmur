@@ -1,3 +1,4 @@
+import AVFoundation
 import SwiftUI
 
 enum MeetingTab: Hashable { case summary, transcript, notes }
@@ -18,6 +19,41 @@ struct RecordingView: View {
     @State private var confirmStop = false
     /// The speaker being renamed (the label's menu).
     @State private var naming: Speaker?
+    @State private var renaming = false
+    @State private var newTitle = ""
+    @State private var confirmDiscard = false
+    @AppStorage("micInput") private var micInput = ""
+
+    /// The …: rename the meeting, another microphone without stopping, or throw it away. What's
+    /// chosen at the start (the language, who's in the room) can't change in the middle.
+    private var moreMenu: some View {
+        Menu {
+            Button(L("meeting.rename"), systemImage: "pencil") {
+                newTitle = store.live?.title ?? ""
+                renaming = true
+            }
+            if Microphone.simulated == nil {
+                Menu {
+                    Picker(L("settings.microphone"), selection: Binding(get: { micInput }, set: { uid in
+                        let bluetooth: Set<AVAudioSession.Port> = [.bluetoothHFP, .bluetoothLE, .bluetoothA2DP]
+                        let port = Microphone.inputsNow().first { $0.uid == uid }
+                        store.useInput(uid, bluetooth: port.map { bluetooth.contains($0.portType) } ?? false)
+                    })) {
+                        Text(L("settings.micAuto")).tag("")
+                        ForEach(Microphone.inputsNow(), id: \.uid) { Text($0.portName).tag($0.uid) }
+                    }
+                } label: {
+                    Label(L("settings.microphone"), systemImage: "mic")
+                }
+            }
+            Divider()
+            Button(L("recMenu.discard"), systemImage: "trash", role: .destructive) { confirmDiscard = true }
+        } label: {
+            Image(systemName: "ellipsis").font(.system(size: 17, weight: .medium)).frame(width: 44, height: 44)
+                .background(palette.fillSubtle, in: Circle())
+        }
+        .accessibilityLabel(L("recMenu.more"))
+    }
 
     private func actions(_ live: LiveMeeting?) -> SpeakerActions {
         SpeakerActions(
@@ -35,7 +71,7 @@ struct RecordingView: View {
                 Spacer()
                 Text(live?.title ?? "").font(.system(size: 17, weight: .semibold)).lineLimit(1)
                 Spacer()
-                Color.clear.frame(width: 44, height: 44)
+                moreMenu
             }
             .padding(.horizontal, 16).frame(height: 56)
 
@@ -55,6 +91,12 @@ struct RecordingView: View {
                     Color.black
                     LinearGradient(colors: [.black, .black.opacity(0)], startPoint: .top, endPoint: .bottom).frame(height: 44)
                 }
+            }
+            // "Parlant 3 ara és Laia · Desfés", above the controls.
+            if let toast = store.toast {
+                ToastView(toast: toast) { withAnimation { store.toast = nil } }
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
+                    .padding(.bottom, 6)
             }
             // Writing a note: the format bar takes the controls' place, above the keyboard.
             if editing != nil {
@@ -76,6 +118,19 @@ struct RecordingView: View {
         .foregroundStyle(palette.textPrimary)
         .toolbar(.hidden, for: .navigationBar)
         .speakerNameAlert($naming) { store.nameLiveSpeaker($0.id, $1) }
+        .renameAlert(isPresented: $renaming, title: $newTitle) { store.renameLive($0) }
+        .confirmationDialog(L("recMenu.discardTitle"), isPresented: $confirmDiscard, titleVisibility: .visible) {
+            Button(L("recMenu.discardConfirm"), role: .destructive) {
+                stopping = true
+                Task {
+                    await store.discard()
+                    dismiss()
+                }
+            }
+        } message: {
+            Text(L("recMenu.discardMessage"))
+        }
+        .animation(.spring(duration: 0.3), value: store.toast?.id)
         // `-autostop <seconds>` (development): stops by itself, to try the end without touching the screen.
         .task {
             let args = ProcessInfo.processInfo.arguments

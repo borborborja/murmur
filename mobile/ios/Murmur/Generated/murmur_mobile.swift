@@ -621,6 +621,19 @@ public protocol MurmurProtocol: AnyObject, Sendable {
     
     func deleteMeeting(id: String) throws 
     
+    func deleteVoice() throws 
+    
+    /**
+     * Throws the recording away: nothing is saved, and its audio and photos are deleted.
+     */
+    func discard() throws 
+    
+    /**
+     * Makes and saves the print from the user reading the sentence. Fails (translated) with too
+     * little speech, to read it again.
+     */
+    func enrollVoice(samples: [Float]) throws  -> Double
+    
     /**
      * Whether a recording is in progress (after the app was killed, it isn't).
      */
@@ -702,6 +715,16 @@ public protocol MurmurProtocol: AnyObject, Sendable {
      * (`notesDoc`), its photos (`screens`) and the moments marked as important (`marks`).
      */
     func stop(extra: String) throws  -> String
+    
+    /**
+     * How many words of `sentence` have been read so far in `samples` (the karaoke).
+     */
+    func voiceProgress(sentence: String, samples: [Float]) throws  -> UInt32
+    
+    /**
+     * When it was saved (seconds since 1970), if it is.
+     */
+    func voiceSaved()  -> Double?
     
     /**
      * Unpaired on the phone: what was sent is forgotten (pairing again sends it all; the computer
@@ -802,6 +825,39 @@ open func deleteMeeting(id: String)throws   {try rustCallWithError(FfiConverterT
         FfiConverterString.lower(id),uniffiCallStatus
     )
 }
+}
+    
+open func deleteVoice()throws   {try rustCallWithError(FfiConverterTypeMurmurError_lift) {
+        uniffiCallStatus in
+    uniffi_murmur_mobile_fn_method_murmur_delete_voice(
+            self.uniffiCloneHandle(),uniffiCallStatus
+    )
+}
+}
+    
+    /**
+     * Throws the recording away: nothing is saved, and its audio and photos are deleted.
+     */
+open func discard()throws   {try rustCallWithError(FfiConverterTypeMurmurError_lift) {
+        uniffiCallStatus in
+    uniffi_murmur_mobile_fn_method_murmur_discard(
+            self.uniffiCloneHandle(),uniffiCallStatus
+    )
+}
+}
+    
+    /**
+     * Makes and saves the print from the user reading the sentence. Fails (translated) with too
+     * little speech, to read it again.
+     */
+open func enrollVoice(samples: [Float])throws  -> Double  {
+    return try  FfiConverterDouble.lift(try rustCallWithError(FfiConverterTypeMurmurError_lift) {
+        uniffiCallStatus in
+    uniffi_murmur_mobile_fn_method_murmur_enroll_voice(
+            self.uniffiCloneHandle(),
+        FfiConverterSequenceFloat.lower(samples),uniffiCallStatus
+    )
+})
 }
     
     /**
@@ -1005,6 +1061,32 @@ open func stop(extra: String)throws  -> String  {
     uniffi_murmur_mobile_fn_method_murmur_stop(
             self.uniffiCloneHandle(),
         FfiConverterString.lower(extra),uniffiCallStatus
+    )
+})
+}
+    
+    /**
+     * How many words of `sentence` have been read so far in `samples` (the karaoke).
+     */
+open func voiceProgress(sentence: String, samples: [Float])throws  -> UInt32  {
+    return try  FfiConverterUInt32.lift(try rustCallWithError(FfiConverterTypeMurmurError_lift) {
+        uniffiCallStatus in
+    uniffi_murmur_mobile_fn_method_murmur_voice_progress(
+            self.uniffiCloneHandle(),
+        FfiConverterString.lower(sentence),
+        FfiConverterSequenceFloat.lower(samples),uniffiCallStatus
+    )
+})
+}
+    
+    /**
+     * When it was saved (seconds since 1970), if it is.
+     */
+open func voiceSaved() -> Double?  {
+    return try!  FfiConverterOptionDouble.lift(try! rustCall() {
+        uniffiCallStatus in
+    uniffi_murmur_mobile_fn_method_murmur_voice_saved(
+            self.uniffiCloneHandle(),uniffiCallStatus
     )
 })
 }
@@ -1787,6 +1869,30 @@ public func FfiConverterTypeMurmurError_lower(_ value: MurmurError) -> RustBuffe
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
+fileprivate struct FfiConverterOptionDouble: FfiConverterRustBuffer {
+    typealias SwiftType = Double?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterDouble.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterDouble.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 fileprivate struct FfiConverterOptionString: FfiConverterRustBuffer {
     typealias SwiftType = String?
 
@@ -1978,6 +2084,15 @@ private let initializationResult: InitializationResult = {
     if (uniffi_murmur_mobile_checksum_method_murmur_delete_meeting() != 57961) {
         return InitializationResult.apiChecksumMismatch
     }
+    if (uniffi_murmur_mobile_checksum_method_murmur_delete_voice() != 13459) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_murmur_mobile_checksum_method_murmur_discard() != 35759) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_murmur_mobile_checksum_method_murmur_enroll_voice() != 22361) {
+        return InitializationResult.apiChecksumMismatch
+    }
     if (uniffi_murmur_mobile_checksum_method_murmur_is_recording() != 6817) {
         return InitializationResult.apiChecksumMismatch
     }
@@ -2021,6 +2136,12 @@ private let initializationResult: InitializationResult = {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_murmur_mobile_checksum_method_murmur_stop() != 8302) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_murmur_mobile_checksum_method_murmur_voice_progress() != 37939) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_murmur_mobile_checksum_method_murmur_voice_saved() != 60321) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_murmur_mobile_checksum_method_murmur_forget_computer() != 62072) {

@@ -117,6 +117,11 @@ struct SettingsView: View {
                     Text(L("language.ca")).tag("ca")
                     Text(L("language.es")).tag("es")
                 }
+                NavigationLink {
+                    VoiceSettingsView()
+                } label: {
+                    LabeledContent(L("voice.title"), value: store.voiceSavedAt.map { L("voice.saved", $0.formatted(date: .abbreviated, time: .omitted)) } ?? L("voice.notSaved"))
+                }
                 Picker(L("start.roomTitle"), selection: $moreInRoom) {
                     Text(L("start.onlyMe")).tag(false)
                     Text(L("start.moreInRoom")).tag(true)

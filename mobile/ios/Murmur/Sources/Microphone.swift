@@ -78,6 +78,19 @@ final class Microphone: @unchecked Sendable {
         return input.portName
     }
 
+    /// The microphones there are now, while recording: the session is already active, so it isn't
+    /// touched (`available()` turns it on and off).
+    static func inputsNow() -> [AVAudioSessionPortDescription] {
+        AVAudioSession.sharedInstance().availableInputs ?? []
+    }
+
+    /// The chosen microphone (Configuració) taken on now, in the middle of a recording: the engine
+    /// restarts with it (`AVAudioEngineConfigurationChange`) and the recording carries on.
+    static func switchInput() {
+        guard simulated == nil else { return }
+        try? configureSession()
+    }
+
     /// The microphones this phone has now, for Configuració. Bluetooth ones only show up while the
     /// session allows them, so it's set up briefly to ask.
     static func available() -> [AVAudioSessionPortDescription] {

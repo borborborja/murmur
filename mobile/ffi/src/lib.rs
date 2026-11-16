@@ -10,7 +10,8 @@ use std::sync::Mutex;
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use murmur_core::db::Db;
-use murmur_core::engine::{Event, LiveModel, LoadOptions, Models, SAMPLE_RATE};
+use murmur_core::engine::{Channel, Event, LiveModel, LoadOptions, Models, SAMPLE_RATE};
+use murmur_core::{glossary, voice};
 use murmur_core::pipeline::{Pipeline, Source};
 use murmur_core::recorder::Recorder;
 use serde_json::{Value, json};
@@ -294,6 +295,12 @@ impl Murmur {
         if partial_every > 0.0 {
             pipeline.set_partial_every(partial_every);
         }
+        // "Murmur" spelled right, so "Murmur, sóc la Laia" is heard as such (glossary.rs).
+        pipeline.set_glossary(glossary::with_guests(&[], &[]));
+        // The user's voice (voice.rs), if saved: they're speaker 0, "Tu", from the first word.
+        if let Some(voice) = voice::load(&self.data_dir) {
+            pipeline.known_speakers(Channel::Mic, vec![(0, voice.embedding)], 1);
+        }
         let meeting = json!({
             "id": id, "title": title, "createdAt": created, "duration": 0.0, "status": "recording",
             "utterances": [], "speakerNames": {}, "notes": [], "language": language,
@@ -349,6 +356,40 @@ impl Murmur {
         meeting["utterances"] = Value::Array(lines);
         lock(&self.db).put(&meeting)?;
         Ok(meeting["id"].as_str().unwrap_or_default().to_owned())
+    }
+
+    /// Throws the recording away: nothing is saved, and its audio and photos are deleted.
+    pub fn discard(&self) -> Result<()> {
+        let Some(live) = lock(&self.live).take() else { return Ok(()) };
+        let id = live.meeting["id"].as_str().unwrap_or_default().to_owned();
+        drop(live);
+        let _ = std::fs::remove_file(self.data_dir.join("recordings").join(format!("{}.ogg", safe_dir(&id))));
+        let _ = std::fs::remove_dir_all(self.data_dir.join("screens").join(safe_dir(&id)));
+        Ok(())
+    }
+
+    // "La teva veu" (voice.rs): a print of the user's voice, only on this phone.
+
+    /// When it was saved (seconds since 1970), if it is.
+    pub fn voice_saved(&self) -> Option<f64> {
+        voice::load(&self.data_dir).map(|v| v.created_at)
+    }
+
+    /// How many words of `sentence` have been read so far in `samples` (the karaoke).
+    pub fn voice_progress(&self, sentence: String, samples: Vec<f32>) -> Result<u32> {
+        let words: Vec<&str> = sentence.split_whitespace().collect();
+        Ok(voice::progress(&words, &self.models()?.transcribe(&samples)) as u32)
+    }
+
+    /// Makes and saves the print from the user reading the sentence. Fails (translated) with too
+    /// little speech, to read it again.
+    pub fn enroll_voice(&self, samples: Vec<f32>) -> Result<f64> {
+        self.models()?;
+        voice::enroll(&self.models_dir, &self.data_dir, &samples).map(|v| v.created_at).map_err(Into::into)
+    }
+
+    pub fn delete_voice(&self) -> Result<()> {
+        voice::delete(&self.data_dir).map_err(Into::into)
     }
 
     /// Whether a recording is in progress (after the app was killed, it isn't).

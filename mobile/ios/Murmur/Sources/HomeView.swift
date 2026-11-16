@@ -41,6 +41,11 @@ struct RootView: View {
     @Environment(\.murmur) private var palette
     @State private var path: [Route] = []
     @State private var tab: Tab = .meetings
+    /// The splash, at launch (Splash.swift).
+    @State private var splashing = true
+    /// The first time: the onboarding (Onboarding.swift), after the splash.
+    @AppStorage("onboarded") private var onboarded = false
+    @State private var onboarding = false
 
     var body: some View {
         NavigationStack(path: $path) {
@@ -53,6 +58,19 @@ struct RootView: View {
                 Dock(tab: $tab, record: record, openRecording: { path.append(.recording) })
                     .padding(.bottom, 8)
             }
+            // The splash lands on the list's logo (or fades into the onboarding, the first time).
+            // Inside the stack: preferences don't come out of a NavigationStack.
+            .overlayPreferenceValue(LogoAnchorKey.self) { anchor in
+                GeometryReader { proxy in
+                    if splashing {
+                        SplashOverlay(target: onboarded && tab == .meetings ? anchor.map { proxy[$0] } : nil, size: proxy.size) {
+                            splashing = false
+                            if !onboarded { onboarding = true }
+                        }
+                    }
+                }
+                .ignoresSafeArea()
+            }
             .toolbar(.hidden, for: .navigationBar)
             .navigationDestination(for: Route.self) { route in
                 switch route {
@@ -64,9 +82,17 @@ struct RootView: View {
             }
         }
         .tint(palette.textPrimary)
+        .fullScreenCover(isPresented: $onboarding) {
+            OnboardingView {
+                onboarded = true
+                onboarding = false
+            }
+        }
         // `-autostart` (development, with -simulate): records at launch, to try it without touching the screen.
         .task {
             let args = ProcessInfo.processInfo.arguments
+            // `-onboarding` (development): shows it again.
+            if args.contains("-onboarding") { onboarded = false }
             if args.contains("-autostart") { record() }
             if args.contains("-search") { path = [.search] }
             // `-openLatest` (development): opens the newest meeting, to see it without touching the screen.
@@ -159,6 +185,8 @@ struct HomeView: View {
             HStack {
                 HStack(spacing: 9) {
                     LogoTile(size: 34)
+                        // Where the splash lands.
+                        .anchorPreference(key: LogoAnchorKey.self, value: .bounds) { $0 }
                     Text("murmur").font(.system(size: 24, weight: .bold)).tracking(-1.1)
                 }
                 Spacer()

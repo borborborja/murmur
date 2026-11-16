@@ -55,7 +55,10 @@ struct MeetingView: View {
                     if let m {
                         HStack(spacing: 6) {
                             Image(systemName: "iphone")
-                            Text("\(m.createdAt.formatted(date: .abbreviated, time: .shortened)) · \(max(1, Int(m.duration / 60))) min")
+                            // When, how long, and how many voices were heard.
+                            let voices = m.speakers.count
+                            let heard = voices == 0 ? "" : " · " + (voices == 1 ? L("meetingVoices.one") : L("meetingVoices.many", "\(voices)"))
+                            Text("\(m.createdAt.formatted(date: .abbreviated, time: .shortened)) · \(max(1, Int(m.duration / 60))) min\(heard)")
                         }
                         .font(.system(size: 13)).foregroundStyle(palette.textSecondary)
                         // Tapping the title renames it.

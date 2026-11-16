@@ -128,6 +128,8 @@ final class Store: ObservableObject {
     @Published var syncProblem: String?
     @Published var lastSync: Date? = UserDefaults.standard.object(forKey: "lastSync") as? Date
     @Published var unsent = 0
+    /// What just changed, with Desfés ("Parlant 3 ara és Laia").
+    @Published var toast: Toast?
     /// Sync runs on its own queue: it can take a while (the audio), and the recording can't wait.
     let syncQueue = DispatchQueue(label: "murmur.sync", qos: .utility)
     /// The lock screen's Atura was tapped once: a second tap within 4 s stops.
@@ -263,6 +265,8 @@ final class Store: ObservableObject {
         do {
             let id = try await onQueue { try engine.start(title: title, language: language, moreInRoom: room, partialEvery: every) }
             live = LiveMeeting(id: id, title: title)
+            // With the user's voice saved, speaker 0 is them (the engine knows them from the first word).
+            if engine.voiceSaved() != nil { live?.speakerNames[0] = L("rec.you") }
             paused.isOn = false
             meter.reset()
             let gate = paused, meter = meter
@@ -377,6 +381,80 @@ final class Store: ObservableObject {
         try? engine?.setNotes(id: meeting, doc: NotesDoc.json(doc))
     }
 
+    /// "Murmur, sóc la Laia": the speaker of that line takes the name, at once, with an undo (the
+    /// toast). Another speaker already called so is the same person: the two are joined.
+    private func introduce(_ line: Line) {
+        guard let current = live, let heard = Intro.name(in: line.text) else { return }
+        let speaker = current.speaker(of: line)
+        let name = Intro.match(heard, among: Array(current.speakerNames.values))
+        let before = Speaker(id: speaker, name: current.speakerNames[speaker]).label
+        guard before != name else { return }
+        let previous = current
+        if let other = current.speakerNames.first(where: { $0.key != speaker && $0.value.lowercased() == name.lowercased() })?.key {
+            mergeLiveSpeakers(speaker, into: other)
+        } else {
+            nameLiveSpeaker(speaker, name)
+        }
+        toast = Toast(text: L("intro.named", before, name)) { [weak self] in
+            // Back as it was: the names and the joins of before this line.
+            self?.live?.speakerNames = previous.speakerNames
+            self?.live?.aliases = previous.aliases
+            self?.live?.lineSpeakers = previous.lineSpeakers
+        }
+    }
+
+    // MARK: La teva veu (voice.rs): a print of the user's voice, only on this phone.
+
+    var voiceSavedAt: Date? { engine?.voiceSaved().map { Date(timeIntervalSince1970: $0) } }
+
+    /// How many words of the sentence have been read in `samples` (the karaoke).
+    func voiceProgress(_ sentence: String, _ samples: [Float]) async -> Int {
+        guard let engine else { return 0 }
+        return Int((try? await onQueue { try engine.voiceProgress(sentence: sentence, samples: samples) }) ?? 0)
+    }
+
+    /// Makes and saves the print; throws (with the reason to show) if there was too little speech.
+    func enrollVoice(_ samples: [Float]) async throws {
+        guard let engine else { return }
+        _ = try await onQueue { try engine.enrollVoice(samples: samples) }
+        objectWillChange.send()
+    }
+
+    func deleteVoice() {
+        try? engine?.deleteVoice()
+        objectWillChange.send()
+    }
+
+    /// The recording's new title (the … while recording); it's saved with the meeting.
+    func renameLive(_ title: String) {
+        let title = title.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !title.isEmpty else { return }
+        live?.title = title
+        updateActivity()
+    }
+
+    /// Throws the recording away: nothing saved, its audio and photos deleted.
+    func discard() async {
+        guard let engine, live != nil else { return }
+        microphone.stop()
+        UIApplication.shared.isIdleTimerDisabled = false
+        if let observer = routeObserver { NotificationCenter.default.removeObserver(observer) }
+        routeObserver = nil
+        stopArmed = false
+        endActivity()
+        try? await onQueue { try engine.discard() }
+        live = nil
+        reload()
+    }
+
+    /// Another microphone in the middle of a recording (the … menu): the engine carries on with it.
+    func useInput(_ uid: String, bluetooth: Bool) {
+        UserDefaults.standard.set(uid, forKey: "micInput")
+        UserDefaults.standard.set(bluetooth, forKey: "micInputBluetooth")
+        Microphone.switchInput()
+        inputName = Microphone.currentName
+    }
+
     /// Stops and saves the meeting; returns its id.
     func stop() async -> String? {
         guard let engine, let current = live else { return nil }
@@ -422,6 +500,8 @@ final class Store: ObservableObject {
     private func apply(_ u: LiveUpdate) {
         guard live != nil else { return }
         live?.lines.append(contentsOf: u.finals)
+        // "Murmur, sóc la Laia" (Intro.swift): that line's speaker gets the name.
+        for line in u.finals { introduce(line) }
         if !u.finals.isEmpty {
             live?.partial = ""
             // The lock screen gets each finished sentence (not the provisional text: too many updates).
@@ -440,6 +520,7 @@ final class Store: ObservableObject {
     /// applies the aliases and the lines' speakers, also to the last lines).
     private static func extra(_ live: LiveMeeting) -> String {
         var extra: [String: Any] = [
+            "title": live.title,
             "marks": NotesDoc.marks(live.notes),
             "screens": NotesDoc.screens(live.notes),
             "speakerNames": Dictionary(uniqueKeysWithValues: live.speakerNames.map { ("\($0.key)", $0.value) }),

@@ -263,6 +263,21 @@ uint64_t uniffi_murmur_mobile_fn_constructor_murmur_new(RustBuffer models_dir, R
 void uniffi_murmur_mobile_fn_method_murmur_delete_meeting(uint64_t ptr, RustBuffer id, RustCallStatus *_Nonnull out_status
 );
 #endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_MURMUR_MOBILE_FN_METHOD_MURMUR_DELETE_VOICE
+#define UNIFFI_FFIDEF_UNIFFI_MURMUR_MOBILE_FN_METHOD_MURMUR_DELETE_VOICE
+void uniffi_murmur_mobile_fn_method_murmur_delete_voice(uint64_t ptr, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_MURMUR_MOBILE_FN_METHOD_MURMUR_DISCARD
+#define UNIFFI_FFIDEF_UNIFFI_MURMUR_MOBILE_FN_METHOD_MURMUR_DISCARD
+void uniffi_murmur_mobile_fn_method_murmur_discard(uint64_t ptr, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_MURMUR_MOBILE_FN_METHOD_MURMUR_ENROLL_VOICE
+#define UNIFFI_FFIDEF_UNIFFI_MURMUR_MOBILE_FN_METHOD_MURMUR_ENROLL_VOICE
+double uniffi_murmur_mobile_fn_method_murmur_enroll_voice(uint64_t ptr, RustBuffer samples, RustCallStatus *_Nonnull out_status
+);
+#endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_MURMUR_MOBILE_FN_METHOD_MURMUR_IS_RECORDING
 #define UNIFFI_FFIDEF_UNIFFI_MURMUR_MOBILE_FN_METHOD_MURMUR_IS_RECORDING
 int8_t uniffi_murmur_mobile_fn_method_murmur_is_recording(uint64_t ptr, RustCallStatus *_Nonnull out_status
@@ -336,6 +351,16 @@ RustBuffer uniffi_murmur_mobile_fn_method_murmur_start(uint64_t ptr, RustBuffer 
 #ifndef UNIFFI_FFIDEF_UNIFFI_MURMUR_MOBILE_FN_METHOD_MURMUR_STOP
 #define UNIFFI_FFIDEF_UNIFFI_MURMUR_MOBILE_FN_METHOD_MURMUR_STOP
 RustBuffer uniffi_murmur_mobile_fn_method_murmur_stop(uint64_t ptr, RustBuffer extra, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_MURMUR_MOBILE_FN_METHOD_MURMUR_VOICE_PROGRESS
+#define UNIFFI_FFIDEF_UNIFFI_MURMUR_MOBILE_FN_METHOD_MURMUR_VOICE_PROGRESS
+uint32_t uniffi_murmur_mobile_fn_method_murmur_voice_progress(uint64_t ptr, RustBuffer sentence, RustBuffer samples, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_MURMUR_MOBILE_FN_METHOD_MURMUR_VOICE_SAVED
+#define UNIFFI_FFIDEF_UNIFFI_MURMUR_MOBILE_FN_METHOD_MURMUR_VOICE_SAVED
+RustBuffer uniffi_murmur_mobile_fn_method_murmur_voice_saved(uint64_t ptr, RustCallStatus *_Nonnull out_status
 );
 #endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_MURMUR_MOBILE_FN_METHOD_MURMUR_FORGET_COMPUTER
@@ -647,6 +672,24 @@ uint16_t uniffi_murmur_mobile_checksum_method_murmur_delete_meeting(void
     
 );
 #endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_MURMUR_MOBILE_CHECKSUM_METHOD_MURMUR_DELETE_VOICE
+#define UNIFFI_FFIDEF_UNIFFI_MURMUR_MOBILE_CHECKSUM_METHOD_MURMUR_DELETE_VOICE
+uint16_t uniffi_murmur_mobile_checksum_method_murmur_delete_voice(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_MURMUR_MOBILE_CHECKSUM_METHOD_MURMUR_DISCARD
+#define UNIFFI_FFIDEF_UNIFFI_MURMUR_MOBILE_CHECKSUM_METHOD_MURMUR_DISCARD
+uint16_t uniffi_murmur_mobile_checksum_method_murmur_discard(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_MURMUR_MOBILE_CHECKSUM_METHOD_MURMUR_ENROLL_VOICE
+#define UNIFFI_FFIDEF_UNIFFI_MURMUR_MOBILE_CHECKSUM_METHOD_MURMUR_ENROLL_VOICE
+uint16_t uniffi_murmur_mobile_checksum_method_murmur_enroll_voice(void
+    
+);
+#endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_MURMUR_MOBILE_CHECKSUM_METHOD_MURMUR_IS_RECORDING
 #define UNIFFI_FFIDEF_UNIFFI_MURMUR_MOBILE_CHECKSUM_METHOD_MURMUR_IS_RECORDING
 uint16_t uniffi_murmur_mobile_checksum_method_murmur_is_recording(void
@@ -734,6 +777,18 @@ uint16_t uniffi_murmur_mobile_checksum_method_murmur_start(void
 #ifndef UNIFFI_FFIDEF_UNIFFI_MURMUR_MOBILE_CHECKSUM_METHOD_MURMUR_STOP
 #define UNIFFI_FFIDEF_UNIFFI_MURMUR_MOBILE_CHECKSUM_METHOD_MURMUR_STOP
 uint16_t uniffi_murmur_mobile_checksum_method_murmur_stop(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_MURMUR_MOBILE_CHECKSUM_METHOD_MURMUR_VOICE_PROGRESS
+#define UNIFFI_FFIDEF_UNIFFI_MURMUR_MOBILE_CHECKSUM_METHOD_MURMUR_VOICE_PROGRESS
+uint16_t uniffi_murmur_mobile_checksum_method_murmur_voice_progress(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_MURMUR_MOBILE_CHECKSUM_METHOD_MURMUR_VOICE_SAVED
+#define UNIFFI_FFIDEF_UNIFFI_MURMUR_MOBILE_CHECKSUM_METHOD_MURMUR_VOICE_SAVED
+uint16_t uniffi_murmur_mobile_checksum_method_murmur_voice_saved(void
     
 );
 #endif

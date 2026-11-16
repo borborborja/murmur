@@ -159,6 +159,11 @@ Per provar-la al simulador sense parlar: `xcrun simctl launch <simulador> com.qu
 - **Les etiquetes:** les mateixes que a l'ordinador; «+ Etiqueta» sota el títol obre la llista de les que ja hi ha i una de nova.
 - **Compartir:** el full del sistema amb la reunió en Markdown (resum, notes i transcripció). Només surt el que la persona envia, quan l'envia.
 - **Configuració:** Aparença (els tres temes de l'ordinador, i el mode) i «Desa l'àudio al telèfon»: desactivat, l'àudio s'esborra quan l'ordinador confirma que el té sencer.
+- **La teva veu** (`Sources/VoiceView.swift`, `voice.rs`): llegeixes una frase uns 15 segons (el karaoke va enfosquint les paraules sentides), i el motor en desa l'empremta a la carpeta de dades. Amb l'empremta, el parlant 0 de cada gravació és «Tu» des de la primera paraula (`known_speakers`). Es queda al telèfon: no passa mai a l'ordinador.
+- **«Murmur, sóc…»** (`Sources/Intro.swift`, el mateix que `app/src/lib/intro.ts`): en directe, el parlant de la frase pren el nom, amb un avís que es pot desfer; si un altre parlant ja es diu així, s'ajunten. El glossari amb «Murmur» és al motor. L'ordinador ho torna a llegir en rebre la reunió, i ho aplica després de verificar els parlants.
+- **El «…» mentre graves:** canviar el nom (va amb la reunió en aturar), triar el micròfon sense aturar i descartar la reunió (el motor ho esborra tot: `discard`).
+- **El splash** (`Sources/Splash.swift`): la pantalla d'arrencada d'iOS és la marca fixa (`make-launch.sh` la genera igual que la dibuixa l'app); l'app hi continua: l'eco es desdobla en tres ressons i torna, i la marca vola fins al logo de la capçalera (per un `anchorPreference`, que s'ha de llegir dins el `NavigationStack`). El primer cop s'esvaeix cap a l'onboarding; amb «Reduir moviment», un fos.
+- **L'onboarding** (`Sources/Onboarding.swift`): benvinguda, quatre pàgines de què fa, l'idioma i qui hi ha a la sala, el permís del micròfon explicat abans, i la teva veu i l'ordinador, opcionals. `-onboarding` el torna a mostrar.
 - **La lletra:** SF Pro a tot arreu, com a l'ordinador. Els temps porten xifres tabulars (`Font.tabular`), mai una lletra monoespaiada.
 
 Encara no hi ha: posar nom als parlants, les fotos, l'editor de notes amb format, l'emparellament, l'iPad, el Duo ni Android.

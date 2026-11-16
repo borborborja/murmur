@@ -340,7 +340,8 @@
     "copyCode": "Copia el codi",
     "paired": "«{{name}}» s'ha connectat amb aquest ordinador.",
     "privacy": "El mòbil i l'ordinador es parlen directament per la teva xarxa, xifrats, sense passar per cap servidor. L'empremta de la teva veu no surt mai de l'aparell.",
-    "copyFailed": "No s'ha pogut copiar el codi."
+    "copyFailed": "No s'ha pogut copiar el codi.",
+    "windowsNetwork": "Si Windows pregunta si Murmur es pot comunicar per la xarxa, permet-ho a les xarxes privades. Si el mòbil no troba l'ordinador, comprova que la xarxa Wi-Fi sigui privada (Configuració › Xarxa i Internet)."
   },
   "export": {
     "intro": "On van les reunions, a més de Murmur: fitxers Markdown en una carpeta, la teva caixa forta d'Obsidian i Notion. Cadascun pot rebre cada reunió sol, quan s'acaba.",

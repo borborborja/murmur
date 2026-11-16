@@ -3,7 +3,7 @@ import { getVersion } from "@tauri-apps/api/app";
 import { disable as disableAutostart, enable as enableAutostart, isEnabled as autostartEnabled } from "@tauri-apps/plugin-autostart";
 import { ask, open as openDialog } from "@tauri-apps/plugin-dialog";
 import { openUrl } from "@tauri-apps/plugin-opener";
-import { AudioLines, CalendarDays, Check, ChevronRight, CloudUpload, Contrast, Copy, FileOutput, Link2, Lock, Mic, Plug, SlidersHorizontal, Smartphone, Sparkles, X } from "lucide-react";
+import { AudioLines, CalendarDays, Check, ChevronRight, CloudUpload, Contrast, Copy, FileOutput, Link2, Lock, Mic, Plug, SlidersHorizontal, Smartphone, Sparkles, Wifi, X } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
@@ -26,7 +26,7 @@ import { cn } from "@/lib/utils";
 import { copyText } from "@/lib/clipboard";
 import { MarkerBackground, useMarker } from "@/lib/motion";
 import { MEETING_LANGUAGES } from "./StartOptions";
-import { capabilities, isMac } from "@/lib/platform";
+import { capabilities, isMac, OS } from "@/lib/platform";
 import { VoicePrivacy, VoiceRecorder } from "@/components/VoiceRecorder";
 
 type Props = {
@@ -1671,6 +1671,13 @@ function MobileTab({ open }: { open: boolean }) {
         <Lock className="mt-px size-3 shrink-0" aria-hidden />
         <span>{t("mobile.privacy")}</span>
       </p>
+      {/* Windows asks before letting the phone in, and blocks it on a "public" network. */}
+      {OS === "windows" && (
+        <p className="-mt-3 mb-5 flex gap-1.5 px-1 text-[11px] leading-snug text-muted-foreground">
+          <Wifi className="mt-px size-3 shrink-0" aria-hidden />
+          <span>{t("mobile.windowsNetwork")}</span>
+        </p>
+      )}
     </>
   );
 }

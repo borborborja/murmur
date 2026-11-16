@@ -129,7 +129,7 @@ fn keys() -> Result<Keys> {
     Ok(keys)
 }
 
-/// The name people know this computer by ("MacBook de Quico").
+/// The name people know this computer by ("MacBook de Quico"), which the phone shows.
 pub fn computer_name() -> String {
     #[cfg(target_os = "macos")]
     if let Ok(out) = std::process::Command::new("/usr/sbin/scutil").args(["--get", "ComputerName"]).output() {
@@ -139,10 +139,43 @@ pub fn computer_name() -> String {
         }
     }
     #[cfg(windows)]
-    if let Ok(name) = std::env::var("COMPUTERNAME") {
+    if let Some(name) = windows_name() {
+        return name;
+    }
+    // Linux: the "pretty" name, if it has one (Settings › About on GNOME), then the hostname.
+    #[cfg(target_os = "linux")]
+    if let Some(name) = std::fs::read_to_string("/etc/machine-info").ok().and_then(|s| {
+        s.lines().find_map(|l| l.strip_prefix("PRETTY_HOSTNAME=")).map(|v| v.trim().trim_matches('"').to_string()).filter(|v| !v.is_empty())
+    }) {
         return name;
     }
     std::fs::read_to_string("/etc/hostname").map(|s| s.trim().to_string()).ok().filter(|s| !s.is_empty()).unwrap_or_else(|| "Murmur".into())
+}
+
+/// Windows: the device name as Settings › System › About shows it (`COMPUTERNAME` is in capitals
+/// and cut at 15 letters). The one Windows makes up ("DESKTOP-4F2K1QX") says nothing on the
+/// phone: then "PC de Quico", with the user's name.
+#[cfg(windows)]
+fn windows_name() -> Option<String> {
+    use windows_sys::Win32::System::SystemInformation::{ComputerNameDnsHostname, GetComputerNameExW};
+    let mut buffer = [0u16; 256];
+    let mut len = buffer.len() as u32;
+    let ok = unsafe { GetComputerNameExW(ComputerNameDnsHostname, buffer.as_mut_ptr(), &mut len) } != 0;
+    let name = ok.then(|| String::from_utf16_lossy(&buffer[..len as usize])).or_else(|| std::env::var("COMPUTERNAME").ok())?;
+    if !is_default_windows_name(&name) {
+        return Some(name);
+    }
+    let user = std::env::var("USERNAME").ok().filter(|u| !u.is_empty())?;
+    Some(tr!("mobile_computer_of", name = user))
+}
+
+/// "DESKTOP-4F2K1QX", "LAPTOP-8KJ2M1A0": the name Windows gives a computer nobody has renamed.
+#[cfg(any(windows, test))]
+fn is_default_windows_name(name: &str) -> bool {
+    let upper = name.to_ascii_uppercase();
+    ["DESKTOP-", "LAPTOP-"].iter().any(|prefix| {
+        upper.strip_prefix(prefix).is_some_and(|rest| (7..=8).contains(&rest.len()) && rest.chars().all(|c| c.is_ascii_alphanumeric()))
+    })
 }
 
 /// This computer's address on the local network (the one it would use to go out; nothing is sent).
@@ -496,6 +529,15 @@ fn for_phone(mut meeting: Value) -> Value {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn windows_default_names() {
+        assert!(is_default_windows_name("DESKTOP-4F2K1QX"));
+        assert!(is_default_windows_name("laptop-8kj2m1a0"));
+        assert!(!is_default_windows_name("Portatil-Quico"));
+        assert!(!is_default_windows_name("DESKTOP-DE-LA-FEINA"));
+        assert!(!is_default_windows_name("DESKTOP"));
+    }
 
     #[test]
     fn hex_round_trips_and_rejects_junk() {

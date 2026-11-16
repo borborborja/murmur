@@ -81,7 +81,7 @@ Només dos esdeveniments nous, sense contingut ni identificadors (CLAUDE.md): `m
 
 1. [x] `core/src/sync.rs`: el codi QR, el canal xifrat, els missatges i l'enviament de fitxers que es pot reprendre, amb tests (emparellar, reconnectar, rebutjar desconeguts, un fitxer malmès, missatges grans).
 2. [x] `app/src-tauri/src/mobile.rs`: la clau al clauer, els mòbils a `phones.json`, el QR, Bonjour (`mdns-sd`), el servidor i on va cada reunió que arriba (l'àudio a `recordings/`, les captures a `screens/`, marcada amb `device` i en `processing`). L'app l'obre i hi passa la revisió de parlants i Whisper (`retranscribe_meeting` amb `max_speakers`), la puntuació i el resum.
-3. [x] Configuració › Mòbil (interfície, textos en tres idiomes, `DESIGN.md`). Només es veu en desenvolupament fins que hi hagi l'app del mòbil.
+3. [x] Configuració › Mòbil (interfície, textos en tres idiomes, `DESIGN.md`). Visible per a tothom des que hi ha l'app de l'iPhone.
 4. [x] `examples/fake_phone.rs`, que fa de mòbil: `pair <codi>`, `send <fitxer.wav> [títol]` i `results`.
 5. [x] Provat de punta a punta amb l'app i `fake_phone` (15/11/2026).
 6. [x] La part del mòbil (`mobile/ffi/src/pairing.rs` i `Sources/Pairing.swift`), provada al simulador amb `mobile/ffi/examples/fake_computer.rs`, que fa d'ordinador.

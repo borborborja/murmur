@@ -243,8 +243,7 @@ export function Sidebar({ meetings, selectedId, canCreate, starting, importingId
         ) : (
           <span className="flex-1 text-[11px]">{t("localOnly")}</span>
         )}
-        {/* Mòbil: only in development until there's a phone app to pair, like its settings tab. */}
-        {import.meta.env.DEV && <MobileSync meetings={meetings} onSettings={onMobileSettings} />}
+        <MobileSync meetings={meetings} onSettings={onMobileSettings} />
         <button type="button" onClick={onSettings} aria-label={t("settings")} title={t("settingsShortcut")} className="grid size-7 place-items-center rounded-md text-muted-foreground hover:bg-black/5 hover:text-foreground dark:hover:bg-white/10">
           <Settings className="size-4" />
         </button>

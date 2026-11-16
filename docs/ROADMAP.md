@@ -207,7 +207,11 @@ Entre reunions (bloc 5):
   - [x] L'ordinador torna a llegir el «Murmur, sóc…» de les reunions del mòbil després de verificar els parlants.
   - [x] Estadístiques d'ús anònimes al mòbil (Aptabase, com l'ordinador), desactivables a l'onboarding i a Configuració.
   - [x] Emparellar i sincronitzar amb l'ordinador, la part del mòbil: el QR amb la càmera, Bonjour, l'enviament amb l'àudio i la versió revisada de tornada. Provat al simulador amb `fake_computer`.
-  - [ ] Provar l'emparellament amb l'app de l'ordinador i un iPhone de debò.
+  - [x] Provar l'emparellament amb l'app de l'ordinador i un iPhone de debò.
+  - [x] Configuració › Mòbil i la icona de la barra lateral, visibles per a tothom (abans, només en desenvolupament).
+  - [x] Preparar l'App Store: 1.0 només per a iPhone, la fitxa en tres idiomes, la privadesa, les notes per a la revisió i les captures en català ([`docs/APPSTORE.md`](APPSTORE.md)).
+  - [ ] La pàgina de privadesa a la web, les captures en castellà i anglès, i enviar-la a revisió.
+  - [ ] Publicar la versió de l'ordinador que ensenya Configuració › Mòbil abans que l'app surti a la botiga.
   - [ ] Les edicions després de revisar en tots dos sentits (avui el mòbil només conserva el títol i els noms que hi canvies).
   - [ ] iPad, iPhone Duo i Android.
   - [x] Provar l'emparellament de punta a punta amb `fake_phone` i l'app: emparellar, enviar una reunió de 3 minuts, passada final (Whisper i dos parlants trobats) i recollir-ne el resultat.

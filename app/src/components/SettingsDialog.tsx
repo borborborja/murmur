@@ -124,8 +124,7 @@ export function SettingsDialog({ open, onOpenChange, settings, onChange, recordi
           <nav ref={navRef} className="relative w-[184px] shrink-0 overflow-y-auto border-r border-border bg-mm-sidebar p-2" role="tablist" aria-orientation="vertical">
             {/* The selection's background slides to the section chosen (not on opening; motion-reduce: jumps). */}
             <MarkerBackground marker={marker} className="rounded-md bg-mm-sidebar-selection" />
-            {/* Mòbil: only in development until there's a phone app to pair (docs/MOBIL.md). */}
-            {TABS.filter(({ id }) => (id !== "calendar" || capabilities.calendar) && (id !== "mobile" || import.meta.env.DEV)).map(({ id, icon: Icon }) => (
+            {TABS.filter(({ id }) => (id !== "calendar" || capabilities.calendar)).map(({ id, icon: Icon }) => (
               <button
                 key={id}
                 type="button"

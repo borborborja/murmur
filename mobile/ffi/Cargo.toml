@@ -22,6 +22,7 @@ path = "src/bin/uniffi-bindgen.rs"
 murmur-core = { path = "../../core", default-features = false }
 sherpa-onnx = { version = "1.13.8", default-features = false, features = ["shared"] }
 uniffi = { version = "0.32", features = ["cli"] }
+serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 anyhow = "1"
 thiserror = "2"

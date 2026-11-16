@@ -23,10 +23,27 @@ const MAX_SPEAKERS: usize = 6;
 /// On the phone the Conformer runs in int8 on the two fast cores (docs/MOBIL.md: 4 threads are slower).
 const LOAD: LoadOptions = LoadOptions { int8: true, threads: 2 };
 
+mod pairing;
+
 #[derive(Debug, thiserror::Error, uniffi::Error)]
 pub enum MurmurError {
     #[error("{0}")]
     Failed(String),
+    /// The QR isn't a Murmur pairing code.
+    #[error("not a pairing code")]
+    NotACode,
+    /// The code answered no more (it expired, or it was closed on the computer).
+    #[error("the pairing code isn't on screen any more")]
+    CodeExpired,
+    /// No computer answered: not on the same network, or Murmur closed.
+    #[error("the computer isn't reachable")]
+    Unreachable,
+    /// The computer answered but doesn't know this phone any more (it unpaired it).
+    #[error("this phone isn't paired with the computer")]
+    NotPaired,
+    /// A sync is already running.
+    #[error("already syncing")]
+    Busy,
 }
 
 impl From<anyhow::Error> for MurmurError {
@@ -69,6 +86,8 @@ pub struct MeetingRow {
     pub tags: Vec<String>,
     /// The last thing said, to recognise it in the list.
     pub last_line: Option<String>,
+    /// The computer has it (stored whole).
+    pub sent: bool,
     /// The computer has revised it (Whisper, speakers, summary).
     pub revised: bool,
 }
@@ -95,6 +114,8 @@ pub struct Murmur {
     models: Mutex<Option<SharedModels>>,
     db: Mutex<Db>,
     live: Mutex<Option<Live>>,
+    /// Held while syncing with the computer: one sync at a time.
+    syncing: Mutex<()>,
 }
 
 fn now_ms() -> f64 {
@@ -112,7 +133,7 @@ impl Murmur {
     pub fn new(models_dir: String, data_dir: String) -> Result<std::sync::Arc<Self>> {
         let data_dir = PathBuf::from(data_dir);
         let db = Db::open(&data_dir.join("murmur.db"))?;
-        Ok(std::sync::Arc::new(Self { models_dir: PathBuf::from(models_dir), data_dir, models: Mutex::new(None), db: Mutex::new(db), live: Mutex::new(None) }))
+        Ok(std::sync::Arc::new(Self { models_dir: PathBuf::from(models_dir), data_dir, models: Mutex::new(None), db: Mutex::new(db), live: Mutex::new(None), syncing: Mutex::new(()) }))
     }
 
     /// Loads the models now (they load on the first recording otherwise): about half a second.
@@ -122,6 +143,7 @@ impl Murmur {
 
     /// The meetings, newest first.
     pub fn meetings(&self) -> Result<Vec<MeetingRow>> {
+        let state = self.load_sync();
         let db = lock(&self.db);
         let list = db.list()?;
         Ok(list
@@ -131,8 +153,8 @@ impl Murmur {
                 let last_line = full
                     .as_ref()
                     .and_then(|m| m["utterances"].as_array().and_then(|u| u.last()).and_then(|u| u["text"].as_str()).map(str::to_owned));
-                let revised = full.as_ref().is_some_and(|m| m.get("cover").is_some_and(|c| !c.is_null()));
-                MeetingRow { id: s.id, title: s.title, created_at: s.created_at, duration: s.duration, status: s.status, tags: s.tags, last_line, revised }
+                let (sent, revised) = (state.sent.contains(&s.id), state.revised.contains(&s.id));
+                MeetingRow { id: s.id, title: s.title, created_at: s.created_at, duration: s.duration, status: s.status, tags: s.tags, last_line, sent, revised }
             })
             .collect())
     }
@@ -285,7 +307,11 @@ impl Murmur {
         let mut db = lock(&self.db);
         let Some(mut meeting) = db.get(id)? else { return Ok(()) };
         change(&mut meeting);
-        db.put(&meeting).map_err(Into::into)
+        db.put(&meeting)?;
+        drop(db);
+        // Already on the computer: the phone's names win when it comes back revised.
+        self.note_edit(id);
+        Ok(())
     }
 
     fn models(&self) -> Result<&'static Models> {
@@ -361,6 +387,112 @@ mod tests {
         // An empty name takes it away.
         m.set_speaker_name("phone-1".into(), 1, "".into()).unwrap();
         assert!(saved(&m)["speakerNames"].get("1").is_none());
+        let _ = std::fs::remove_dir_all(&dir);
+    }
+
+    /// The computer's side as mobile.rs does it: stores what arrives, and sends back a revised
+    /// version of each meeting it got.
+    fn computer(keys: murmur_core::sync::Keys, secret: Option<[u8; 32]>, paired: Vec<[u8; 32]>, dest: std::path::PathBuf) -> (u16, std::thread::JoinHandle<Vec<Value>>) {
+        use murmur_core::sync::{self, Accept, Incoming, Msg, Receiving};
+        let listener = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
+        let port = listener.local_addr().unwrap().port();
+        let handle = std::thread::spawn(move || {
+            let (stream, _) = listener.accept().unwrap();
+            let (mut s, _) = sync::accept(stream, &keys, &Accept { pairing_secret: secret.as_ref(), paired: &paired }, "MacBook de Quico").unwrap();
+            let mut got = vec![];
+            loop {
+                match s.recv() {
+                    Ok(Incoming::Msg(Msg::PutMeeting { meeting, files })) => {
+                        let id = meeting["id"].as_str().unwrap().to_owned();
+                        let r = Receiving::new(dest.join(&id), files).unwrap();
+                        s.send(&Msg::Have { meeting_id: id.clone(), files: r.progress() }).unwrap();
+                        while !r.finish().unwrap() {
+                            let Incoming::Chunk { name, offset, data, .. } = s.recv().unwrap() else { panic!() };
+                            r.write(&name, offset, &data).unwrap();
+                        }
+                        s.send(&Msg::Stored { meeting_id: id }).unwrap();
+                        got.push(meeting);
+                    }
+                    Ok(Incoming::Msg(Msg::GetResults { .. })) => {
+                        for m in &got {
+                            let mut revised = m.clone();
+                            revised["title"] = json!("Revisió del pressupost");
+                            revised["speakerNames"] = json!({ "0": "Marta" });
+                            revised["utterances"] = json!([{ "id": "w-0", "start": 0.0, "end": 2.0, "speaker": 0, "text": "Text de Whisper." }]);
+                            revised["cover"] = json!({ "summary": "Resum" });
+                            s.send(&Msg::Results { meeting: revised, revised_at: 100.0 }).unwrap();
+                        }
+                        s.send(&Msg::Bye).unwrap();
+                    }
+                    _ => return got,
+                }
+            }
+        });
+        (port, handle)
+    }
+
+    #[test]
+    fn pairs_sends_a_meeting_with_its_audio_and_takes_the_results() {
+        use murmur_core::sync::{Keys, PairingCode, VERSION};
+        let dir = std::env::temp_dir().join(format!("murmur-mobile-sync-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&dir);
+        std::fs::create_dir_all(dir.join("recordings")).unwrap();
+        let m = Murmur::new("/nowhere".into(), dir.to_string_lossy().into_owned()).unwrap();
+        let audio = dir.join("recordings/phone-1.ogg");
+        std::fs::write(&audio, vec![7u8; 300_000]).unwrap();
+        let meeting = json!({ "id": "phone-1", "title": "Reunió de les 10:00", "createdAt": 0.0, "duration": 3.0, "status": "done",
+            "audioPath": audio.to_string_lossy(), "utterances": [line("phone-1-0", 0)] });
+        lock(&m.db).put(&meeting).unwrap();
+        assert_eq!(m.unsent_count().unwrap(), 1);
+
+        // Pairing, with the QR's code.
+        let (pc, phone) = (Keys::generate().unwrap(), crate::pairing::new_sync_key().unwrap());
+        let secret = [9u8; 32];
+        let (port, handle) = computer(pc.clone(), Some(secret), vec![], dir.join("pc"));
+        let uri = PairingCode { version: VERSION, name: "MacBook de Quico".into(), key: pc.public, secret, addrs: vec!["127.0.0.1".into()], port }.to_uri();
+        assert_eq!(crate::pairing::read_pairing_code(uri.clone()).unwrap().computer_name, "MacBook de Quico");
+        assert!(matches!(crate::pairing::read_pairing_code("https://example.com".into()), Err(MurmurError::NotACode)));
+        let computer_info = m.pair(uri, vec![], phone.clone(), "iPhone de Quico".into()).unwrap();
+        assert_eq!((computer_info.name.as_str(), computer_info.key.as_slice()), ("MacBook de Quico", pc.public.as_slice()));
+        handle.join().unwrap();
+
+        // Syncing: the meeting and its audio go; the revised version comes back.
+        let phone_public = Keys::from_private(&phone).unwrap().public;
+        let (port, handle) = computer(pc.clone(), None, vec![phone_public], dir.join("pc"));
+        let report = m.sync(vec![format!("127.0.0.1:{port}")], phone.clone(), pc.public.to_vec(), "iPhone de Quico".into()).unwrap();
+        let got = handle.join().unwrap();
+        assert_eq!((report.sent, report.revised, report.failed), (1, 1, 0));
+        assert!(got[0].get("audioPath").is_none(), "the phone's paths stay on the phone");
+        assert_eq!(std::fs::read(dir.join("pc/phone-1/audio.ogg")).unwrap(), vec![7u8; 300_000]);
+
+        let back = saved(&m);
+        assert_eq!(back["utterances"][0]["text"], "Text de Whisper.");
+        assert_eq!(back["title"], "Revisió del pressupost");
+        assert_eq!(back["audioPath"], json!(audio.to_string_lossy()));
+        let row = m.meetings().unwrap().into_iter().next().unwrap();
+        assert!(row.sent && row.revised);
+        assert_eq!(m.unsent_count().unwrap(), 0);
+
+        // Renamed on the phone after sending: the phone's name wins when it comes back again.
+        m.rename_meeting("phone-1".into(), "El meu títol".into()).unwrap();
+        assert!(m.load_sync().edited.contains("phone-1"));
+        // The fake computer only answers for what it gets in the same connection: send it again.
+        let mut state = m.load_sync();
+        state.sent.clear();
+        state.since = 0.0;
+        m.save_sync(&state).unwrap();
+        let (port, handle) = computer(pc.clone(), None, vec![phone_public], dir.join("pc2"));
+        m.sync(vec![format!("127.0.0.1:{port}")], phone.clone(), pc.public.to_vec(), "iPhone de Quico".into()).unwrap();
+        handle.join().unwrap();
+        assert_eq!(saved(&m)["title"], "El meu títol");
+        assert_eq!(saved(&m)["utterances"][0]["text"], "Text de Whisper.");
+
+        // A computer that doesn't know this phone: refused, and said so.
+        let (port, handle) = computer(pc.clone(), None, vec![], dir.join("pc"));
+        assert!(matches!(m.sync(vec![format!("127.0.0.1:{port}")], phone.clone(), pc.public.to_vec(), "iPhone".into()), Err(MurmurError::NotPaired)));
+        let _ = handle.join();
+        // Nobody there.
+        assert!(matches!(m.sync(vec!["127.0.0.1:1".into()], phone, pc.public.to_vec(), "iPhone".into()), Err(MurmurError::Unreachable)));
         let _ = std::fs::remove_dir_all(&dir);
     }
 }

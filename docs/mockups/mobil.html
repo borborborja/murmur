@@ -317,6 +317,25 @@
   .dynexp .acts svg { width: 17px; height: 17px; }
   .dynexp .acts .stopb { background: #FF3B30; } .dynexp .acts .stopb i { width: 11px; height: 11px; border-radius: 3px; background: #fff; display: block; }
 
+  /* The toast (as the desktop's): what just changed, with Desfés */
+  .toast { position: absolute; left: 16px; right: 16px; bottom: 112px; z-index: 39; border-radius: 18px; padding: 13px 16px; display: flex; align-items: center; gap: 12px;
+    background: var(--mm-toast-background); color: var(--mm-toast-text); box-shadow: 0 0 0 .5px var(--mm-toast-border), 0 12px 30px rgba(0,0,0,.2); font-size: 15px; }
+  .toast span { flex: 1; } .toast b { font-weight: 600; color: var(--mm-toast-text); }
+  /* La teva veu */
+  .voice { padding: 6px 24px 0; }
+  .voice .phrase { margin: 26px 0 0; font-size: 26px; line-height: 1.35; font-weight: 600; letter-spacing: -0.01em; }
+  .voice .phrase .read { color: var(--mm-text-primary); } .voice .phrase .toread { color: var(--mm-text-tertiary); }
+  .voice .meter { display: flex; align-items: center; gap: 4px; height: 60px; margin: 34px 0 6px; }
+  .voice .meter i { width: 5px; border-radius: 3px; background: var(--mm-text-primary); display: block; }
+  .voice .progress { height: 4px; border-radius: 2px; background: var(--mm-separator); overflow: hidden; }
+  .voice .progress i { display: block; height: 100%; width: 55%; background: var(--mm-text-primary); }
+  .voice .lbl { display: flex; justify-content: space-between; font-size: 13px; color: var(--mm-text-secondary); margin-top: 8px; font-variant-numeric: tabular-nums; }
+  .voicebadge { width: 84px; height: 84px; border-radius: 42px; display: grid; place-items: center; background: var(--mm-fill-subtle); margin: 18px auto 14px; }
+  .voicebadge .levels i { width: 5px; background: var(--mm-text-primary); }
+  .voice h2 { font-size: 22px; text-align: center; margin: 0 0 6px; letter-spacing: -0.01em; color: var(--mm-text-primary); }
+  .voice p { font-size: 15px; line-height: 1.45; color: var(--mm-text-secondary); margin: 0 0 10px; text-align: center; }
+  .bio { margin: 14px 0 0; padding: 12px 14px; border-radius: 14px; background: var(--mm-fill-subtle); font-size: 13px; line-height: 1.4; color: var(--mm-text-secondary); display: flex; gap: 10px; }
+
   /* Android (Pixel, 412 x 915 dp): Roboto, punch-hole camera, no glass; the same tokens */
   .phone.android { width: 412px; height: 915px; border-radius: 46px; font-family: Roboto, "Google Sans", system-ui, sans-serif; }
   .android .status { padding: 6px 28px 0 30px; font-size: 15px; font-weight: 500; height: 44px; }
@@ -513,17 +532,42 @@
   </div>
 </div>
 
+<!-- 17 to 19: still to make -->
+<div class="row">
+  <div class="screen">
+    <h2>17 · La teva veu</h2>
+    <p class="note">A Configuració › Transcripció. Llegeixes una frase en veu alta uns 15 segons (a l'esquerra) i Murmur et reconeix com a «Tu» a les reunions del telèfon. És una dada biomètrica: es diu així, es queda només al telèfon, no va mai a l'ordinador (que té la seva) i s'esborra quan vulguis (a la dreta).</p>
+    <div class="pair" id="s-voice"></div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="screen">
+    <h2>18 · El «…» mentre graves</h2>
+    <p class="note">Canviar el nom de la reunió, triar el micròfon sense aturar, i descartar-la (s'atura i s'esborra, amb una confirmació). La resta, que es tria en començar (l'idioma, si sou més a la sala), no es canvia a mitja reunió.</p>
+    <div class="pair" id="s-recmenu"></div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="screen">
+    <h2>19 · «Murmur, sóc la Laia», i les veus</h2>
+    <p class="note">Com a l'ordinador: qui diu «Murmur, sóc…» o «Murmur, em dic…» posa el seu nom al seu parlant, al moment, amb un avís que es pot desfer. Només llegeix el text, no cal cap model més. L'ordinador ho torna a llegir després de la seva passada, perquè el nom segueixi la persona. A la reunió acabada, quantes veus s'hi han sentit.</p>
+    <div class="pair" id="s-intro"></div>
+  </div>
+</div>
+
 <!-- Android -->
 <div class="row">
   <div class="screen">
-    <h2>17 · Android: inici mentre graves i gravant</h2>
+    <h2>20 · Android: inici mentre graves i gravant</h2>
     <p class="note">Les mateixes pantalles amb les maneres d'Android (Material 3): Roboto, sense vidre, la barra d'eines flotant de Material, títols a l'esquerra i botons més quadrats. Els colors, els mateixos.</p>
     <div class="pair" id="s-alist"></div>
   </div>
 </div>
 <div class="row">
   <div class="screen">
-    <h2>18 · Android: la notificació fixa</h2>
+    <h2>21 · Android: la notificació fixa</h2>
     <p class="note">Android no té Live Activity: la gravació és un servei en primer pla, amb una notificació que no es pot treure mentre grava. Amb el temps, l'última frase, Marca, Pausa i Atura.</p>
     <div class="pair" id="s-anotif"></div>
   </div>
@@ -532,21 +576,21 @@
 <!-- iPhone Duo: inner screen 2007 x 2853 px (about 669 x 951 pt), outer 1398 x 2034 px (about 466 x 678 pt), from the simulator's device profile -->
 <div class="row">
   <div class="screen">
-    <h2>19 · iPhone Duo obert, en vertical</h2>
+    <h2>22 · iPhone Duo obert, en vertical</h2>
     <p class="note">Pantalla interior, uns 669 × 951 pt. El plec és horitzontal, a mitja alçada. Pla, la zona del plec no és activa i el contingut hi pot passar, però no hi posem res que es toqui: la targeta de gravació a dalt, la transcripció a sota.</p>
     <div class="pair" id="s-duov"></div>
   </div>
 </div>
 <div class="row">
   <div class="screen">
-    <h2>20 · iPhone Duo en horitzontal: la llista i la reunió alhora</h2>
+    <h2>23 · iPhone Duo en horitzontal: la llista i la reunió alhora</h2>
     <p class="note">Girat, el plec és vertical i queden dues pàgines, com un llibre: a l'esquerra les reunions, a la dreta la que es grava. Cap columna no creua la zona del plec (40 pt).</p>
     <div class="pair" id="s-duo"></div>
   </div>
 </div>
 <div class="row">
   <div class="screen">
-    <h2>21 · iPhone Duo mig plegat, damunt la taula</h2>
+    <h2>24 · iPhone Duo mig plegat, damunt la taula</h2>
     <p class="note">Com un portàtil petit. A dalt, el que es llegeix: el temps i la frase en gran. A baix, el que es toca: els controls i, quan escrius una nota, el teclat, que ocupa just la meitat de baix. A l'esquerra, sense escriure; a la dreta, escrivint.</p>
     <div class="pair" id="s-duofold"></div>
   </div>
@@ -578,6 +622,8 @@ const icon = {
   pencil: '<svg class="i" viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="m13.5 6.5 4 4"/></svg>',
   trash: '<svg class="i" viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>',
   headphones: '<svg class="i" viewBox="0 0 24 24"><path d="M4 15v-3a8 8 0 0 1 16 0v3"/><rect x="3" y="14" width="4" height="6" rx="1.5"/><rect x="17" y="14" width="4" height="6" rx="1.5"/></svg>',
+  wave: '<svg class="i" viewBox="0 0 24 24"><path d="M4 10v4M8 7v10M12 4v16M16 7v10M20 10v4"/></svg>',
+  lock: '<svg class="i" viewBox="0 0 24 24" style="width:15px;height:15px"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>',
   right: '<svg class="i" viewBox="0 0 24 24" style="width:16px;height:16px"><path d="m9 6 6 6-6 6"/></svg>',
   check: '<svg class="i" viewBox="0 0 24 24" style="width:18px;height:18px"><path d="m5 12 5 5 9-10"/></svg>',
   more: '<svg class="i" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.2" fill="currentColor"/><circle cx="12" cy="12" r="1.2" fill="currentColor"/><circle cx="19" cy="12" r="1.2" fill="currentColor"/></svg>',
@@ -949,6 +995,72 @@ const variants = {
       </div>`,
   ],
 };
+
+Object.assign(variants, {
+  // 17: La teva veu: reading the phrase, and saved.
+  voice: [
+    () => `<div class="content">
+      <div class="nav"><div class="circle">${icon.back}</div><div class="t">La teva veu</div><div style="width:44px"></div></div>
+      <div class="voice">
+        <div class="label"><span class="dot"></span>Escoltant · llegeix-la en veu alta</div>
+        <p class="phrase" style="text-align:left;font-size:26px;color:inherit;margin:26px 0 0"><span class="read">Bon dia. Sóc qui fa servir aquest telèfon, i aquesta és la meva veu quan parlo </span><span class="toread">en una reunió, a poc a poc i amb calma.</span></p>
+        <div class="meter">${[10,24,38,30,46,22,14,34,50,28,18,40,26,12,8].map((h) => `<i style="height:${h}px"></i>`).join("")}</div>
+        <div class="progress"><i></i></div>
+        <div class="lbl"><span class="tab">0:08</span><span class="tab">0:15</span></div>
+      </div>
+      <div class="actions"><div class="btn ghost">Cancel·la</div></div>
+    </div>`,
+    () => `<div class="content">
+      <div class="nav"><div class="circle">${icon.back}</div><div class="t">La teva veu</div><div style="width:44px"></div></div>
+      <div class="voice">
+        <div class="voicebadge">${levels([14, 26, 18, 30, 12])}</div>
+        <h2>Desada el 15 de novembre</h2>
+        <p>Murmur et reconeix com a «Tu» a totes les reunions que graves amb aquest telèfon, també quan sou més gent a la sala.</p>
+        <div class="bio">${icon.lock}<span>És una dada biomètrica: una empremta de com sona la teva veu, no cap gravació. Es queda només en aquest telèfon i no passa mai a l'ordinador.</span></div>
+      </div>
+      <div class="settings" style="padding:0">
+        <div class="group" style="margin-top:22px">
+          <div class="cell"><span class="lbl">Torna-la a gravar</span></div>
+          <div class="cell danger"><span class="lbl">Esborra la teva veu…</span></div>
+        </div>
+      </div>
+    </div>`,
+  ],
+  // 18: the … while recording.
+  recmenu: [
+    () => screens.rec() + `
+      <div class="dim" style="z-index:40"></div>
+      <div class="menu" style="top:104px;right:16px">
+        <div>Canvia el nom…${icon.pencil}</div>
+        <div>Micròfon<span style="display:flex;gap:6px;align-items:center;color:var(--mm-text-secondary);font-size:15px">AirPods ${icon.right}</span></div>
+        <div class="gap danger">Descarta la reunió${icon.trash}</div>
+      </div>`,
+    () => screens.rec() + `
+      <div class="dim" style="z-index:40"></div>
+      <div class="alert" style="top:290px"><b>Vols descartar la reunió?</b><p style="font-size:13px;color:var(--mm-text-secondary);margin:-4px 16px 16px;line-height:1.35">S'aturarà i s'esborrarà del telèfon, amb l'àudio i les notes. No es pot desfer.</p><div class="btns"><span>Cancel·la</span><span style="color:var(--mm-recording-label)">Descarta</span></div></div>`,
+  ],
+  // 19: "Murmur, sóc la Laia" while recording, and the voices in a finished meeting.
+  intro: [
+    () => screens.rec()
+      .replace('<div class="line"><div class="head"><span class="chip s2">Laia</span><span class="ts mono">12:21</span></div><p>La puc fer jo, però necessito que em passeu <span class="pending">els preus definitius abans de</span><span class="caret"></span></p></div>',
+               '<div class="line"><div class="head"><span class="chip s2">Laia</span><span class="ts mono">12:21</span></div><p>Murmur, sóc la Laia. La pàgina de preus la puc fer jo<span class="caret"></span></p></div>')
+      + `<div class="toast"><span><b>Parlant 3</b> ara és <b>Laia</b></span><span style="flex:none;font-weight:600;color:var(--mm-toast-secondary)">Desfés</span></div>`,
+    () => `<div class="content">
+      <div class="nav"><div class="circle">${icon.back}</div><div class="t"></div><div class="circle">${icon.share}</div><div class="circle">${icon.more}</div></div>
+      <div class="meeting">
+        <div class="meta">${icon.phone} Avui · 10:00 · <span class="tab">34 min</span> · 3 veus</div>
+        <h1>Reunió de les 10:00</h1>
+        <div class="tags"><span class="add">+ Etiqueta</span></div>
+      </div>
+      <div class="seg"><span class="on">Transcripció</span><span>Notes · 3</span></div>
+      <div class="lines">
+        <div class="line"><div class="head"><span class="chip you">Tu</span><span class="ts mono">0:04</span></div><p>bon dia a tothom avui la idea és tancar el calendari del llançament</p></div>
+        <div class="line"><div class="head"><span class="chip s2">Laia</span><span class="ts mono">0:09</span></div><p>murmur sóc la laia i porto els textos en anglès</p></div>
+        <div class="line"><div class="head"><span class="chip s1">Parlant 2</span><span class="ts mono">0:12</span></div><p>perfecte jo he portat les captures de l'última versió</p></div>
+      </div>
+    </div>${dock()}`,
+  ],
+});
 
 const androidChrome = `<div class="island"></div><div class="status"><span class="tab">9:41</span><span class="icons">
   <svg width="16" height="12" viewBox="0 0 16 12"><path d="M8 11.5 5.6 9a3.4 3.4 0 0 1 4.8 0zM3.4 6.8a6.5 6.5 0 0 1 9.2 0l-1.3 1.3a4.7 4.7 0 0 0-6.6 0zM1.2 4.6a9.6 9.6 0 0 1 13.6 0l-1.3 1.3a7.8 7.8 0 0 0-11 0z" fill="currentColor"/></svg>

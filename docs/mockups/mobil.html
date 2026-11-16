@@ -336,6 +336,36 @@
   .voice p { font-size: 15px; line-height: 1.45; color: var(--mm-text-secondary); margin: 0 0 10px; text-align: center; }
   .bio { margin: 14px 0 0; padding: 12px 14px; border-radius: 14px; background: var(--mm-fill-subtle); font-size: 13px; line-height: 1.4; color: var(--mm-text-secondary); display: flex; gap: 10px; }
 
+  /* Splash and onboarding */
+  .splash { position: absolute; inset: 0; display: grid; place-items: center; background: var(--mm-background); }
+  .splash .tile { width: 112px; height: 112px; border-radius: 28px; background: var(--mm-logo-background); box-shadow: 0 0 0 1px var(--mm-logo-ring); display: grid; place-items: center; }
+  .ob { position: absolute; inset: 54px 0 0; display: flex; flex-direction: column; padding: 0 28px 34px; color: var(--mm-text-primary); }
+  .ob .art { flex: 1; display: flex; align-items: center; justify-content: center; min-height: 0; }
+  .ob .kicker { font-size: 13px; font-weight: 600; color: var(--mm-text-secondary); }
+  .ob h1 { font-size: 30px; line-height: 1.12; letter-spacing: -0.02em; margin: 6px 0 10px; }
+  .ob p { font-size: 17px; line-height: 1.45; color: var(--mm-text-secondary); margin: 0 0 8px; }
+  .ob .small { font-size: 13px; color: var(--mm-text-tertiary); display: flex; gap: 6px; align-items: flex-start; line-height: 1.4; }
+  .ob .dots { display: flex; gap: 7px; justify-content: center; margin: 16px 0 18px; }
+  .ob .dots i { width: 7px; height: 7px; border-radius: 4px; background: var(--mm-separator); display: block; }
+  .ob .dots i.on { background: var(--mm-text-primary); width: 20px; }
+  .ob .go { height: 56px; border-radius: 28px; display: grid; place-items: center; font-size: 17px; font-weight: 600; background: var(--mm-new-meeting); color: var(--mm-on-new-meeting); }
+  .ob .skip { height: 44px; display: grid; place-items: center; font-size: 16px; font-weight: 500; color: var(--mm-text-secondary); margin-top: 6px; }
+  .ob .top { display: flex; justify-content: space-between; align-items: center; height: 44px; font-size: 16px; color: var(--mm-text-secondary); }
+  .demo { width: 100%; border-radius: 26px; background: var(--mm-fill-subtle); padding: 18px; box-sizing: border-box; }
+  .demo .line { margin: 0 0 12px; } .demo .line p { font-size: 16px; color: var(--mm-text-primary); }
+  .flow { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 10px; width: 100%; }
+  .flow .dev { border-radius: 22px; background: var(--mm-fill-subtle); padding: 16px 10px; text-align: center; font-size: 13px; color: var(--mm-text-secondary); display: grid; gap: 8px; justify-items: center; }
+  .flow .dev svg { width: 34px; height: 34px; color: var(--mm-text-primary); }
+  .flow .dev b { color: var(--mm-text-primary); font-size: 14px; }
+  .flow .arrow { display: grid; gap: 6px; justify-items: center; font-size: 11px; color: var(--mm-text-tertiary); }
+  .flow .arrow i { display: block; width: 40px; height: 2px; background: repeating-linear-gradient(90deg, var(--mm-text-tertiary) 0 4px, transparent 4px 8px); }
+  .choice { display: flex; justify-content: space-between; align-items: center; min-height: 50px; padding: 0 16px; font-size: 17px; }
+  .choice + .choice { border-top: .5px solid var(--mm-separator); }
+  .bigmic { width: 132px; height: 132px; border-radius: 66px; display: grid; place-items: center; background: var(--mm-fill-subtle); position: relative; }
+  .bigmic svg { width: 46px; height: 46px; }
+  .ob .frame i { border-color: var(--mm-text-primary); }
+  [data-mode="dark"] .ob .frame i { border-color: var(--mm-accent); }
+
   /* Android (Pixel, 412 x 915 dp): Roboto, punch-hole camera, no glass; the same tokens */
   .phone.android { width: 412px; height: 915px; border-radius: 46px; font-family: Roboto, "Google Sans", system-ui, sans-serif; }
   .android .status { padding: 6px 28px 0 30px; font-size: 15px; font-weight: 500; height: 44px; }
@@ -389,6 +419,55 @@
   <h1>Murmur per a iPhone</h1>
   <p>Mida real de l'iPhone 17 (402 × 874 pt), clar i fosc. Els colors són els tokens de l'ordinador (<code>murmur-theme.css</code>, tema Negre i àcid). Tipografia del sistema (SF Pro) a tot arreu; els temps, amb xifres tabulars.</p>
   <p>Idees: la barra flotant de vidre amb el botó de gravar al mig, que es torna la píndola «Gravant» de l'ordinador; la targeta de gravació amb la forma d'ona i el regle; els parlants amb els xips de l'ordinador; el text que encara no és segur, en gris dins la frase; la llista per dies amb l'última frase.</p>
+</div>
+
+<!-- A to F: the first time -->
+<div class="row">
+  <div class="screen">
+    <h2>A · Splash</h2>
+    <p class="note">La marca sola, sobre el fons del tema, en clar i en fosc. És la pantalla d'arrencada d'iOS (fixa); quan l'app ja és oberta, l'eco de la «m» s'hi mou un cop mentre carreguen els models.</p>
+    <div class="pair" id="s-splash"></div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="screen">
+    <h2>B · Benvinguda</h2>
+    <p class="note">El primer cop. Què és Murmur, en una frase, i que tot passa al telèfon.</p>
+    <div class="pair" id="s-welcome"></div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="screen">
+    <h2>C · Què fa (1 i 2)</h2>
+    <p class="note">Quatre pàgines que es passen lliscant, cadascuna amb una petita demostració, com a l'ordinador. «Omet» va directament a la configuració.</p>
+    <div class="pair" id="s-features1"></div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="screen">
+    <h2>D · Què fa (3 i 4)</h2>
+    <p class="note">Gravar amb el telèfon bloquejat, i l'ordinador: què hi passa, xifrat, i què en torna. Sense demanar res encara.</p>
+    <div class="pair" id="s-features2"></div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="screen">
+    <h2>E · Com graves, i el micròfon</h2>
+    <p class="note">L'idioma i qui hi ha a la sala (els valors per defecte, que es poden canviar a cada reunió) i el recordatori del consentiment. Després, el permís del micròfon, explicat abans que iOS el demani.</p>
+    <div class="pair" id="s-setup"></div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="screen">
+    <h2>F · Opcional: la teva veu i l'ordinador</h2>
+    <p class="note">Dues coses que es poden fer ara o més tard (a Configuració): gravar la teva veu, i connectar l'ordinador amb el seu codi QR. «Ara no» les salta. En acabar, la llista buida (pantalla 1).</p>
+    <div class="pair" id="s-optional"></div>
+  </div>
 </div>
 
 <!-- 1. Empty -->
@@ -1059,6 +1138,136 @@ Object.assign(variants, {
         <div class="line"><div class="head"><span class="chip s1">Parlant 2</span><span class="ts mono">0:12</span></div><p>perfecte jo he portat les captures de l'última versió</p></div>
       </div>
     </div>${dock()}`,
+  ],
+});
+
+/** An onboarding page: its art, kicker, title, text, the dots and the buttons. */
+const ob = ({ art = "", kicker = "", title, text = "", extra = "", dots = null, go = "Continua", skip = "", top = "" }) => `
+  <div class="ob">
+    ${top ? `<div class="top">${top}</div>` : ""}
+    <div class="art">${art}</div>
+    ${kicker ? `<div class="kicker">${kicker}</div>` : ""}
+    <h1>${title}</h1>
+    ${text ? `<p>${text}</p>` : ""}
+    ${extra}
+    ${dots ? `<div class="dots">${Array.from({ length: dots[1] }, (_, i) => `<i class="${i === dots[0] ? "on" : ""}"></i>`).join("")}</div>` : `<div style="height:18px"></div>`}
+    <div class="go">${go}</div>
+    ${skip ? `<div class="skip">${skip}</div>` : ""}
+  </div>`;
+
+const topSkip = `<span></span><span>Omet</span>`;
+
+Object.assign(variants, {
+  splash: [
+    () => `<div class="splash"><div class="tile">${icon.logoBig.replace('width="62" height="62"', 'width="84" height="84"')}</div></div>`,
+  ],
+  welcome: [
+    () => ob({
+      art: `<div class="splash" style="position:static;background:none"><div class="tile">${icon.logoBig.replace('width="62" height="62"', 'width="84" height="84"')}</div></div>`,
+      title: "Benvinguda a Murmur",
+      text: "Transcriu les teves reunions en directe, amb el català al centre.",
+      extra: `<div class="small">${icon.lock}<span>Privat, perquè tot passa al telèfon. Res no surt d'aquí si tu no ho vols.</span></div>`,
+      go: "Comença",
+    }),
+  ],
+  features1: [
+    () => ob({
+      top: topSkip,
+      art: `<div class="demo">
+        <div class="line"><div class="head"><span class="chip s1">Marta</span><span class="ts mono">4:12</span></div><p>Doncs si us sembla bé, tanquem el pressupost dijous</p></div>
+        <div class="line" style="margin:0"><div class="head"><span class="chip you">Tu</span><span class="ts mono">4:20</span></div><p>I ho enviem divendres <span class="pending">al client perquè ho</span><span class="caret"></span></p></div>
+      </div>`,
+      kicker: "En directe", title: "Veus el text mentre parleu",
+      text: "Murmur transcriu la reunió al moment, en català, castellà i anglès, dins del telèfon.",
+      dots: [0, 4],
+    }),
+    () => ob({
+      top: topSkip,
+      art: `<div class="demo">
+        <div style="display:flex;gap:6px;margin-bottom:12px"><span class="chip you">Tu</span><span class="chip s1">Marta</span><span class="chip s2">Jordi</span></div>
+        <div class="bar" style="margin:0 0 16px;height:8px"><i style="flex:40;background:var(--mm-you)"></i><i style="flex:35;background:var(--mm-speaker-1)"></i><i style="flex:25;background:var(--mm-speaker-2)"></i></div>
+        <div class="note-l" style="margin:0 0 8px;font-size:16px"><span class="ts mono">1:40</span><b>Pressupost tancat dijous</b></div>
+        <div class="note-l" style="margin:0 0 8px;font-size:16px"><span class="ts mono">3:05</span><span style="display:flex;gap:8px"><span class="check" style="width:17px;height:17px;margin-top:3px"></span>Revisar textos legals</span></div>
+        <div class="note-l" style="margin:0;font-size:16px"><span class="ts mono">4:20</span><span class="flagchip">${icon.flag} Moment important</span></div>
+      </div>`,
+      kicker: "Parlants i notes", title: "Qui parla i què hi apuntes",
+      text: "Distingeix les veus, i les notes, les fotos i els moments que marques queden al minut exacte.",
+      dots: [1, 4],
+    }),
+  ],
+  features2: [
+    () => ob({
+      top: topSkip,
+      art: `<div class="activity big" style="position:static;width:100%;box-sizing:border-box">
+        <div class="tp"><div class="lg">${icon.logo}</div><div class="tt">Reunió de les 10:00<small>Gravant · Català + castellà</small></div></div>
+        <div class="bigtime"><span class="mono">12:34</span><span class="levels">${[12,22,16,26,10].map((x) => `<i style="height:${x}px;background:#D4FF3A"></i>`).join("")}</span></div>
+        <div class="said"><b style="color:#fff;font-weight:600">Marta</b> · …tanquem el pressupost dijous</div>
+        <div class="acts"><span>${icon.flag} Marca</span><span>${icon.pause} Pausa</span><span class="stopb"><i></i> Atura</span></div>
+      </div>`,
+      kicker: "Damunt la taula", title: "Grava amb el telèfon bloquejat",
+      text: "Deixa'l a la taula: la reunió continua, i des de la pantalla bloquejada marques, pauses o atures.",
+      dots: [2, 4],
+    }),
+    () => ob({
+      top: topSkip,
+      art: `<div style="width:100%">
+        <div class="flow">
+          <div class="dev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><rect x="6" y="2.5" width="12" height="19" rx="2.5"/><path d="M11 18.5h2"/></svg><b>Telèfon</b>La reunió en directe</div>
+          <div class="arrow">${icon.lock}<i></i>xifrada</div>
+          <div class="dev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><rect x="4" y="5" width="16" height="11" rx="1.5"/><path d="M2 19h20"/></svg><b>Ordinador</b>Whisper i el resum</div>
+        </div>
+        <div class="demo" style="margin-top:14px;padding:14px 16px;font-size:15px;color:var(--mm-text-secondary)"><span class="okdot"></span>&nbsp; Revisada al MacBook de Quico: Whisper, parlants i resum.</div>
+      </div>`,
+      kicker: "I a l'ordinador", title: "La reunió, revisada i resumida",
+      text: "Amb Murmur a l'ordinador i a la mateixa xarxa, cada reunió hi passa sola. L'ordinador la torna a escoltar, en fa el resum i te'l torna al telèfon.",
+      dots: [3, 4], go: "Continua",
+    }),
+  ],
+  setup: [
+    () => ob({
+      art: `<div style="width:100%">
+        <div class="group-t" style="margin:0 16px 7px">En quin idioma parleu?</div>
+        <div class="group" style="margin:0">
+          <div class="choice">Català + castellà<span class="tickmark">${icon.check}</span></div>
+          <div class="choice">Català</div>
+          <div class="choice">Castellà</div>
+          <div class="choice">Anglès</div>
+        </div>
+        <div class="group-t" style="margin:18px 16px 7px">Qui hi ha a la sala?</div>
+        <div class="seg" style="margin:0"><span>Només jo</span><span class="on">Més gent</span></div>
+      </div>`,
+      kicker: "Com graves", title: "Ho pots canviar en cada reunió",
+      extra: `<div class="small">${icon.person.replace('width:14px;height:14px;vertical-align:-2px','width:15px;height:15px')}<span>Per gravar una reunió cal el consentiment de tothom qui hi participa.</span></div>`,
+    }),
+    () => ob({
+      art: `<div class="bigmic"><div class="glow" style="position:absolute;inset:-60px;height:auto;border-radius:50%"></div>${icon.mic.replace('style="width:20px;height:20px"', '')}</div>`,
+      kicker: "Un permís", title: "Murmur necessita el micròfon",
+      text: "Per escoltar la reunió i transcriure-la. L'àudio es queda al telèfon: res no va a cap servidor.",
+      go: "Permet el micròfon",
+    }),
+  ],
+  optional: [
+    () => ob({
+      top: `<span></span><span>Ara no</span>`,
+      art: `<div class="demo" style="background:none;padding:0">
+        <p class="phrase" style="font-size:24px;line-height:1.35;font-weight:600;color:var(--mm-text-primary);margin:0">Bon dia. Sóc qui fa servir aquest telèfon, <span style="color:var(--mm-text-tertiary)">i aquesta és la meva veu quan parlo en una reunió.</span></p>
+        <div class="meter" style="display:flex;gap:4px;align-items:center;height:48px;margin-top:22px">${[10,24,38,30,46,22,14,34,44,28,18].map((h) => `<i style="display:block;width:5px;border-radius:3px;height:${h}px;background:var(--mm-text-primary)"></i>`).join("")}</div>
+      </div>`,
+      kicker: "Opcional", title: "Fes que Murmur et reconegui",
+      extra: `<div class="small">${icon.lock}<span>Una empremta de la teva veu, no una gravació: una dada biomètrica. Es queda en aquest telèfon i la pots esborrar a Configuració.</span></div>`,
+      go: "Llegeix la frase",
+    }),
+    () => ob({
+      top: `<span></span><span>Ara no</span>`,
+      art: `<div style="position:relative;width:180px;height:180px;display:grid;place-items:center">
+        <div class="frame" style="position:absolute;inset:0;left:0;top:0;width:180px;height:180px"><i></i><i></i><i></i><i></i></div>
+        <svg viewBox="0 0 24 24" width="64" height="64" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><rect x="4" y="5" width="16" height="11" rx="1.5"/><path d="M2 19h20"/></svg>
+      </div>`,
+      kicker: "Opcional", title: "Tens Murmur a l'ordinador?",
+      text: "Connecta'ls amb el codi QR de Configuració › Mòbil, i les reunions hi passaran soles quan siguin a la mateixa xarxa.",
+      extra: `<div class="small">${icon.laptop.replace('style="width:20px;height:20px"','style="width:15px;height:15px"')}<span>Encara no el tens? murmur.quicodomingo.com, per a macOS, Windows i Linux.</span></div>`,
+      go: "Escaneja el codi",
+    }),
   ],
 });
 

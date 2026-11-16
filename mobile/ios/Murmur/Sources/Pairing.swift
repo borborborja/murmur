@@ -180,8 +180,9 @@ extension Store {
         let found = await Discovery.find(timeout: 1.5)
         let candidates = (computer.addresses + found).uniqued()
         let (key, name, computerKey) = ((try? SyncKey.get()) ?? Data(), phoneName, computer.key)
+        let keepAudio = UserDefaults.standard.object(forKey: "keepAudio") as? Bool ?? true
         do {
-            let report = try await onSyncQueue { try engine.sync(candidates: candidates, privateKey: key, computerKey: computerKey, phoneName: name) }
+            let report = try await onSyncQueue { try engine.sync(candidates: candidates, privateKey: key, computerKey: computerKey, phoneName: name, keepAudio: keepAudio) }
             // Where it answered goes first next time; its name may have changed.
             computer.name = report.computerName
             computer.addresses = Array(([report.address] + computer.addresses).uniqued().prefix(4))

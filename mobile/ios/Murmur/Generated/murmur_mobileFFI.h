@@ -350,7 +350,7 @@ RustBuffer uniffi_murmur_mobile_fn_method_murmur_pair(uint64_t ptr, RustBuffer u
 #endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_MURMUR_MOBILE_FN_METHOD_MURMUR_SYNC
 #define UNIFFI_FFIDEF_UNIFFI_MURMUR_MOBILE_FN_METHOD_MURMUR_SYNC
-RustBuffer uniffi_murmur_mobile_fn_method_murmur_sync(uint64_t ptr, RustBuffer candidates, RustBuffer private_key, RustBuffer computer_key, RustBuffer phone_name, RustCallStatus *_Nonnull out_status
+RustBuffer uniffi_murmur_mobile_fn_method_murmur_sync(uint64_t ptr, RustBuffer candidates, RustBuffer private_key, RustBuffer computer_key, RustBuffer phone_name, int8_t keep_audio, RustCallStatus *_Nonnull out_status
 );
 #endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_MURMUR_MOBILE_FN_METHOD_MURMUR_UNSENT_COUNT

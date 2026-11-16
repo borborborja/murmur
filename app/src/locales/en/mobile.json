@@ -83,7 +83,15 @@
     "micAuto": "Automatic",
     "micHint": "Automatic uses a wired or USB microphone if there is one, otherwise the iPhone's. Bluetooth headphones only if you pick them: they only hear whoever is wearing them, not the room.",
     "pairComputer": "Connect your computer",
-    "computerHint": "Meetings go to it on their own when both are on the same network: the computer listens to them again with Whisper and writes the summary."
+    "computerHint": "Meetings go to it on their own when both are on the same network: the computer listens to them again with Whisper and writes the summary.",
+    "keepAudio": "Keep the audio on the phone",
+    "keepAudioHint": "When off, the audio is deleted from the phone once the computer has all of it, to save space. The computer needs it to redo the meeting.",
+    "appearance": "Appearance",
+    "theme": "Theme",
+    "mode": "Mode",
+    "modeSystem": "System",
+    "modeLight": "Light",
+    "modeDark": "Dark"
   },
   "mic": {
     "denied": "Murmur needs the microphone to record. Turn it on in Settings › Murmur."
@@ -174,5 +182,10 @@
     "create": "Add “{{tag}}”",
     "hint": "To sort meetings by client or project. They're the same as on the computer.",
     "done": "Done"
+  },
+  "themes": {
+    "acid": "Black and Acid",
+    "mono": "Monochrome",
+    "formigo": "Concrete and Red"
   }
 }

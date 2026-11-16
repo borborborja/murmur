@@ -530,7 +530,7 @@ mod tests {
         // Syncing: the meeting and its audio go; the revised version comes back.
         let phone_public = Keys::from_private(&phone).unwrap().public;
         let (port, handle) = computer(pc.clone(), None, vec![phone_public], dir.join("pc"));
-        let report = m.sync(vec![format!("127.0.0.1:{port}")], phone.clone(), pc.public.to_vec(), "iPhone de Quico".into()).unwrap();
+        let report = m.sync(vec![format!("127.0.0.1:{port}")], phone.clone(), pc.public.to_vec(), "iPhone de Quico".into(), true).unwrap();
         let got = handle.join().unwrap();
         assert_eq!((report.sent, report.revised, report.failed), (1, 1, 0));
         assert!(got[0].get("audioPath").is_none(), "the phone's paths stay on the phone");
@@ -558,17 +558,20 @@ mod tests {
         state.since = 0.0;
         m.save_sync(&state).unwrap();
         let (port, handle) = computer(pc.clone(), None, vec![phone_public], dir.join("pc2"));
-        m.sync(vec![format!("127.0.0.1:{port}")], phone.clone(), pc.public.to_vec(), "iPhone de Quico".into()).unwrap();
+        m.sync(vec![format!("127.0.0.1:{port}")], phone.clone(), pc.public.to_vec(), "iPhone de Quico".into(), false).unwrap();
         handle.join().unwrap();
         assert_eq!(saved(&m)["title"], "El meu títol");
         assert_eq!(saved(&m)["utterances"][0]["text"], "Text de Whisper.");
+        // Without "Desa l'àudio al telèfon", the audio goes once the computer has it.
+        assert!(!audio.exists());
+        assert_eq!(std::fs::read(dir.join("pc2/phone-1/audio.ogg")).unwrap(), vec![7u8; 300_000]);
 
         // A computer that doesn't know this phone: refused, and said so.
         let (port, handle) = computer(pc.clone(), None, vec![], dir.join("pc"));
-        assert!(matches!(m.sync(vec![format!("127.0.0.1:{port}")], phone.clone(), pc.public.to_vec(), "iPhone".into()), Err(MurmurError::NotPaired)));
+        assert!(matches!(m.sync(vec![format!("127.0.0.1:{port}")], phone.clone(), pc.public.to_vec(), "iPhone".into(), true), Err(MurmurError::NotPaired)));
         let _ = handle.join();
         // Nobody there.
-        assert!(matches!(m.sync(vec!["127.0.0.1:1".into()], phone, pc.public.to_vec(), "iPhone".into()), Err(MurmurError::Unreachable)));
+        assert!(matches!(m.sync(vec!["127.0.0.1:1".into()], phone, pc.public.to_vec(), "iPhone".into(), true), Err(MurmurError::Unreachable)));
         let _ = std::fs::remove_dir_all(&dir);
     }
 }

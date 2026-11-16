@@ -13,6 +13,9 @@ struct SettingsView: View {
     /// The microphones there are now (uid, name, Bluetooth or not).
     @State private var inputs: [(uid: String, name: String, bluetooth: Bool)] = []
     @AppStorage("autoSync") private var autoSync = true
+    @AppStorage("keepAudio") private var keepAudio = true
+    @AppStorage("theme") private var theme = MurmurTheme.acid.rawValue
+    @AppStorage("appearance") private var appearance = "system"
     @State private var pairing = false
     @State private var confirmUnpair = false
 
@@ -101,6 +104,13 @@ struct SettingsView: View {
             }
             .listRowBackground(palette.fillSubtle)
 
+            Section {
+                Toggle(L("settings.keepAudio"), isOn: $keepAudio).tint(palette.toggleOn)
+            } footer: {
+                Text(L("settings.keepAudioHint")).font(.system(size: 13))
+            }
+            .listRowBackground(palette.fillSubtle)
+
             Section(L("settings.transcription")) {
                 Picker(L("settings.language"), selection: $language) {
                     Text(L("language.caEs")).tag("ca-es")
@@ -121,6 +131,18 @@ struct SettingsView: View {
                         Text(L("settings.partials"))
                         Text(L("settings.partialsHint")).font(.system(size: 13)).foregroundStyle(palette.textSecondary)
                     }
+                }
+            }
+            .listRowBackground(palette.fillSubtle)
+
+            Section(L("settings.appearance")) {
+                Picker(L("settings.theme"), selection: $theme) {
+                    ForEach(MurmurTheme.allCases) { Text(L("themes.\($0.rawValue)")).tag($0.rawValue) }
+                }
+                Picker(L("settings.mode"), selection: $appearance) {
+                    Text(L("settings.modeSystem")).tag("system")
+                    Text(L("settings.modeLight")).tag("light")
+                    Text(L("settings.modeDark")).tag("dark")
                 }
             }
             .listRowBackground(palette.fillSubtle)

@@ -718,8 +718,10 @@ public protocol MurmurProtocol: AnyObject, Sendable {
     /**
      * Sends the computer every finished meeting it doesn't have yet (with its audio, resuming a
      * cut one), then picks up what it has revised. One sync at a time.
+     * `keep_audio` false (Configuració › Desa l'àudio al telèfon): a meeting's audio is deleted
+     * from the phone once the computer has stored it whole and checked.
      */
-    func sync(candidates: [String], privateKey: Data, computerKey: Data, phoneName: String) throws  -> SyncReport
+    func sync(candidates: [String], privateKey: Data, computerKey: Data, phoneName: String, keepAudio: Bool) throws  -> SyncReport
     
     /**
      * Finished meetings the computer doesn't have yet.
@@ -1039,8 +1041,10 @@ open func pair(uri: String, extra: [String], privateKey: Data, phoneName: String
     /**
      * Sends the computer every finished meeting it doesn't have yet (with its audio, resuming a
      * cut one), then picks up what it has revised. One sync at a time.
+     * `keep_audio` false (Configuració › Desa l'àudio al telèfon): a meeting's audio is deleted
+     * from the phone once the computer has stored it whole and checked.
      */
-open func sync(candidates: [String], privateKey: Data, computerKey: Data, phoneName: String)throws  -> SyncReport  {
+open func sync(candidates: [String], privateKey: Data, computerKey: Data, phoneName: String, keepAudio: Bool)throws  -> SyncReport  {
     return try  FfiConverterTypeSyncReport_lift(try rustCallWithError(FfiConverterTypeMurmurError_lift) {
         uniffiCallStatus in
     uniffi_murmur_mobile_fn_method_murmur_sync(
@@ -1048,7 +1052,8 @@ open func sync(candidates: [String], privateKey: Data, computerKey: Data, phoneN
         FfiConverterSequenceString.lower(candidates),
         FfiConverterData.lower(privateKey),
         FfiConverterData.lower(computerKey),
-        FfiConverterString.lower(phoneName),uniffiCallStatus
+        FfiConverterString.lower(phoneName),
+        FfiConverterBool.lower(keepAudio),uniffiCallStatus
     )
 })
 }
@@ -2024,7 +2029,7 @@ private let initializationResult: InitializationResult = {
     if (uniffi_murmur_mobile_checksum_method_murmur_pair() != 10970) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_murmur_mobile_checksum_method_murmur_sync() != 46887) {
+    if (uniffi_murmur_mobile_checksum_method_murmur_sync() != 37164) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_murmur_mobile_checksum_method_murmur_unsent_count() != 16442) {

@@ -83,7 +83,15 @@
     "micAuto": "Automàtic",
     "micHint": "Automàtic fa servir el micròfon connectat per cable o USB i, si no n'hi ha, el de l'iPhone. Els auriculars Bluetooth només si els tries: només senten qui els porta, no la sala.",
     "pairComputer": "Connecta l'ordinador",
-    "computerHint": "Les reunions hi passaran soles quan siguin a la mateixa xarxa: l'ordinador les torna a escoltar amb Whisper i en fa el resum."
+    "computerHint": "Les reunions hi passaran soles quan siguin a la mateixa xarxa: l'ordinador les torna a escoltar amb Whisper i en fa el resum.",
+    "keepAudio": "Desa l'àudio al telèfon",
+    "keepAudioHint": "Desactivat, l'àudio s'esborra del telèfon quan l'ordinador el té sencer, per fer lloc. L'ordinador el necessita per refer la reunió.",
+    "appearance": "Aparença",
+    "theme": "Tema",
+    "mode": "Mode",
+    "modeSystem": "Sistema",
+    "modeLight": "Clar",
+    "modeDark": "Fosc"
   },
   "mic": {
     "denied": "Murmur necessita el micròfon per gravar. Activa'l a Configuració › Murmur."
@@ -174,5 +182,10 @@
     "create": "Afegeix «{{tag}}»",
     "hint": "Per ordenar les reunions per client o projecte. Són les mateixes que a l'ordinador.",
     "done": "Fet"
+  },
+  "themes": {
+    "acid": "Negre i àcid",
+    "mono": "Monocrom",
+    "formigo": "Formigó i vermell"
   }
 }

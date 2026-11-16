@@ -155,6 +155,10 @@ Per provar-la al simulador sense parlar: `xcrun simctl launch <simulador> com.qu
 - **Les fotos:** el botó de la càmera, al costat de Marca (i a la barra del teclat). Cada foto es desa en JPEG (com a molt 2048 px) a `screens/<reunió>/<ms>.jpg` de la carpeta de dades, i entra a les notes al seu minut. Passen a l'ordinador amb la reunió com les seves captures de pantalla (`screens`), i el mòbil les conserva quan la reunió torna revisada.
 - **La portada** (`Sources/CoverView.swift`): quan l'ordinador la torna, la reunió s'obre per la pestanya Resum, amb l'entradeta, el to, qui ha parlat, el resum, les decisions i les tasques amb el seu minut, i les parts. Els textos són els de l'ordinador (`cover.json`).
 - **Per provar-ho sense tocar la pantalla:** `-openLatest` obre l'última reunió; `fake_computer` torna una portada de mostra.
+- **La cerca** (`Sources/SearchView.swift`): la de l'ordinador (`Db::search`, FTS), en els títols, el que s'ha dit i les notes; cada resultat obre la reunió a la pestanya on és. `-search <paraules>` la prova sense escriure.
+- **Les etiquetes:** les mateixes que a l'ordinador; «+ Etiqueta» sota el títol obre la llista de les que ja hi ha i una de nova.
+- **Compartir:** el full del sistema amb la reunió en Markdown (resum, notes i transcripció). Només surt el que la persona envia, quan l'envia.
+- **Configuració:** Aparença (els tres temes de l'ordinador, i el mode) i «Desa l'àudio al telèfon»: desactivat, l'àudio s'esborra quan l'ordinador confirma que el té sencer.
 - **La lletra:** SF Pro a tot arreu, com a l'ordinador. Els temps porten xifres tabulars (`Font.tabular`), mai una lletra monoespaiada.
 
 Encara no hi ha: posar nom als parlants, les fotos, l'editor de notes amb format, l'emparellament, l'iPad, el Duo ni Android.

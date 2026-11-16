@@ -162,7 +162,9 @@ impl Murmur {
 
     /// Sends the computer every finished meeting it doesn't have yet (with its audio, resuming a
     /// cut one), then picks up what it has revised. One sync at a time.
-    pub fn sync(&self, candidates: Vec<String>, private_key: Vec<u8>, computer_key: Vec<u8>, phone_name: String) -> Result<SyncReport> {
+    /// `keep_audio` false (Configuració › Desa l'àudio al telèfon): a meeting's audio is deleted
+    /// from the phone once the computer has stored it whole and checked.
+    pub fn sync(&self, candidates: Vec<String>, private_key: Vec<u8>, computer_key: Vec<u8>, phone_name: String, keep_audio: bool) -> Result<SyncReport> {
         let _one = self.syncing.try_lock().map_err(|_| MurmurError::Busy)?;
         let keys = Keys::from_private(&private_key)?;
         let computer = key32(&computer_key)?;
@@ -174,6 +176,13 @@ impl Murmur {
         for id in pending {
             match self.send_meeting(&mut session, &id)? {
                 true => {
+                    if !keep_audio {
+                        // The computer said Stored: it has every byte and the checksum matched.
+                        let meeting = lock(&self.db).get(&id)?;
+                        if let Some(path) = meeting.as_ref().and_then(|m| self.audio_of(m)) {
+                            let _ = std::fs::remove_file(path);
+                        }
+                    }
                     state.sent.insert(id);
                     report.sent += 1;
                     self.save_sync(&state)?;

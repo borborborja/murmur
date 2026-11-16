@@ -14,9 +14,13 @@ enum Tab { case meetings, settings }
 struct MurmurApp: App {
     @StateObject private var store = Store()
     @Environment(\.scenePhase) private var scenePhase
+    /// Configuració › Aparença: the theme (the desktop's three) and the mode.
+    @AppStorage("theme") private var theme = MurmurTheme.acid.rawValue
+    @AppStorage("appearance") private var appearance = "system"
     var body: some Scene {
         WindowGroup {
-            RootView().environmentObject(store).murmurTheme(.acid)
+            RootView().environmentObject(store).murmurTheme(MurmurTheme(rawValue: theme) ?? .acid)
+                .preferredColorScheme(appearance == "light" ? .light : appearance == "dark" ? .dark : nil)
                 .task {
                     // `-pair <code>` (development): pairs without the camera, as in the simulator.
                     let args = ProcessInfo.processInfo.arguments

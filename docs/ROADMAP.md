@@ -197,7 +197,9 @@ Entre reunions (bloc 5):
   - [x] Posar nom als parlants (el menú de l'etiqueta: canvia el nom, aquesta frase és d'un altre, totes les frases són d'un altre), mentre graves i a la reunió acabada.
   - [x] Fotos amb el minut; l'editor de notes amb format (títol, llista, casella), mentre graves i a la reunió acabada.
   - [x] La portada que torna de l'ordinador (pestanya Resum): l'entradeta, el to, qui ha parlat, el resum, les decisions, les tasques i les parts.
-  - [ ] Marcar tasques fetes des del mòbil, i tornar-ho a l'ordinador.
+  - [x] Marcar tasques fetes des del mòbil (es conserven quan la reunió torna revisada).
+  - [x] El cercador, les etiquetes, compartir una reunió en text, i Configuració › Aparença (tema i mode) i «Desa l'àudio al telèfon».
+  - [ ] «La teva veu» al mòbil (l'empremta, només al telèfon).
   - [x] Emparellar i sincronitzar amb l'ordinador, la part del mòbil: el QR amb la càmera, Bonjour, l'enviament amb l'àudio i la versió revisada de tornada. Provat al simulador amb `fake_computer`.
   - [ ] Provar l'emparellament amb l'app de l'ordinador i un iPhone de debò.
   - [ ] Les edicions després de revisar en tots dos sentits (avui el mòbil només conserva el títol i els noms que hi canvies).

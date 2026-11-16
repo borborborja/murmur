@@ -142,6 +142,9 @@ L'app xifra el que passa entre el telèfon i l'ordinador de la persona (Noise: X
 
 ## Captures
 
+**Les que es pugen** són a `docs/appstore/<idioma>/botiga/` (1.png … 5.png, 1206 × 2622, la casella «iPhone with Dynamic Island, medium display»): un titular amb la tipografia de la landing i el telèfon damunt dels colors de la marca. La marca Eco travessa la primera i la segona. Es fan amb `docs/appstore/promo/render.sh` (Chrome sense finestra, a partir de `promo.html`, on hi ha els titulars en tres idiomes) a partir de les captures de l'app d'aquí sota.
+
+**Les captures de l'app:** 
 L'App Store en demana per a l'iPhone de 6,9 polzades (1320 × 2868); les mides més petites les fa Apple. Són a `docs/appstore/<idioma>/` (ca, es, en), al costat dels textos de la fitxa en un fitxer per camp per copiar-los, amb els límits comprovats. L'iPhone només transcriu en català i castellà: a les angleses, la transcripció és en castellà i la resta (títols, notes i el resum que fa l'ordinador) en anglès. Es fan amb `-demo` i l'idioma del simulador, fetes al simulador de l'iPhone 16 Pro Max amb les reunions de mostra (`-demo`, només en compilacions de desenvolupament: la gent i les reunions són inventades, com a la landing).
 
 ## Política de privadesa (per a la web)

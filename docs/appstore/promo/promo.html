@@ -1,0 +1,141 @@
+<!doctype html>
+<!--
+  Les captures de l'App Store amb titular: una tira de cinc captures de 1206 × 2622 (iPhone de 6,3 polzades).
+  La marca Eco travessa la primera i la segona, que es veuen seguides a la botiga.
+  promo.html?lang=ca|es|en&n=0..4 ensenya una sola captura (render.sh les fa totes amb Chrome);
+  sense n, ensenya la tira sencera, reduïda, per revisar-la.
+  Els colors són els tokens del tema Negre i àcid fosc (app/src/murmur-theme.css), copiats a :root.
+-->
+<html>
+<head>
+<meta charset="utf-8">
+<title>Murmur · captures de l'App Store</title>
+<style>
+  @font-face { font-family: "Space Grotesk"; font-weight: 400; src: url(space-grotesk-latin-400-normal.woff2) format("woff2"); }
+  @font-face { font-family: "Space Grotesk"; font-weight: 700; src: url(space-grotesk-latin-700-normal.woff2) format("woff2"); }
+  :root {
+    --mm-background: #0E0E0E;
+    --mm-text-primary: #F2F2F2;
+    --mm-separator: #242424;
+    --mm-accent: #D4FF3A;
+    --mm-on-accent: #0B0B0B;
+    --logo-bar-1: #F5F5F5;
+    --w: 1206px;
+    --h: 2622px;
+  }
+  * { box-sizing: border-box; margin: 0; }
+  html, body { background: var(--mm-background); overflow: hidden; }
+  .strip { position: relative; width: calc(5 * var(--w)); height: var(--h); transform-origin: 0 0; }
+  .slide { position: absolute; top: 0; width: var(--w); height: var(--h); }
+  .bg.acid { background: var(--mm-accent); }
+  .bg.dark { background: var(--mm-background); }
+
+  /* The Eco mark across the first two, behind the phones. */
+  .mark { position: absolute; left: calc(var(--w) - 620px); top: 760px; width: 1240px; height: 1240px; color: var(--logo-bar-1); }
+  .mark .echo { stroke: var(--mm-accent); }
+
+  .content { display: flex; flex-direction: column; align-items: center; padding-top: 210px; }
+  h1 {
+    font: 400 100px/1.06 "Space Grotesk", sans-serif; letter-spacing: -0.035em;
+    color: var(--mm-text-primary); text-align: center; max-width: 1000px; text-wrap: balance;
+  }
+  h1 b { font-weight: 700; color: var(--mm-accent); }
+  .on-acid h1, .on-acid h1 b { color: var(--mm-on-accent); }
+
+  .phone {
+    position: absolute; left: 153px; top: 640px; width: 900px; padding: 18px;
+    border-radius: 136px; background: #050505;
+    box-shadow: 0 0 0 3px #2E2E2E, 0 60px 160px -40px rgba(0, 0, 0, .7);
+  }
+  .on-acid .phone { box-shadow: 0 0 0 3px #1A1A1A, 0 60px 140px -50px rgba(0, 0, 0, .45); }
+  /* The first two step aside, so the mark shows between them. */
+  .slide.left .phone { left: 70px; }
+  .slide.right .phone { left: 236px; }
+  .phone img { display: block; width: 864px; height: auto; border-radius: 118px; }
+
+  body.overview { overflow: auto; }
+  body.overview .strip { transform: scale(.16); }
+</style>
+</head>
+<body>
+<div class="strip" id="strip"></div>
+
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <mask id="cut" maskUnits="userSpaceOnUse" x="0" y="0" width="200" height="200">
+      <rect width="200" height="200" fill="#fff"/>
+      <path d="M60 140 V100 a18 18 0 0 1 36 0 V140 M96 100 a18 18 0 0 1 36 0 V140" transform="translate(-4 -3)" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke="#000" stroke-width="32"/>
+    </mask>
+  </defs>
+</svg>
+
+<script>
+  const COPY = {
+    ca: [
+      ["Transcriu la reunió", " mentre parleu"],
+      ["L'ordinador la resumeix", " i te la torna"],
+      ["Notes i fotos", " al minut exacte"],
+      ["Troba-ho", " en totes les reunions"],
+      ["Sense núvol", " ni comptes"],
+    ],
+    es: [
+      ["Transcribe la reunión", " mientras habláis"],
+      ["Tu ordenador", " te la resume"],
+      ["Notas y fotos", " en su minuto exacto"],
+      ["Encuéntralo", " en todas las reuniones"],
+      ["Sin nube", " y sin cuentas"],
+    ],
+    en: [
+      ["Transcribes the meeting", " as you talk"],
+      ["Your computer", " sums it up for you"],
+      ["Notes and photos", " at the exact minute"],
+      ["Find anything", " across all your meetings"],
+      ["No cloud,", " no accounts"],
+    ],
+  };
+  // Which screenshot each one shows, and its background.
+  const SLIDES = [
+    { shot: "3-transcripcio", bg: "dark" },
+    { shot: "2-resum", bg: "dark" },
+    { shot: "4-notes", bg: "acid" },
+    { shot: "5-cerca", bg: "dark" },
+    { shot: "1-llista", bg: "dark" },
+  ];
+
+  const q = new URLSearchParams(location.search);
+  const lang = COPY[q.get("lang")] ? q.get("lang") : "ca";
+  const strip = document.getElementById("strip");
+  const W = 1206;
+
+  SLIDES.forEach((s, i) => {
+    const bg = document.createElement("div");
+    bg.className = `slide bg ${s.bg}`;
+    bg.style.left = `${i * W}px`;
+    strip.append(bg);
+  });
+
+  const MARK = 'M60 140 V100 a18 18 0 0 1 36 0 V140 M96 100 a18 18 0 0 1 36 0 V140';
+  strip.insertAdjacentHTML("beforeend", `
+    <svg class="mark" viewBox="34 38 128 128" aria-hidden="true">
+      <g mask="url(#cut)"><path class="echo" d="${MARK}" transform="translate(8 -15)" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="18"/></g>
+      <path d="${MARK}" transform="translate(-4 -3)" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke="currentColor" stroke-width="18"/>
+    </svg>`);
+
+  SLIDES.forEach((s, i) => {
+    const [strong, rest] = COPY[lang][i];
+    const c = document.createElement("div");
+    c.className = `slide content ${s.bg === "acid" ? "on-acid" : ""} ${["left", "right"][i] ?? ""}`;
+    c.style.left = `${i * W}px`;
+    c.innerHTML = `<h1><b></b><span></span></h1><div class="phone"><img alt=""></div>`;
+    c.querySelector("b").textContent = strong;
+    c.querySelector("span").textContent = rest;
+    c.querySelector("img").src = `../${lang}/${s.shot}.png`;
+    strip.append(c);
+  });
+
+  const n = q.get("n");
+  if (n === null) document.body.classList.add("overview");
+  else strip.style.transform = `translateX(${-Number(n) * W}px)`;
+</script>
+</body>
+</html>

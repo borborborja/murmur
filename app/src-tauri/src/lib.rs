@@ -1084,7 +1084,7 @@ async fn run_llm(
     .map_err(|e| e.to_string())?
 }
 
-/// The same with Claude or OpenAI: nothing to load and light on the Mac, so it doesn't wait for
+/// The same with Claude, OpenAI, Gemini or OpenRouter: nothing to load and light on the Mac, so it doesn't wait for
 /// recordings (gate.rs). Only text leaves the computer.
 fn run_cloud(
     app: &AppHandle,
@@ -1119,6 +1119,8 @@ struct CloudStatus {
     /// The saved key's last characters, per provider; None = not connected.
     anthropic: Option<String>,
     openai: Option<String>,
+    openrouter: Option<String>,
+    gemini: Option<String>,
 }
 
 #[tauri::command]
@@ -1126,6 +1128,8 @@ async fn cloud_status() -> Result<CloudStatus, String> {
     tauri::async_runtime::spawn_blocking(|| CloudStatus {
         anthropic: cloud::key_hint(cloud::Provider::Anthropic),
         openai: cloud::key_hint(cloud::Provider::OpenAI),
+        openrouter: cloud::key_hint(cloud::Provider::OpenRouter),
+        gemini: cloud::key_hint(cloud::Provider::Gemini),
     })
     .await
     .map_err(|e| e.to_string())

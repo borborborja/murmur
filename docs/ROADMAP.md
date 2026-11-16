@@ -131,8 +131,9 @@ Entre reunions (bloc 5):
 - [ ] Primera publicació (0.2.0) i provar una actualització real amb la 0.2.1.
 - [x] Portada: tasques editables, notes com a font, avís de portada desactualitzada i «PDF o envia…».
 - [ ] Google Calendar directe (OAuth) per a Windows, si cal.
-- [x] Intel·ligència: la portada amb el model local o amb Claude / OpenAI i la clau pròpia, desada al clauer del sistema, triant el model. Només s'envia text (transcripció i notes), mai àudio.
-- [ ] Provar la portada amb Claude i OpenAI amb claus reals i comparar-la amb Gemma (qualitat, temps i cost per reunió).
+- [x] Intel·ligència: la portada amb el model local o amb Claude / OpenAI / Gemini / OpenRouter i la clau pròpia, desada al clauer del sistema, triant el model. Només s'envia text (transcripció i notes), mai àudio.
+- [ ] Provar la portada amb Claude, OpenAI, Gemini i OpenRouter amb claus reals i comparar-la amb Gemma (qualitat, temps i cost per reunió).
+- [ ] Mesurar els models «Recomanats» d'OpenRouter (`RECOMMENDED`, `lib/cloud.ts`) amb el banc de proves abans de deixar-los com a recomanació: ara són un model conegut per empresa.
 - [ ] Vocabulari personalitzat (marques i noms propis: WordPress, WooCommerce, noms de l'equip…).
 - [x] Triar l'idioma i si sou més gent a la sala just abans de gravar (pantalla inicial, barra lateral i avisos), i canviar «Som més a la sala» durant la gravació.
 - [x] Tornar a transcriure una reunió desada en un altre idioma (català, castellà o anglès) amb Whisper, des del menú del títol.

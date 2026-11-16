@@ -83,21 +83,37 @@
     "waiting": "Waiting",
     "percent": "{{value}}%",
     "summaryName": "Summaries",
-    "summaryText": "Title, summary, decisions and tasks for each meeting. Choose who writes them:",
+    "summaryText": "Title, summary, decisions and tasks for each meeting. Choose where they're written:",
     "writers": {
       "local": "Gemma, on this Mac",
+      "cloud": "In the Cloud",
+      "none": "Not Now",
       "anthropic": "Claude",
       "openai": "ChatGPT",
-      "none": "Not Now"
+      "gemini": "Gemini",
+      "openrouter": "OpenRouter"
     },
+    "writerNotes": {
+      "anthropic": "by Anthropic",
+      "openai": "by OpenAI",
+      "gemini": "by Google",
+      "openrouter": "Many models, one key"
+    },
+    "whichCompany": "Who writes it",
     "localText": "Gemma 4, by Google, runs on this Mac. It takes {{size}} and needs a Mac with 16 GB of memory.",
     "noneText": "You can choose later in Settings › Intelligence.",
-    "cloudText": "Only the meeting's text is sent to {{name}}, never the audio. You need an API key, billed separately by usage: the subscription doesn't work.",
+    "cloudTexts": {
+      "anthropic": "Only the meeting's text is sent to {{name}}, never the audio. You need an API key, billed separately by usage: the subscription doesn't work.",
+      "openai": "Only the meeting's text is sent to {{name}}, never the audio. You need an API key, billed separately by usage: the subscription doesn't work.",
+      "gemini": "Only the meeting's text is sent to {{name}}, never the audio. You need an API key, which has a free tier with limits: the subscription doesn't work.",
+      "openrouter": "Only the meeting's text is sent to {{name}}, which passes it on to the company behind the model you choose, never the audio. You need an API key with prepaid credit."
+    },
     "cloudCreateKey": "Create one at {{site}}",
     "cloudKey": "{{name}} API key",
     "cloudConnect": "Connect",
     "cloudChecking": "Checking…",
     "cloudConnected": "{{name}} connected. Key saved in the keychain, ending in …{{hint}}",
+    "model": "Model:",
     "offlineCloud": "Audio never leaves this computer. For the summaries, only the meeting's text is sent, with your key.",
     "analytics": "Send anonymous usage statistics: which features are used, with nothing of what's said in your meetings. You can change it in Settings › General."
   },

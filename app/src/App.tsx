@@ -1674,7 +1674,7 @@ export default function App() {
         />
       )}
       {!recording && <UpdatesDialog run={updates.run} manual={updates.manual} onClose={() => {}} />}
-      {onboarding.open && <Onboarding open onClose={closeOnboarding} onChange={updateSettings} startAtModels={onboarding.atModels} />}
+      {onboarding.open && <Onboarding open onClose={closeOnboarding} onChange={updateSettings} startAtModels={onboarding.atModels} cloudModels={settings.cloudModels} />}
       {calendarSync.syncing && !showSettings && !showSidebar && (
         <button
           type="button"

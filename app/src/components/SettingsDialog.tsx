@@ -13,7 +13,8 @@ import { THEMES, type Theme } from "@/lib/appearance";
 import * as backend from "@/lib/backend";
 import type { CfAccount, ShareSetupStep } from "@/lib/backend";
 import { locale, systemLanguage, UI_LANGUAGE_NAMES, UI_LANGUAGES, type UiLanguagePref } from "@/lib/i18n";
-import { cloudModel, connectCloud, coverEngine, disconnectCloud, KEYS_URL, loadCloudModels, PROVIDERS, useCloud } from "@/lib/cloud";
+import { ModelPicker } from "@/components/ModelPicker";
+import { cloudModel, connectCloud, KEY_PLACEHOLDER, coverEngine, disconnectCloud, KEYS_URL, loadCloudModels, PROVIDERS, useCloud } from "@/lib/cloud";
 import { coverDocument, llmTasks, PROMPTS, promptText, type PromptId } from "@/lib/cover";
 import { syncCalendars, useCalendarSync } from "@/lib/calendar";
 import { spellingNote } from "@/lib/glossary";
@@ -992,19 +993,27 @@ function IntelligenceTab({
           label={<span id="cover-engine-label">{t("intelligence.engine")}</span>}
           hint={provider ? t("intelligence.engineCloudHint", { provider: t(`intelligence.companies.${provider}`) }) : t("intelligence.engineLocalHint")}
         >
-          <Segmented
+          {/* A native menu, not a segmented control: the providers don't fit side by side. */}
+          <select
             value={settings.coverEngine}
-            options={[
-              { value: "local", label: t("intelligence.engineLocal") },
-              ...PROVIDERS.map((p) => ({ value: p, label: t(`intelligence.providers.${p}`) })),
-            ]}
-            onChange={(coverEngine) => {
+            onChange={(e) => {
+              const coverEngine = e.target.value as Settings["coverEngine"];
               onChange({ coverEngine });
               // Back to the local model: fetch it if the cover is on and it isn't there.
               if (coverEngine === "local" && settings.summarize) enableWithModel(models, "llm", true, () => {});
             }}
-            labelledBy="cover-engine-label"
-          />
+            aria-labelledby="cover-engine-label"
+            className="h-6 max-w-56 shrink-0 truncate rounded-md border border-input bg-background px-1.5 text-[13px]"
+          >
+            <option value="local">{t("intelligence.engineLocal")}</option>
+            <optgroup label={t("intelligence.engineCloud")}>
+              {PROVIDERS.map((p) => (
+                <option key={p} value={p}>
+                  {t(`intelligence.providers.${p}`)}
+                </option>
+              ))}
+            </optgroup>
+          </select>
         </Row>
         {provider ? (
           <CloudRow key={provider} provider={provider} settings={settings} onChange={onChange} />
@@ -1025,7 +1034,13 @@ function IntelligenceTab({
       </Group>
       <p className="-mt-3 mb-5 flex gap-1.5 px-1 text-[11px] leading-snug text-muted-foreground">
         {provider ? <CloudUpload className="mt-px size-3 shrink-0" aria-hidden /> : <Lock className="mt-px size-3 shrink-0" aria-hidden />}
-        <span>{provider ? t("intelligence.privacyCloud", { provider: t(`intelligence.companies.${provider}`) }) : t("intelligence.privacy")}</span>
+        <span>
+          {provider === "openrouter"
+            ? t("intelligence.privacyRouter")
+            : provider
+              ? t("intelligence.privacyCloud", { provider: t(`intelligence.companies.${provider}`) })
+              : t("intelligence.privacy")}
+        </span>
       </p>
       <PromptsEditor
         settings={settings}
@@ -1040,7 +1055,7 @@ function IntelligenceTab({
 }
 
 /**
- * Claude or OpenAI under "Qui l'escriu": the API key (checked, then saved to the keychain; it
+ * Claude, OpenAI, Gemini or OpenRouter under "Qui l'escriu": the API key (checked, then saved to the keychain; it
  * never comes back here) and, once connected, the model.
  */
 function CloudRow({ provider, settings, onChange }: { provider: CloudProvider; settings: Settings; onChange: Props["onChange"] }) {
@@ -1088,7 +1103,7 @@ function CloudRow({ provider, settings, onChange }: { provider: CloudProvider; s
           {t("cloud.keyLabel", { company })}
         </label>
         <div className="mt-0.5 text-[11px] leading-snug text-muted-foreground">
-          {t("cloud.keyHint")}{" "}
+          {t(`cloud.keyHints.${provider}`)}{" "}
           <button type="button" onClick={() => openLink(KEYS_URL[provider])} className="text-mm-link hover:underline">
             {t("cloud.createKey", { site: new URL(KEYS_URL[provider]).host })}
           </button>
@@ -1105,7 +1120,7 @@ function CloudRow({ provider, settings, onChange }: { provider: CloudProvider; s
             type="password"
             value={key}
             onChange={(e) => setKey(e.target.value)}
-            placeholder={provider === "anthropic" ? "sk-ant-…" : "sk-…"}
+            placeholder={KEY_PLACEHOLDER[provider]}
             autoComplete="off"
             spellCheck={false}
             aria-invalid={!!error}
@@ -1138,22 +1153,14 @@ function CloudRow({ provider, settings, onChange }: { provider: CloudProvider; s
           {t("cloud.disconnect")}
         </button>
       </div>
-      <Row label={t("cloud.model")} hint={cloud.errors[provider] ?? t("cloud.modelHint")}>
-        <select
+      <Row label={<span id="cloud-model-label">{t("cloud.model")}</span>} hint={cloud.errors[provider] ?? t("cloud.modelHint")}>
+        <ModelPicker
+          provider={provider}
           value={model}
-          onChange={(e) => onChange({ cloudModels: { ...settings.cloudModels, [provider]: e.target.value } })}
-          aria-label={t("cloud.model")}
-          disabled={!list}
-          className="h-6 max-w-56 truncate rounded-md border border-input bg-background px-1.5 text-[13px] disabled:opacity-60"
-        >
-          {!list && <option value={model}>{model}</option>}
-          {list && !list.some((m) => m.id === model) && <option value={model}>{model}</option>}
-          {list?.map((m) => (
-            <option key={m.id} value={m.id}>
-              {m.name}
-            </option>
-          ))}
-        </select>
+          models={list}
+          onChange={(id) => onChange({ cloudModels: { ...settings.cloudModels, [provider]: id } })}
+          labelledBy="cloud-model-label"
+        />
       </Row>
     </>
   );

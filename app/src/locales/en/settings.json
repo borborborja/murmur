@@ -204,17 +204,23 @@
     "coverLanguageMeeting": "Meeting",
     "engine": "LLM",
     "engineLocal": "This Mac",
+    "engineCloud": "In the cloud, with your key",
     "engineLocalHint": "Gemma, on the computer. The transcript stays here, but it takes about 2–3 minutes for a 20-minute meeting.",
     "engineCloudHint": "Faster and better, but the transcript is sent to {{provider}}. You need your own API key, billed separately by usage.",
     "providers": {
       "anthropic": "Claude",
-      "openai": "OpenAI"
+      "openai": "OpenAI",
+      "gemini": "Gemini",
+      "openrouter": "OpenRouter"
     },
     "companies": {
       "anthropic": "Anthropic",
-      "openai": "OpenAI"
+      "openai": "OpenAI",
+      "gemini": "Google",
+      "openrouter": "OpenRouter"
     },
-    "privacyCloud": "Each time a summary is generated, the transcript's text and the notes are sent to {{provider}}. The audio never leaves this computer, and the key is saved in the macOS keychain."
+    "privacyCloud": "Each time a summary is generated, the transcript's text and the notes are sent to {{provider}}. The audio never leaves this computer, and the key is saved in the macOS keychain.",
+    "privacyRouter": "Each time a summary is generated, the transcript's text and the notes are sent to OpenRouter, which passes them on to the company behind the model you chose. The audio never leaves this computer, and the key is saved in the keychain."
   },
   "model": {
     "deleteMessage": "{{name}} ({{size}}) will be deleted. You can download it again whenever you want.",
@@ -252,7 +258,12 @@
   },
   "cloud": {
     "keyLabel": "{{company}} API key",
-    "keyHint": "A Claude or ChatGPT subscription won't do: you need an API key, billed separately by usage.",
+    "keyHints": {
+      "anthropic": "A Claude or ChatGPT subscription won't do: you need an API key, billed separately by usage.",
+      "openai": "A Claude or ChatGPT subscription won't do: you need an API key, billed separately by usage.",
+      "gemini": "A Gemini subscription won't do: you need an API key. There's a free tier with limits, and beyond that it's billed by usage.",
+      "openrouter": "OpenRouter runs on prepaid credit: you add money and each summary uses a little. One key gives you models from many companies."
+    },
     "createKey": "Create one at {{site}}",
     "connect": "Connect",
     "checking": "Checking…",
@@ -376,5 +387,17 @@
     "notionUsePrivate": "Use private pages",
     "notionAuto": "Save Each Meeting When It Ends",
     "notionPrivacy": "Only the meeting's text (summary, notes and transcript) goes to Notion, straight to your workspace, when you export it or when it ends if that's on. Never the audio or the screenshots."
+  },
+  "modelPicker": {
+    "search": "Search {{count}} models",
+    "recommended": "Recommended",
+    "free": "Free",
+    "count_one": "{{count}} model",
+    "count_other": "{{count}} models",
+    "matches_one": "{{shown}} of {{count}} model",
+    "matches_other": "{{shown}} of {{count}} models",
+    "none": "No model matches “{{query}}”",
+    "noneHint": "Try the company's name, like “google” or “mistral”.",
+    "escape": "Esc to close"
   }
 }

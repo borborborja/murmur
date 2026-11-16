@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { openUrl } from "@tauri-apps/plugin-opener";
 import { AudioLines, Camera, Check, Lock, Sparkles, Square } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -8,7 +8,8 @@ import { LogoIcon, LogoMark, Wordmark } from "@/components/Logo";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { Segmented } from "@/components/SettingsDialog";
 import * as backend from "@/lib/backend";
-import { connectCloud, KEYS_URL, useCloud } from "@/lib/cloud";
+import { ModelPicker } from "@/components/ModelPicker";
+import { cloudModel, connectCloud, KEY_PLACEHOLDER, KEYS_URL, loadCloudModels, PROVIDERS, useCloud } from "@/lib/cloud";
 import { bytes, downloadQueue, useModels } from "@/lib/models";
 import type { Settings } from "@/lib/settings";
 import type { CloudProvider, ModelId } from "@/lib/types";
@@ -22,6 +23,8 @@ type Props = {
   onChange: (patch: Partial<Settings>) => void;
   /** Jump straight to the models (e.g. from the empty screen when the model is missing). */
   startAtModels?: boolean;
+  /** The models already chosen per provider, kept when OpenRouter's is picked here. */
+  cloudModels?: Settings["cloudModels"];
 };
 
 const STEPS = 8;
@@ -29,11 +32,11 @@ const STEPS = 8;
 const MODELS_STEP = 6;
 const VOICE_STEP = 7;
 
-/** Who writes the summaries, chosen on the last step: the local model, Claude, ChatGPT or nobody yet. */
-type Writer = "local" | CloudProvider | "none";
+/** Where the summaries are written, chosen on the models step; "cloud" then asks which company. */
+type Where = "local" | "cloud" | "none";
 
 /** First-run screens (docs/design/DESIGN.md › Onboarding): six steps, then the models. */
-export function Onboarding({ open, onClose, onChange, startAtModels }: Props) {
+export function Onboarding({ open, onClose, onChange, startAtModels, cloudModels }: Props) {
   const { t } = useTranslation("onboarding");
   const [step, setStep] = useState(startAtModels ? MODELS_STEP : 0);
   return (
@@ -51,7 +54,7 @@ export function Onboarding({ open, onClose, onChange, startAtModels }: Props) {
         {step === VOICE_STEP ? (
           <VoiceStep step={step} onClose={onClose} />
         ) : step === MODELS_STEP ? (
-          <Models step={step} onBack={() => setStep(step - 1)} onClose={onClose} onChange={onChange} onNext={startAtModels ? undefined : () => setStep(VOICE_STEP)} />
+          <Models step={step} onBack={() => setStep(step - 1)} onClose={onClose} onChange={onChange} cloudModels={cloudModels} onNext={startAtModels ? undefined : () => setStep(VOICE_STEP)} />
         ) : (
           <Footer step={step} onBack={step > 0 ? () => setStep(step - 1) : undefined} primary={step === 0 ? t("start") : t("continue")} onNext={() => setStep(step + 1)} />
         )}
@@ -367,27 +370,32 @@ function Models({
   onBack,
   onClose,
   onChange,
+  cloudModels,
   onNext,
 }: {
   step: number;
   onBack: () => void;
   onClose: () => void;
   onChange: Props["onChange"];
+  cloudModels?: Settings["cloudModels"];
   /** The models are ready: on to the user's voice (not when opened just for the models). */
   onNext?: () => void;
 }) {
   const { t } = useTranslation("onboarding");
   const models = useModels();
   const cloud = useCloud();
-  const [writer, setWriter] = useState<Writer>("local");
+  const [where, setWhere] = useState<Where>("local");
+  const [company, setCompany] = useState<CloudProvider | null>(null);
+  // OpenRouter has hundreds of models: its model is chosen here too (the others' default is fine).
+  const [routerModel, setRouterModel] = useState<string | null>(null);
   // Anonymous usage statistics (lib/analytics.ts): on unless unticked here or in Settings › General.
   const [analytics, setAnalytics] = useState(true);
   const [started, setStarted] = useState(false);
   const status = (id: ModelId) => models.status[id];
   const installed = (ids: ModelId[]) => ids.every((id) => status(id)?.installed);
-  const remote = writer === "anthropic" || writer === "openai" ? writer : null;
+  const remote = where === "cloud" ? company : null;
   // Punctuation isn't published yet: leave out what can't be downloaded.
-  const toolIds = (writer === "none" ? [] : writer === "local" ? (["punctuation", "llm"] as ModelId[]) : (["punctuation"] as ModelId[])).filter(
+  const toolIds = (where === "none" ? [] : where === "local" ? (["punctuation", "llm"] as ModelId[]) : (["punctuation"] as ModelId[])).filter(
     (id) => status(id)?.downloadable !== false,
   );
   const wanted: ModelId[] = ["transcription", ...toolIds];
@@ -395,11 +403,20 @@ function Models({
   const ready = started && installed(wanted);
   const failed = wanted.map((id) => models.errors[id]).find(Boolean);
   const phase = ready ? "ready" : started && (busy || !failed) ? "downloading" : "choose";
-  // Claude or ChatGPT: the account must be connected before going on.
-  const waitingForKey = !!remote && !cloud.status[remote];
+  // In the cloud: a company chosen and its account connected before going on.
+  const waitingForKey = where === "cloud" && (!remote || !cloud.status[remote]);
+  const routerReady = remote === "openrouter" && !!cloud.status.openrouter;
+  useEffect(() => {
+    if (routerReady) loadCloudModels("openrouter");
+  }, [routerReady]);
 
   const start = () => {
-    onChange({ analytics, ...(writer !== "none" ? { punctuate: toolIds.includes("punctuation"), summarize: true, coverEngine: writer } : {}) });
+    const coverEngine = where === "local" ? "local" : remote;
+    onChange({
+      analytics,
+      ...(coverEngine ? { punctuate: toolIds.includes("punctuation"), summarize: true, coverEngine } : {}),
+      ...(coverEngine === "openrouter" && routerModel ? { cloudModels: { ...cloudModels, openrouter: routerModel } } : {}),
+    });
     setStarted(true);
     downloadQueue(wanted);
   };
@@ -421,12 +438,12 @@ function Models({
   const intro =
     phase === "ready" ? t("models.introReady") : phase === "downloading" ? t("models.introDownloading") : t("models.introChoose");
   const size = (ids: ModelId[]) => bytes(ids.reduce((n, id) => n + (status(id)?.bytes ?? 0), 0));
-  const writers: { value: Writer; label: string }[] = [
+  const places: { value: Where; label: string }[] = [
     { value: "local", label: t("models.writers.local") },
-    { value: "anthropic", label: t("models.writers.anthropic") },
-    { value: "openai", label: t("models.writers.openai") },
+    { value: "cloud", label: t("models.writers.cloud") },
     { value: "none", label: t("models.writers.none") },
   ];
+  const locked = phase !== "choose";
 
   return (
     <>
@@ -434,7 +451,7 @@ function Models({
         <div className="text-[12px] font-semibold text-muted-foreground">{t("models.kicker")}</div>
         <h1 className="mt-1 text-[24px] font-bold leading-tight tracking-[-0.015em]">{title}</h1>
         <p className="mt-1.5 text-[14px] leading-normal text-foreground/80">{intro}</p>
-        <div className="mt-4 overflow-hidden rounded-xl border border-border">
+        <div className="mt-4 shrink-0 overflow-hidden rounded-xl border border-border">
           <ModelRow
             icon={<AudioLines className="size-4" />}
             name={t("models.transcriptionName")}
@@ -454,20 +471,57 @@ function Models({
             icon={<Sparkles className="size-4" />}
             name={t("models.summaryName")}
             badge={t("models.optional")}
-            size={writer === "local" ? size(toolIds) : ""}
+            size={where === "local" ? size(toolIds) : ""}
             text={t("models.summaryText")}
             state={rowState(toolIds)}
             progress={progress(toolIds)}
             error={toolIds.map((id) => models.errors[id]).find(Boolean)}
             last
           >
-            <div className={cn("mt-2.5 flex", phase !== "choose" && "pointer-events-none opacity-60")}>
-              <Segmented<Writer> value={writer} options={writers} onChange={setWriter} labelledBy="onboarding-summary" />
+            <div className={cn("mt-2.5 flex", locked && "pointer-events-none opacity-60")}>
+              <Segmented<Where> value={where} options={places} onChange={setWhere} labelledBy="onboarding-summary" />
             </div>
+            {where === "cloud" && (
+              <div
+                role="radiogroup"
+                aria-label={t("models.whichCompany")}
+                className={cn("mt-2 grid grid-cols-4 gap-1.5", locked && "pointer-events-none opacity-60")}
+              >
+                {PROVIDERS.map((p) => (
+                  <button
+                    key={p}
+                    type="button"
+                    role="radio"
+                    aria-checked={company === p}
+                    onClick={() => setCompany(p)}
+                    className={cn(
+                      "rounded-lg px-2.5 py-1.5 text-left transition-shadow duration-150 focus-visible:outline-2 focus-visible:outline-ring",
+                      company === p ? "shadow-[0_0_0_2px_var(--mm-text-primary)]" : "shadow-[0_0_0_1px_var(--mm-separator)] hover:shadow-[0_0_0_1px_var(--mm-text-tertiary)]",
+                    )}
+                  >
+                    <span className="block text-[12px] font-semibold text-foreground">{t(`models.writers.${p}`)}</span>
+                    <span className="block text-[11px] leading-snug text-muted-foreground">{t(`models.writerNotes.${p}`)}</span>
+                  </button>
+                ))}
+              </div>
+            )}
             <div id="onboarding-summary" className="mt-2 text-[12px] leading-normal text-muted-foreground">
-              {writer === "local" && t("models.localText", { size: size(["llm"]) })}
-              {writer === "none" && t("models.noneText")}
-              {remote && <CloudKey provider={remote} connected={cloud.status[remote]} locked={phase !== "choose"} />}
+              {where === "local" && t("models.localText", { size: size(["llm"]) })}
+              {where === "none" && t("models.noneText")}
+              {remote && <CloudKey provider={remote} connected={cloud.status[remote]} locked={locked} />}
+              {routerReady && (
+                <div className={cn("mt-2 flex items-center gap-2", locked && "pointer-events-none opacity-60")}>
+                  <span id="onboarding-model">{t("models.model")}</span>
+                  <ModelPicker
+                    provider="openrouter"
+                    value={routerModel ?? cloudModel("openrouter", { cloudModels: cloudModels ?? {} })}
+                    models={cloud.models.openrouter}
+                    onChange={setRouterModel}
+                    labelledBy="onboarding-model"
+                    align="start"
+                  />
+                </div>
+              )}
             </div>
           </ModelRow>
         </div>
@@ -497,7 +551,7 @@ function Models({
   );
 }
 
-/** Claude or ChatGPT on the models step: the API key, checked and saved to the keychain (lib/cloud.ts). */
+/** A cloud company on the models step: the API key, checked and saved to the keychain (lib/cloud.ts). */
 function CloudKey({ provider, connected, locked }: { provider: CloudProvider; connected: string | null; locked: boolean }) {
   const { t } = useTranslation("onboarding");
   const [key, setKey] = useState("");
@@ -530,7 +584,7 @@ function CloudKey({ provider, connected, locked }: { provider: CloudProvider; co
   return (
     <>
       <p>
-        {t("models.cloudText", { name })}{" "}
+        {t(`models.cloudTexts.${provider}`, { name })}{" "}
         <button
           type="button"
           onClick={() => (backend.isTauri() ? openUrl(KEYS_URL[provider]) : Promise.resolve(window.open(KEYS_URL[provider], "_blank"))).catch(() => {})}
@@ -551,7 +605,7 @@ function CloudKey({ provider, connected, locked }: { provider: CloudProvider; co
           value={key}
           onChange={(e) => setKey(e.target.value)}
           disabled={locked}
-          placeholder={provider === "anthropic" ? "sk-ant-…" : "sk-…"}
+          placeholder={KEY_PLACEHOLDER[provider]}
           aria-label={t("models.cloudKey", { name })}
           autoComplete="off"
           spellCheck={false}

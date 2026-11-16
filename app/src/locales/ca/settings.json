@@ -204,17 +204,23 @@
     "coverLanguageMeeting": "El de la reunió",
     "engine": "LLM",
     "engineLocal": "Aquest Mac",
+    "engineCloud": "Al núvol, amb la teva clau",
     "engineLocalHint": "Gemma, a l'ordinador. La transcripció no en surt, però triga uns 2–3 minuts per a una reunió de 20 minuts.",
     "engineCloudHint": "Més ràpid i amb més qualitat, però la transcripció s'envia a {{provider}}. Cal una clau d'API pròpia, que es paga a part segons l'ús.",
     "providers": {
       "anthropic": "Claude",
-      "openai": "OpenAI"
+      "openai": "OpenAI",
+      "gemini": "Gemini",
+      "openrouter": "OpenRouter"
     },
     "companies": {
       "anthropic": "Anthropic",
-      "openai": "OpenAI"
+      "openai": "OpenAI",
+      "gemini": "Google",
+      "openrouter": "OpenRouter"
     },
-    "privacyCloud": "Cada vegada que es genera un resum, el text de la transcripció i les notes s'envien a {{provider}}. L'àudio no surt mai d'aquest ordinador, i la clau es desa al clauer de macOS."
+    "privacyCloud": "Cada vegada que es genera un resum, el text de la transcripció i les notes s'envien a {{provider}}. L'àudio no surt mai d'aquest ordinador, i la clau es desa al clauer de macOS.",
+    "privacyRouter": "Cada vegada que es genera un resum, el text de la transcripció i les notes s'envien a OpenRouter, que els passa a l'empresa del model que hagis triat. L'àudio no surt mai d'aquest ordinador, i la clau es desa al clauer."
   },
   "model": {
     "deleteMessage": "S'esborrarà {{name}} ({{size}}). El pots tornar a descarregar quan vulguis.",
@@ -251,16 +257,21 @@
     "needKey": "Primer connecta el compte."
   },
   "cloud": {
-    "keyLabel": "Clau d'API d'{{company}}",
-    "keyHint": "No serveix la subscripció a Claude o ChatGPT: cal una clau d'API, que es factura a part segons l'ús.",
+    "keyLabel": "Clau d'API per a {{company}}",
+    "keyHints": {
+      "anthropic": "No serveix la subscripció a Claude o ChatGPT: cal una clau d'API, que es factura a part segons l'ús.",
+      "openai": "No serveix la subscripció a Claude o ChatGPT: cal una clau d'API, que es factura a part segons l'ús.",
+      "gemini": "No serveix la subscripció a Gemini: cal una clau d'API. Té un nivell gratuït amb límits, i a partir d'aquí es paga segons l'ús.",
+      "openrouter": "OpenRouter funciona amb crèdit de prepagament: hi afegeixes diners i cada resum en gasta una mica. Amb una sola clau tens models de moltes empreses."
+    },
     "createKey": "Crea'n una a {{site}}",
     "connect": "Connecta",
     "checking": "Comprovant…",
-    "connected": "Compte d'{{company}} connectat",
+    "connected": "Compte connectat a {{company}}",
     "keySaved": "Clau desada al clauer, acaba en …{{hint}}",
     "disconnect": "Desconnecta",
     "disconnectTitle": "Vols desconnectar el compte?",
-    "disconnectMessage": "S'esborrarà la clau d'{{company}} del clauer. Els resums que ja tens no canvien.",
+    "disconnectMessage": "S'esborrarà del clauer la clau per a {{company}}. Els resums que ja tens no canvien.",
     "model": "Model",
     "modelHint": "Els més grans escriuen millor i costen més per resum."
   },
@@ -376,5 +387,17 @@
     "notionUsePrivate": "Fes servir pàgines privades",
     "notionAuto": "Desa-hi cada reunió en acabar",
     "notionPrivacy": "A Notion només s'hi envia el text de la reunió (resum, notes i transcripció), directament al teu espai, quan l'exportes o en acabar si ho tens activat. L'àudio i les captures, mai."
+  },
+  "modelPicker": {
+    "search": "Cerca entre {{count}} models",
+    "recommended": "Recomanats",
+    "free": "Gratis",
+    "count_one": "{{count}} model",
+    "count_other": "{{count}} models",
+    "matches_one": "{{shown}} de {{count}} model",
+    "matches_other": "{{shown}} de {{count}} models",
+    "none": "Cap model coincideix amb «{{query}}»",
+    "noneHint": "Prova amb el nom de l'empresa, com «google» o «mistral».",
+    "escape": "Esc per tancar"
   }
 }

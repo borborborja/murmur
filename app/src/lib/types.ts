@@ -158,9 +158,10 @@ export type Translation = { lang: "ca" | "es" | "en"; texts: Record<string, stri
 
 /** What the local language model is doing (lib.rs run_llm). */
 /** Who can write the cover instead of the local model, with the user's own API key (cloud.rs). */
-export type CloudProvider = "anthropic" | "openai";
+export type CloudProvider = "anthropic" | "openai" | "gemini" | "openrouter";
 export type CloudEngine = { provider: CloudProvider; model: string };
-export type CloudModel = { id: string; name: string };
+/** `group`: the company behind the model, in OpenRouter's list. */
+export type CloudModel = { id: string; name: string; group?: string };
 
 export type LlmProgress = { job: string; step: string; done: number; total: number; readSeconds: number | null };
 export type LlmTask = { id: string; prompt: string; maxTokens: number; schema: string | null };

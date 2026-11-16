@@ -92,6 +92,19 @@ pub struct MeetingRow {
     pub revised: bool,
 }
 
+/// A search result: where in which meeting. `snippet` has the matched words between \u{2} and
+/// \u{3}, to highlight them.
+#[derive(uniffi::Record)]
+pub struct SearchHit {
+    pub meeting_id: String,
+    pub title: String,
+    pub created_at: f64,
+    /// "title", "utterance" or "note".
+    pub kind: String,
+    pub t: f64,
+    pub snippet: String,
+}
+
 /// The loaded models, shared by every recording. sherpa-onnx's objects aren't marked Send/Sync,
 /// but they're only used by one recording at a time, behind `Murmur.live`'s lock.
 struct SharedModels(&'static Models);
@@ -161,6 +174,16 @@ impl Murmur {
                 let (sent, revised) = (state.sent.contains(&s.id), state.revised.contains(&s.id));
                 MeetingRow { id: s.id, title: s.title, created_at: s.created_at, duration: s.duration, status: s.status, tags: s.tags, last_line, sent, revised }
             })
+            .collect())
+    }
+
+    /// Searches titles, transcripts and notes (every word, as the beginning of a word: the
+    /// computer's search).
+    pub fn search(&self, query: String) -> Result<Vec<SearchHit>> {
+        Ok(lock(&self.db)
+            .search(&query, 60)?
+            .into_iter()
+            .map(|h| SearchHit { meeting_id: h.meeting_id, title: h.title, created_at: h.created_at, kind: h.kind, t: h.t, snippet: h.snippet })
             .collect())
     }
 

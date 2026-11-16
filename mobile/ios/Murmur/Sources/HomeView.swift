@@ -3,6 +3,9 @@ import SwiftUI
 enum Route: Hashable {
     case recording
     case meeting(String)
+    /// A meeting opened on a tab (from a search result).
+    case meetingAt(String, MeetingTab)
+    case search
 }
 
 enum Tab { case meetings, settings }
@@ -51,6 +54,8 @@ struct RootView: View {
                 switch route {
                 case .recording: RecordingView(done: { id in path = id.map { [.meeting($0)] } ?? [] })
                 case .meeting(let id): MeetingView(id: id)
+                case .meetingAt(let id, let tab): MeetingView(id: id, initialTab: tab)
+                case .search: SearchView(open: { path.append($0) })
                 }
             }
         }
@@ -59,6 +64,7 @@ struct RootView: View {
         .task {
             let args = ProcessInfo.processInfo.arguments
             if args.contains("-autostart") { record() }
+            if args.contains("-search") { path = [.search] }
             // `-openLatest` (development): opens the newest meeting, to see it without touching the screen.
             if args.contains("-openLatest") {
                 try? await Task.sleep(for: .seconds(3))
@@ -154,6 +160,10 @@ struct HomeView: View {
                 Spacer()
                 // Where syncing with the computer is; it opens the computer's sheet.
                 SyncButton(openSettings: openSettings)
+                if !store.meetings.isEmpty {
+                    CircleButton(systemImage: "magnifyingglass", label: L("search.title")) { open(.search) }
+                        .padding(.leading, 8)
+                }
             }
             .padding(.horizontal, 20).frame(height: 56)
 

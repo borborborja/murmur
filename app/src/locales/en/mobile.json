@@ -158,5 +158,12 @@
       "tense": "Tense",
       "conflictive": "Confrontational"
     }
+  },
+  "search": {
+    "title": "Search",
+    "placeholder": "Search meetings",
+    "hint": "Searches titles, what was said and the notes.",
+    "empty": "No meeting says “{{query}}”.",
+    "close": "Close Search"
   }
 }

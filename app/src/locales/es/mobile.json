@@ -158,5 +158,12 @@
       "tense": "Tenso",
       "conflictive": "Conflictivo"
     }
+  },
+  "search": {
+    "title": "Buscar",
+    "placeholder": "Buscar en las reuniones",
+    "hint": "Busca en los títulos, en lo que se ha dicho y en las notas.",
+    "empty": "Ninguna reunión dice «{{query}}».",
+    "close": "Cerrar la búsqueda"
   }
 }

@@ -19,6 +19,11 @@ struct MeetingView: View {
     /// The tab chosen by hand; until then, the summary if there is one.
     @State private var chosen: MeetingTab?
 
+    init(id: String, initialTab: MeetingTab? = nil) {
+        self.id = id
+        _chosen = State(initialValue: initialTab)
+    }
+
     var body: some View {
         let m = store.meeting(id)
         VStack(spacing: 0) {

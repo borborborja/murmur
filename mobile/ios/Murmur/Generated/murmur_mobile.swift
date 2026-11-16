@@ -657,6 +657,12 @@ public protocol MurmurProtocol: AnyObject, Sendable {
     func renameMeeting(id: String, title: String) throws 
     
     /**
+     * Searches titles, transcripts and notes (every word, as the beginning of a word: the
+     * computer's search).
+     */
+    func search(query: String) throws  -> [SearchHit]
+    
+    /**
      * One line goes to another speaker, set by hand (`speakerLocked`: the computer's final pass
      * leaves it alone).
      */
@@ -872,6 +878,20 @@ open func renameMeeting(id: String, title: String)throws   {try rustCallWithErro
         FfiConverterString.lower(title),uniffiCallStatus
     )
 }
+}
+    
+    /**
+     * Searches titles, transcripts and notes (every word, as the beginning of a word: the
+     * computer's search).
+     */
+open func search(query: String)throws  -> [SearchHit]  {
+    return try  FfiConverterSequenceTypeSearchHit.lift(try rustCallWithError(FfiConverterTypeMurmurError_lift) {
+        uniffiCallStatus in
+    uniffi_murmur_mobile_fn_method_murmur_search(
+            self.uniffiCloneHandle(),
+        FfiConverterString.lower(query),uniffiCallStatus
+    )
+})
 }
     
     /**
@@ -1437,6 +1457,86 @@ public func FfiConverterTypePairingCodeInfo_lower(_ value: PairingCodeInfo) -> R
 
 
 /**
+ * A search result: where in which meeting. `snippet` has the matched words between \u{2} and
+ * \u{3}, to highlight them.
+ */
+public struct SearchHit: Equatable, Hashable {
+    public var meetingId: String
+    public var title: String
+    public var createdAt: Double
+    /**
+     * "title", "utterance" or "note".
+     */
+    public var kind: String
+    public var t: Double
+    public var snippet: String
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(meetingId: String, title: String, createdAt: Double, 
+        /**
+         * "title", "utterance" or "note".
+         */kind: String, t: Double, snippet: String) {
+        self.meetingId = meetingId
+        self.title = title
+        self.createdAt = createdAt
+        self.kind = kind
+        self.t = t
+        self.snippet = snippet
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension SearchHit: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeSearchHit: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SearchHit {
+        return
+            try SearchHit(
+                meetingId: FfiConverterString.read(from: &buf), 
+                title: FfiConverterString.read(from: &buf), 
+                createdAt: FfiConverterDouble.read(from: &buf), 
+                kind: FfiConverterString.read(from: &buf), 
+                t: FfiConverterDouble.read(from: &buf), 
+                snippet: FfiConverterString.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: SearchHit, into buf: inout [UInt8]) {
+        FfiConverterString.write(value.meetingId, into: &buf)
+        FfiConverterString.write(value.title, into: &buf)
+        FfiConverterDouble.write(value.createdAt, into: &buf)
+        FfiConverterString.write(value.kind, into: &buf)
+        FfiConverterDouble.write(value.t, into: &buf)
+        FfiConverterString.write(value.snippet, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeSearchHit_lift(_ buf: RustBuffer) throws -> SearchHit {
+    return try FfiConverterTypeSearchHit.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeSearchHit_lower(_ value: SearchHit) -> RustBuffer {
+    return FfiConverterTypeSearchHit.lower(value)
+}
+
+
+/**
  * What a sync did.
  */
 public struct SyncReport: Equatable, Hashable {
@@ -1765,6 +1865,31 @@ fileprivate struct FfiConverterSequenceTypeMeetingRow: FfiConverterRustBuffer {
         return seq
     }
 }
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterSequenceTypeSearchHit: FfiConverterRustBuffer {
+    typealias SwiftType = [SearchHit]
+
+    public static func write(_ value: [SearchHit], into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for item in value {
+            FfiConverterTypeSearchHit.write(item, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [SearchHit] {
+        let len: Int32 = try readInt(&buf)
+        var seq = [SearchHit]()
+        seq.reserveCapacity(Int(len))
+        for _ in 0 ..< len {
+            seq.append(try FfiConverterTypeSearchHit.read(from: &buf))
+        }
+        return seq
+    }
+}
 /**
  * A new private key for this phone, for the keychain.
  */
@@ -1830,6 +1955,9 @@ private let initializationResult: InitializationResult = {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_murmur_mobile_checksum_method_murmur_rename_meeting() != 2007) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_murmur_mobile_checksum_method_murmur_search() != 30385) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_murmur_mobile_checksum_method_murmur_set_line_speaker() != 47918) {

@@ -158,5 +158,12 @@
       "tense": "Tens",
       "conflictive": "Conflictiu"
     }
+  },
+  "search": {
+    "title": "Cerca",
+    "placeholder": "Cerca a les reunions",
+    "hint": "Busca en els títols, en el que s'ha dit i en les notes.",
+    "empty": "Cap reunió no diu «{{query}}».",
+    "close": "Tanca la cerca"
   }
 }

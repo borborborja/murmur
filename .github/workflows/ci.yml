@@ -112,8 +112,11 @@ jobs:
             echo "{\"jsonrpc\":\"2.0\",\"id\":2,\"method\":\"tools/call\",\"params\":{\"name\":\"transcribe_file\",\"arguments\":{\"path\":\"$f\",\"language\":\"ca\"}}}"
             sleep 60 ) > input.fifo &
           TRANSCRIPTOR_MODELS=$MURMUR_E2E_MODELS gdb -batch -ex "run --mcp < input.fifo" -ex "thread apply all bt 25" ../src-tauri/target/debug/transcriptor 2>&1 | tail -150
+      # La interfície no es prova a Windows ARM: el msedgedriver no hi arrenca el WebView2
+      # («DevToolsActivePort file doesn't exist»). És la mateixa que a x64, i la prova del motor i
+      # la dels paquets ja hi proven l'app.
       - name: Eines de WebDriver
-        if: runner.os != 'macOS'
+        if: runner.os != 'macOS' && runner.arch != 'ARM64'
         shell: bash
         run: |
           cargo install tauri-driver --locked
@@ -121,17 +124,16 @@ jobs:
             sudo apt-get install -y webkit2gtk-driver xvfb
           fi
       - name: msedgedriver de la mateixa versió que WebView2
-        if: runner.os == 'Windows'
+        if: runner.os == 'Windows' && runner.arch != 'ARM64'
         shell: pwsh
         run: |
           $version = (Get-ItemProperty "HKLM:\SOFTWARE\WOW6432Node\Microsoft\EdgeUpdate\Clients\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}").pv
           Write-Host "WebView2 $version"
-          $arch = if ($env:RUNNER_ARCH -eq "ARM64") { "arm64" } else { "win64" }
-          Invoke-WebRequest "https://msedgedriver.microsoft.com/$version/edgedriver_$arch.zip" -OutFile edgedriver.zip
+          Invoke-WebRequest "https://msedgedriver.microsoft.com/$version/edgedriver_win64.zip" -OutFile edgedriver.zip
           Expand-Archive edgedriver.zip -DestinationPath "$env:RUNNER_TEMP\edgedriver"
           "$env:RUNNER_TEMP\edgedriver" | Out-File -FilePath $env:GITHUB_PATH -Append
       - name: Proves de la interfície
-        if: runner.os != 'macOS'
+        if: runner.os != 'macOS' && runner.arch != 'ARM64'
         working-directory: app/e2e
         shell: bash
         run: |

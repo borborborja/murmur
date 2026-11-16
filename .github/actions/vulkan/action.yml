@@ -30,6 +30,9 @@ runs:
         "VULKAN_SDK=$sdk" | Out-File -FilePath $env:GITHUB_ENV -Append
         "MURMUR_VULKAN_LOADER=$($loader.FullName)" | Out-File -FilePath $env:GITHUB_ENV -Append
         "MURMUR_VULKAN=1" | Out-File -FilePath $env:GITHUB_ENV -Append
+        # Una carpeta curta per compilar murmur-whisper: els camins del generador de shaders de
+        # ggml-vulkan passen dels 260 caràcters de Windows (scripts/build-whisper.mjs).
+        "MURMUR_WHISPER_TARGET_DIR=C:\mw" | Out-File -FilePath $env:GITHUB_ENV -Append
         "$sdk\Bin" | Out-File -FilePath $env:GITHUB_PATH -Append
         # Ninja en comptes de MSBuild: amb MSBuild, el generador dels shaders no es compila.
         & "$env:GITHUB_WORKSPACE\.github\scripts\msvc-ninja.ps1" x64

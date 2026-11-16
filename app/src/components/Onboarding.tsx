@@ -1,18 +1,20 @@
 import { useEffect, useState } from "react";
 import { openUrl } from "@tauri-apps/plugin-opener";
-import { AudioLines, Camera, Check, Lock, Sparkles, Square } from "lucide-react";
+import { AudioLines, Camera, Check, Ear, Lock, Sparkles, Square } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 import { Flag, speakerTone } from "@/components/SpeakerFlag";
 import { LogoIcon, LogoMark, Wordmark } from "@/components/Logo";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { Segmented } from "@/components/SettingsDialog";
+import { MEETING_LANGUAGES } from "@/components/StartOptions";
 import * as backend from "@/lib/backend";
 import { ModelPicker } from "@/components/ModelPicker";
 import { cloudModel, connectCloud, KEY_PLACEHOLDER, KEYS_URL, loadCloudModels, PROVIDERS, useCloud } from "@/lib/cloud";
 import { bytes, downloadQueue, useModels } from "@/lib/models";
 import type { Settings } from "@/lib/settings";
-import type { CloudProvider, ModelId } from "@/lib/types";
+import { preferredFinalModel } from "@/lib/finalpass";
+import type { CloudProvider, Language, ModelId } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { VoicePrivacy, VoiceRecorder } from "@/components/VoiceRecorder";
 
@@ -25,6 +27,8 @@ type Props = {
   startAtModels?: boolean;
   /** The models already chosen per provider, kept when OpenRouter's is picked here. */
   cloudModels?: Settings["cloudModels"];
+  /** The meetings' language so far: what the models step starts with. */
+  language?: Language;
 };
 
 const STEPS = 8;
@@ -36,7 +40,7 @@ const VOICE_STEP = 7;
 type Where = "local" | "cloud" | "none";
 
 /** First-run screens (docs/design/DESIGN.md › Onboarding): six steps, then the models. */
-export function Onboarding({ open, onClose, onChange, startAtModels, cloudModels }: Props) {
+export function Onboarding({ open, onClose, onChange, startAtModels, cloudModels, language }: Props) {
   const { t } = useTranslation("onboarding");
   const [step, setStep] = useState(startAtModels ? MODELS_STEP : 0);
   return (
@@ -54,7 +58,7 @@ export function Onboarding({ open, onClose, onChange, startAtModels, cloudModels
         {step === VOICE_STEP ? (
           <VoiceStep step={step} onClose={onClose} />
         ) : step === MODELS_STEP ? (
-          <Models step={step} onBack={() => setStep(step - 1)} onClose={onClose} onChange={onChange} cloudModels={cloudModels} onNext={startAtModels ? undefined : () => setStep(VOICE_STEP)} />
+          <Models step={step} onBack={() => setStep(step - 1)} onClose={onClose} onChange={onChange} cloudModels={cloudModels} language={language} onNext={startAtModels ? undefined : () => setStep(VOICE_STEP)} />
         ) : (
           <Footer step={step} onBack={step > 0 ? () => setStep(step - 1) : undefined} primary={step === 0 ? t("start") : t("continue")} onNext={() => setStep(step + 1)} />
         )}
@@ -371,6 +375,7 @@ function Models({
   onClose,
   onChange,
   cloudModels,
+  language: initialLanguage = "ca",
   onNext,
 }: {
   step: number;
@@ -378,12 +383,18 @@ function Models({
   onClose: () => void;
   onChange: Props["onChange"];
   cloudModels?: Settings["cloudModels"];
+  language?: Language;
   /** The models are ready: on to the user's voice (not when opened just for the models). */
   onNext?: () => void;
 }) {
   const { t } = useTranslation("onboarding");
+  const { t: ts } = useTranslation("settings");
   const models = useModels();
   const cloud = useCloud();
+  // Which language the meetings are mostly in: it picks the live model and the Whisper that
+  // listens again at the end (lib/finalpass.ts), and becomes the meetings' language.
+  const [language, setLanguage] = useState<Language>(initialLanguage);
+  const [whisperOn, setWhisperOn] = useState(true);
   const [where, setWhere] = useState<Where>("local");
   const [company, setCompany] = useState<CloudProvider | null>(null);
   // OpenRouter has hundreds of models: its model is chosen here too (the others' default is fine).
@@ -398,7 +409,12 @@ function Models({
   const toolIds = (where === "none" ? [] : where === "local" ? (["punctuation", "llm"] as ModelId[]) : (["punctuation"] as ModelId[])).filter(
     (id) => status(id)?.downloadable !== false,
   );
-  const wanted: ModelId[] = ["transcription", ...toolIds];
+  const liveIds: ModelId[] = language === "en" ? ["transcription", "english"] : ["transcription"];
+  // None for meetings in two languages: told one, Whisper turns the other into it.
+  const whisperModel = preferredFinalModel(language);
+  const whisperIds: ModelId[] = whisperOn && whisperModel && status(whisperModel)?.downloadable !== false ? [whisperModel] : [];
+  // In this order: what's needed to record first, then Whisper, then the summaries.
+  const wanted: ModelId[] = [...liveIds, ...whisperIds, ...toolIds];
   const busy = wanted.some((id) => models.downloading[id] || models.queued.includes(id));
   const ready = started && installed(wanted);
   const failed = wanted.map((id) => models.errors[id]).find(Boolean);
@@ -414,6 +430,8 @@ function Models({
     const coverEngine = where === "local" ? "local" : remote;
     onChange({
       analytics,
+      language,
+      ...(whisperIds.length ? { finalPass: true } : {}),
       ...(coverEngine ? { punctuate: toolIds.includes("punctuation"), summarize: true, coverEngine } : {}),
       ...(coverEngine === "openrouter" && routerModel ? { cloudModels: { ...cloudModels, openrouter: routerModel } } : {}),
     });
@@ -451,20 +469,59 @@ function Models({
         <div className="text-[12px] font-semibold text-muted-foreground">{t("models.kicker")}</div>
         <h1 className="mt-1 text-[24px] font-bold leading-tight tracking-[-0.015em]">{title}</h1>
         <p className="mt-1.5 text-[14px] leading-normal text-foreground/80">{intro}</p>
-        <div className="mt-4 shrink-0 overflow-hidden rounded-xl border border-border">
+        <div className={cn("mt-3 flex flex-wrap items-center gap-x-3 gap-y-1.5", locked && "pointer-events-none opacity-60")}>
+          <span id="onboarding-language" className="text-[13px] font-medium">
+            {t("models.languageQuestion")}
+          </span>
+          <Segmented<Language>
+            value={language}
+            options={MEETING_LANGUAGES.map((l) => ({ value: l.value, label: ts(`transcription.languages.${l.key}`) }))}
+            onChange={setLanguage}
+            labelledBy="onboarding-language"
+          />
+        </div>
+        <div className="mt-3 shrink-0 overflow-hidden rounded-xl border border-border">
           <ModelRow
             icon={<AudioLines className="size-4" />}
             name={t("models.transcriptionName")}
             badge={t("models.required")}
-            size={size(["transcription"])}
+            size={size(liveIds)}
             text={t("models.transcriptionText")}
-            state={rowState(["transcription"])}
-            progress={progress(["transcription"])}
-            error={models.errors.transcription}
+            state={rowState(liveIds)}
+            progress={progress(liveIds)}
+            error={liveIds.map((id) => models.errors[id]).find(Boolean)}
             control={
               <span className="grid size-[22px] shrink-0 place-items-center rounded-md bg-foreground text-background opacity-50" aria-label={t("models.alwaysIncluded")}>
                 <Check className="size-3.5" strokeWidth={3} />
               </span>
+            }
+          />
+          <ModelRow
+            icon={<Ear className="size-4" />}
+            name={t("models.whisperName")}
+            badge={t("models.optional")}
+            size={whisperIds.length ? size(whisperIds) : ""}
+            text={whisperModel === "whisper-ca" ? t("models.whisperTextCa") : whisperModel ? t("models.whisperText") : t("models.whisperMixed")}
+            state={rowState(whisperIds)}
+            progress={progress(whisperIds)}
+            error={whisperIds.map((id) => models.errors[id]).find(Boolean)}
+            control={
+              whisperModel && (
+                <button
+                  type="button"
+                  role="checkbox"
+                  aria-checked={whisperOn}
+                  aria-label={t("models.whisperToggle")}
+                  disabled={locked}
+                  onClick={() => setWhisperOn((on) => !on)}
+                  className={cn(
+                    "grid size-[22px] shrink-0 place-items-center rounded-md focus-visible:outline-2 focus-visible:outline-ring disabled:opacity-50",
+                    whisperOn ? "bg-foreground text-background" : "shadow-[inset_0_0_0_1.5px_var(--mm-separator)]",
+                  )}
+                >
+                  {whisperOn && <Check className="size-3.5" strokeWidth={3} />}
+                </button>
+              )
             }
           />
           <ModelRow

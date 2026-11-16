@@ -53,6 +53,7 @@ Nació para reuniones en **catalán**, donde la mayoría de servicios de transcr
 - Murmur solo se conecta a internet para descargar modelos (la primera vez, y cuando activas una función opcional), para buscar actualizaciones y para enviar estadísticas de uso anónimas ([Aptabase](https://aptabase.com): qué funciones se usan y cuánto duran las reuniones, sin ningún identificador ni nada de lo que se dice en las reuniones). Las dos cosas se pueden desactivar en Configuración › General. Las reuniones compartidas se cifran en el ordenador antes de salir de él, y solo puede leerlas quien tiene el enlace. Con el conector para Claude activado, Claude recibe el texto que pide, nunca el audio. Si conectas Notion, solo le llega el texto de las reuniones que guardes allí, directamente a tu espacio.
 - El teléfono y el ordenador se comunican solo por la red local, cifrado de extremo a extremo, sin pasar por ningún servidor.
 - Las reuniones se guardan en una base de datos SQLite local. El audio solo se guarda si lo activas.
+- Murmur lleva un registro técnico en el ordenador (grabaciones, modelos, errores; como mucho 2 MB), para que lo envíes tú si algo falla. No contiene nada de lo que se dice en las reuniones, ni títulos, ni nombres, ni el nombre de los dispositivos, y no sale del ordenador solo. Está en Configuración › General › Mostrar el registro.
 - Para grabar una reunión hace falta el consentimiento de todas las personas que participan. Murmur te lo recuerda al empezar.
 
 ## Requisitos

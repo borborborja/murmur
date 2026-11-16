@@ -57,11 +57,21 @@ impl Resampler {
 /// Live capture streams. Not `Send` on macOS: keep it on the thread that created it; dropping it
 /// stops capture.
 pub struct Capture {
-    _mic: Option<cpal::Stream>,
+    mic: Option<cpal::Stream>,
     #[cfg(target_os = "macos")]
     _system: Option<crate::systap::SystemTap>,
     #[cfg(windows)]
     _system: Option<cpal::Stream>,
+}
+
+impl Capture {
+    /// The microphone again, from scratch: it stopped sending (unplugged, the system's default
+    /// changed, another app took it…). The chosen one if it's there, else the system default.
+    pub fn reopen_mic(&mut self, mic_device: Option<&str>, tx: Sender<Frame>) -> Result<()> {
+        self.mic = None;
+        self.mic = Some(start_mic(mic_device, tx)?);
+        Ok(())
+    }
 }
 
 /// Whether this system can record the other side of a call.
@@ -96,7 +106,7 @@ pub fn start_capture(
         None
     };
     Ok(Capture {
-        _mic: mic_stream,
+        mic: mic_stream,
         #[cfg(any(target_os = "macos", windows))]
         _system: system_stream,
     })

@@ -52,7 +52,7 @@ import { MarkdownSwitch, RoomMenu, StartOptions, type StartChoice } from "@/comp
 import { countBucket, minutesBucket, setAnalyticsAllowed, track } from "@/lib/analytics";
 import { introducedName, matchName } from "@/lib/intro";
 import { reveal } from "@/lib/reveal";
-import { finalPassModel } from "@/lib/finalpass";
+import { finalPassModel, preferredFinalModel } from "@/lib/finalpass";
 import { CONTINUE_MS } from "@/lib/parts";
 import { hasAudio, playAt, release, stopUnless } from "@/lib/player";
 import { stepTextZoom, useSettings } from "@/lib/settings";
@@ -413,6 +413,14 @@ export default function App() {
         stopRef.current();
       }),
       backend.onContinueRequest((id) => continueRef.current(id)),
+      // The meeting is being lost: say so until the microphone sends sound again (lib.rs reopens it).
+      backend.onMicLost((lost) => {
+        if (lost) toast.warning(t("micLost"), { id: "mic-lost", description: t("micLostDetail"), duration: Infinity });
+        else {
+          toast.dismiss("mic-lost");
+          toast.success(t("micBack"));
+        }
+      }),
       backend.onCaptureRequest(() => captureRef.current()),
       backend.onOpenAudio(() => openAudioRef.current()),
       backend.onOpenedFiles(takeOpened),
@@ -1158,24 +1166,27 @@ export default function App() {
     setUpdates({ run: 1, manual: false });
   }, [state.loaded, onboarding.open, transcriptionReady, settings.checkUpdates]);
 
-  // Meetings in Catalan and no BSC Whisper yet (0.12): offer it once, never downloading 1.1 GB unasked.
-  const offeredCatalanWhisper = useRef(false);
+  // The Whisper for the meetings' language isn't there (0.12: the BSC's for Catalan; later, the
+  // turbo for Spanish and English, which the onboarding didn't download before): offer it once,
+  // never downloading unasked. Meetings in two languages have none to offer yet.
+  const offeredWhisper = useRef(false);
   useEffect(() => {
-    if (offeredCatalanWhisper.current || !state.loaded || !models.loaded || onboarding.open || whatsNew) return;
-    const status = models.status["whisper-ca"];
-    if (settings.language !== "ca" || !settings.finalPass || !status || status.installed || !status.downloadable) return;
-    offeredCatalanWhisper.current = true;
-    const key = "murmur.whisperCaOffered.v1";
+    if (offeredWhisper.current || !state.loaded || !models.loaded || onboarding.open || whatsNew) return;
+    const id = preferredFinalModel(settings.language);
+    const status = id && models.status[id];
+    if (!id || !settings.finalPass || !status || status.installed || !status.downloadable) return;
+    offeredWhisper.current = true;
+    const key = id === "whisper-ca" ? "murmur.whisperCaOffered.v1" : "murmur.whisperOffered.v1";
     try {
       if (localStorage.getItem(key)) return;
       localStorage.setItem(key, "1");
     } catch {
       return;
     }
-    toast(t("whisperCaOffer"), {
-      description: t("whisperCaOfferText", { size: bytes(status.bytes) }),
+    toast(t(id === "whisper-ca" ? "whisperCaOffer" : "whisperOffer"), {
+      description: t(id === "whisper-ca" ? "whisperCaOfferText" : "whisperOfferText", { size: bytes(status.bytes) }),
       duration: 20_000,
-      action: { label: t("settings:model.download"), onClick: () => void downloadModel("whisper-ca") },
+      action: { label: t("settings:model.download"), onClick: () => void downloadModel(id) },
     });
   }, [state.loaded, models.loaded, models.status, onboarding.open, whatsNew, settings.language, settings.finalPass, t]);
 
@@ -1674,7 +1685,7 @@ export default function App() {
         />
       )}
       {!recording && <UpdatesDialog run={updates.run} manual={updates.manual} onClose={() => {}} />}
-      {onboarding.open && <Onboarding open onClose={closeOnboarding} onChange={updateSettings} startAtModels={onboarding.atModels} cloudModels={settings.cloudModels} />}
+      {onboarding.open && <Onboarding open onClose={closeOnboarding} onChange={updateSettings} startAtModels={onboarding.atModels} cloudModels={settings.cloudModels} language={settings.language} />}
       {calendarSync.syncing && !showSettings && !showSidebar && (
         <button
           type="button"

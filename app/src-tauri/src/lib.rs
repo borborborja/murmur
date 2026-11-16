@@ -2,11 +2,13 @@
 // `crate::` paths here.
 pub use murmur_core::{aec, db, diarize, engine, glossary, i18n, models, pipeline, playback, punctuate, recorder, storage, voice};
 pub mod audio;
+pub mod awake;
 pub mod calendar;
 pub mod capture;
 pub mod gate;
 pub mod import;
 pub mod keychain;
+pub mod logfile;
 pub mod cloud;
 pub mod share;
 pub mod llm;
@@ -25,7 +27,7 @@ use std::collections::HashMap;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex};
 use std::thread::JoinHandle;
-use std::time::Duration;
+use std::time::{Duration, Instant};
 
 use crossbeam_channel::{RecvTimeoutError, Sender, unbounded};
 use serde::{Deserialize, Serialize};
@@ -119,6 +121,8 @@ async fn start_recording(
     let (audio_tx, audio_rx) = unbounded::<audio::Frame>();
     let (stop_tx, stop_rx) = unbounded::<()>();
     let (ready_tx, ready_rx) = unbounded::<Result<(), String>>();
+    // The worker asks the audio thread to open the microphone again when it goes quiet.
+    let (reopen_tx, reopen_rx) = unbounded::<()>();
 
     // cpal streams aren't Send on macOS: own the stream in its own thread until told to stop.
     let simulate = std::env::var("TRANSCRIPTOR_SIMULATE").ok();
@@ -132,6 +136,16 @@ async fn start_recording(
         (mic, system)
     };
     let importing = file.is_some();
+    // Never the device's name ("AirPods de la Marta"): only whether one was chosen.
+    log::info!(
+        "{} started: mic={mic} system={system} language={language} room={room_speakers} device={} final_text={}",
+        if file.is_some() { "import" } else { "recording" },
+        if mic_device.is_some() { "chosen" } else { "default" },
+        final_text
+    );
+    // A real microphone sends frames all the time, silence included: none for a while means it
+    // stopped (a file or the simulator have no microphone to watch).
+    let watch_mic = mic && !importing && simulate.is_none();
     let tmp = app.path().app_cache_dir().map_err(|e| e.to_string())?.join("import");
     let progress_app = app.clone();
     let audio = std::thread::spawn(move || match (file, simulate) {
@@ -150,16 +164,32 @@ async fn start_recording(
                 log::error!("{e:#}");
             }
         }
-        (None, None) => match audio::start_capture(mic, mic_device.as_deref(), system, audio_tx) {
-            Ok(stream) => {
-                let _ = ready_tx.send(Ok(()));
-                let _ = stop_rx.recv();
-                drop(stream);
+        (None, None) => {
+            let mic_tx = audio_tx.clone();
+            match audio::start_capture(mic, mic_device.as_deref(), system, audio_tx) {
+                Ok(mut capture) => {
+                    let _ = ready_tx.send(Ok(()));
+                    loop {
+                        crossbeam_channel::select! {
+                            recv(stop_rx) -> _ => break,
+                            recv(reopen_rx) -> asked => {
+                                if asked.is_err() {
+                                    break;
+                                }
+                                match capture.reopen_mic(mic_device.as_deref(), mic_tx.clone()) {
+                                    Ok(()) => log::warn!("microphone reopened"),
+                                    Err(e) => log::warn!("microphone: {e:#}"),
+                                }
+                            }
+                        }
+                    }
+                    drop(capture);
+                }
+                Err(e) => {
+                    let _ = ready_tx.send(Err(format!("{e:#}")));
+                }
             }
-            Err(e) => {
-                let _ = ready_tx.send(Err(format!("{e:#}")));
-            }
-        },
+        }
     });
     ready_rx.recv().map_err(|e| e.to_string())??;
     // A file isn't a call: no floating pill, and the work after it needn't wait.
@@ -262,6 +292,9 @@ async fn start_recording(
     let final_pass_meeting = meeting_id.clone();
 
     let worker = std::thread::spawn(move || {
+        // Until the last sentence is written: nobody touches the computer during a meeting.
+        let _awake = (!importing).then(awake::keep).flatten();
+        let began = Instant::now();
         let mut pipeline = match Pipeline::new(
             &models,
             mic,
@@ -296,7 +329,22 @@ async fn start_recording(
             }
         };
         let mut level_samples = 0usize;
+        let mut mic_seen = Instant::now();
+        let mut mic_lost = false;
+        let mut reopened = Instant::now();
         loop {
+            if watch_mic && mic_seen.elapsed() > MIC_QUIET {
+                if !mic_lost {
+                    mic_lost = true;
+                    log::warn!("no audio from the microphone for {:?}", mic_seen.elapsed());
+                    let _ = app.emit("mic-lost", true);
+                    shell::mic_lost(&app, true);
+                }
+                if reopened.elapsed() > MIC_REOPEN_EVERY {
+                    reopened = Instant::now();
+                    let _ = reopen_tx.send(());
+                }
+            }
             // Normally ends when the audio thread drops the streams and the sender disconnects;
             // the flag covers capture backends that keep their handler alive a bit longer.
             let (source, samples) = match audio_rx.recv_timeout(Duration::from_millis(150)) {
@@ -311,6 +359,14 @@ async fn start_recording(
                 }
                 Err(RecvTimeoutError::Disconnected) => break,
             };
+            if source == audio::Source::Mic {
+                mic_seen = Instant::now();
+                if mic_lost {
+                    mic_lost = false;
+                    let _ = app.emit("mic-lost", false);
+                    shell::mic_lost(&app, false);
+                }
+            }
             // "Som més a la sala" changed: the microphone's voices from now on.
             let room = room_worker.load(Ordering::Relaxed);
             if room != room_now && mic && system {
@@ -348,6 +404,7 @@ async fn start_recording(
                 vec![]
             }
         };
+        log::info!("{} stopped after {:.0} s", if importing { "import" } else { "recording" }, began.elapsed().as_secs_f32());
         let _ = app.emit("transcript-done", ());
         if !importing {
             shell::set_recording(&app, false);
@@ -632,6 +689,11 @@ fn safe_id(id: &str) -> String {
 /// 0.116 measured on an M4 base (window 0.2, see diarize_probe), with margin for slower Macs.
 /// Only drives the estimate shown in the UI.
 const DIARIZE_RTF_ESTIMATE: f32 = 0.15;
+/// No frames from the microphone for this long: it stopped (it sends silence too, every ~10 ms).
+const MIC_QUIET: Duration = Duration::from_secs(4);
+/// While it's quiet, how often the audio thread tries to open it again.
+const MIC_REOPEN_EVERY: Duration = Duration::from_secs(5);
+
 /// Captured frames waiting beyond which the recording is "behind" (mic callbacks come every
 /// ~10 ms, system audio every ~60 ms: about a second or more of audio).
 const BACKLOG_FRAMES: usize = 60;
@@ -688,6 +750,8 @@ struct FinalPlan {
 /// After a recording: re-check who spoke when, then improve the text with Whisper. `_heavy` is the
 /// meeting's turn (gate.rs), taken by the caller: a retranscription takes it before decoding.
 fn final_pass(app: AppHandle, meeting_id: String, tapped: Vec<pipeline::Tapped>, plan: FinalPlan, _heavy: gate::Heavy) {
+    let began = Instant::now();
+    log::info!("final pass: speakers={} whisper={:?}", plan.speakers.is_some(), plan.language);
     let started = |stage: &'static str, seconds: f32| {
         let _ = app.emit(
             "final-pass",
@@ -762,6 +826,10 @@ fn final_pass(app: AppHandle, meeting_id: String, tapped: Vec<pipeline::Tapped>,
         let _ = std::fs::remove_file(&t.path);
     }
     save_glossary_hits(&app);
+    for e in &errors {
+        log::error!("final pass: {e}");
+    }
+    log::info!("final pass done in {:.0} s", began.elapsed().as_secs_f32());
     let _ = app.emit(
         "final-pass-done",
         FinalPassDone {
@@ -857,6 +925,14 @@ struct DownloadDone {
     cancelled: bool,
 }
 
+/// Settings › General › "Mostra el registre": the log's folder (logfile.rs), to attach the file.
+#[tauri::command]
+fn show_log(app: AppHandle) -> Result<(), String> {
+    let dir = logfile::dir(&app).ok_or("no log folder")?;
+    let _ = std::fs::create_dir_all(&dir);
+    tauri_plugin_opener::open_path(&dir, None::<&str>).map_err(|e| e.to_string())
+}
+
 #[tauri::command]
 async fn model_status() -> Vec<models::Status> {
     let root = models_dir();
@@ -882,6 +958,11 @@ async fn download_model(app: AppHandle, state: State<'_, AppState>, id: String) 
         app.state::<AppState>().downloads.lock().unwrap().remove(&id);
         let cancelled = cancel.load(Ordering::Relaxed);
         let error = result.err().filter(|_| !cancelled).map(|e| format!("{e:#}"));
+        match &error {
+            Some(e) => log::error!("download {id}: {e}"),
+            None if !cancelled => log::info!("download {id}: done"),
+            None => {}
+        }
         let _ = app.emit("model-download-done", DownloadDone { id, error, cancelled });
     });
     Ok(())
@@ -924,6 +1005,11 @@ async fn update_model(app: AppHandle, state: State<'_, AppState>, id: String) ->
         app.state::<AppState>().downloads.lock().unwrap().remove(&id);
         let cancelled = cancel.load(Ordering::Relaxed);
         let error = result.err().filter(|_| !cancelled).map(|e| format!("{e:#}"));
+        match &error {
+            Some(e) => log::error!("download {id}: {e}"),
+            None if !cancelled => log::info!("download {id}: done"),
+            None => {}
+        }
         let _ = app.emit("model-download-done", DownloadDone { id, error, cancelled });
     });
     Ok(())
@@ -1731,6 +1817,9 @@ pub fn run() {
             None,
         ))
         .setup(|app| {
+            if let Some(dir) = logfile::dir(app.handle()) {
+                logfile::init(&dir);
+            }
             // The standard macOS menus (Edit gives copy/paste), with our own About window and
             // Settings… in the app menu.
             let menu = tauri::menu::Menu::default(app.handle())?;
@@ -1886,6 +1975,8 @@ pub fn run() {
             shell::dismiss_toast,
             shell::toast_start,
             shell::toast_continue,
+            shell::toast_open,
+            show_log,
             shell::show_stopped_toast,
             shell::set_meeting_detection,
             shell::set_calendar_watch,

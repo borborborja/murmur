@@ -53,6 +53,7 @@ Va néixer per a reunions en **català**, on la majoria de serveis de transcripc
 - Murmur només es connecta a internet per descarregar models (el primer cop, i quan actives una funció opcional), per buscar actualitzacions i per enviar estadístiques d'ús anònimes ([Aptabase](https://aptabase.com): quines funcions es fan servir i quant duren les reunions, sense cap identificador ni res del que es diu a les reunions). Totes dues coses es poden desactivar a Configuració › General. Les reunions compartides es xifren a l'ordinador abans de sortir-ne, i només les pot llegir qui té l'enllaç. Amb el connector per a Claude activat, Claude rep el text que demana, mai l'àudio. Si connectes Notion, només hi va el text de les reunions que hi desis, directament al teu espai.
 - El telèfon i l'ordinador es parlen només per la xarxa local, xifrat de punta a punta, sense passar per cap servidor.
 - Les reunions es desen en una base de dades SQLite local. L'àudio només es desa si ho actives.
+- Murmur porta un registre tècnic a l'ordinador (gravacions, models, errors; com a molt 2 MB), per enviar-lo tu mateix si alguna cosa falla. No hi ha res del que es diu a les reunions, ni títols, ni noms, ni el nom dels dispositius, i no surt de l'ordinador sol. És a Configuració › General › Mostra el registre.
 - Per gravar una reunió cal el consentiment de tothom que hi participa. Murmur t'ho recorda en començar.
 
 ## Requisits

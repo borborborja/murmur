@@ -282,6 +282,16 @@ function GeneralTab({
         <Row label={t("general.analytics")} hint={t("general.analyticsHint")}>
           <Switch checked={settings.analytics} onCheckedChange={(analytics) => onChange({ analytics })} />
         </Row>
+        <Row label={t("general.log")} hint={t("general.logHint")}>
+          <button
+            type="button"
+            disabled={!backend.isTauri()}
+            onClick={() => backend.showLog().catch((e) => toast.error(String(e)))}
+            className="h-6 shrink-0 rounded-md border border-input bg-background px-2.5 text-[13px] hover:bg-muted disabled:opacity-50"
+          >
+            {t("general.showLog")}
+          </button>
+        </Row>
       </Group>
     </>
   );

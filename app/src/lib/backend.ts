@@ -84,6 +84,10 @@ export const stopRecording = () => invoke<void>("stop_recording");
 export const showStoppedToast = (meetingId: string, subtitle: string, seconds: number) =>
   invoke<void>("show_stopped_toast", { meetingId, subtitle, seconds });
 /** "Continua la gravació" on that alert. */
+/** The microphone stopped sending sound while recording (true), or came back (false). */
+export const onMicLost = (fn: (lost: boolean) => void) => listen<boolean>("mic-lost", (e) => fn(e.payload));
+/** Opens the folder with Murmur's log (logfile.rs), to send it when something goes wrong. */
+export const showLog = () => invoke<void>("show_log");
 export const onContinueRequest = (fn: (meetingId: string) => void) => listen<string>("continue-recording", (e) => fn(e.payload));
 
 /** One batch of edits to a meeting (db.rs `Changes`). */

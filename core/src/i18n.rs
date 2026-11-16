@@ -86,6 +86,13 @@ fn strings(key: &str) -> Option<[&'static str; 3]> {
         // Alerts. The app's name goes first: dismissed alerts are matched by it.
         "toast_detected" => ["Reunió detectada", "Reunión detectada", "Meeting detected"],
         "toast_stopped" => ["Gravació aturada", "Grabación detenida", "Recording stopped"],
+        "toast_mic_lost" => ["El micròfon no envia so", "El micrófono no envía sonido", "The microphone isn't sending sound"],
+        "toast_mic_lost_detail" => [
+            "Murmur l'està tornant a obrir. Comprova que està connectat.",
+            "Murmur lo está volviendo a abrir. Comprueba que está conectado.",
+            "Murmur is opening it again. Check that it's connected.",
+        ],
+        "awake_reason" => ["Murmur està gravant una reunió", "Murmur está grabando una reunión", "Murmur is recording a meeting"],
         "toast_mic_user" => ["{name} fa servir el micròfon", "{name} está usando el micrófono", "{name} is using the microphone"],
 
         // Audio.

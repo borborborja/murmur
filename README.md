@@ -53,6 +53,7 @@ It started as a tool for meetings in **Catalan**, where most transcription servi
 - Murmur only connects to the internet to download models (the first time, and when you enable an optional feature), to check for updates and to send anonymous usage statistics ([Aptabase](https://aptabase.com): which features are used and how long meetings last, with no identifier and nothing of what's said in your meetings). You can turn both off in Settings › General. Shared meetings are encrypted on your computer before leaving it, and only you and whoever has the link can read them. With the Claude connector on, Claude gets the text it asks for, never the audio. If you connect Notion, only the text of the meetings you save there goes to it, straight to your own workspace.
 - The phone and the computer talk only over the local network, end-to-end encrypted, through no server.
 - Meetings are stored in a local SQLite database. Audio is only saved if you turn it on.
+- Murmur keeps a technical log on your computer (recordings, models, errors; 2 MB at most), for you to send if something goes wrong. It has nothing of what's said in meetings, no titles, no names and no device names, and it never leaves your computer by itself. It's in Settings › General › Show Log.
 - Recording a meeting requires the consent of everyone in it. Murmur reminds you when you start.
 
 ## Requirements

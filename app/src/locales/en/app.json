@@ -107,6 +107,8 @@
   "moreActions": "More actions",
   "whisperCaOffer": "There's a new Whisper for Catalan",
   "whisperCaOfferText": "The Barcelona Supercomputing Center's: in our tests, better than the current one for Central, Valencian and Balearic Catalan. It takes {{size}}.",
+  "whisperOffer": "Let Whisper go over your meetings",
+  "whisperOfferText": "When a meeting ends, Whisper listens to it again and rewrites the text, with punctuation and capitals. All on this computer. It takes {{size}}.",
   "introNamed": "“{{speaker}}” is {{name}}",
   "introHint": "If there's more than one of you in the room, each can say “Murmur, I'm…” and Murmur will add the name.",
   "undo": "Undo",
@@ -125,5 +127,8 @@
   "notionSaved": "Saved to Notion",
   "openInNotion": "Open in Notion",
   "notionSaving": "Saving to Notion…",
-  "notionConnectFirst": "Connect Notion in Settings › Export."
+  "notionConnectFirst": "Connect Notion in Settings › Export.",
+  "micLost": "The microphone isn't sending sound",
+  "micLostDetail": "Murmur is opening it again. If it doesn't come back, check that it's connected or choose another in Settings › Audio.",
+  "micBack": "The microphone is working again"
 }

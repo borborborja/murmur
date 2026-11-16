@@ -47,7 +47,10 @@
     "compactHint": "Murmur se estrecha, junto a la llamada y siempre delante, solo con las notas.",
     "showWhatsNew": "Mostrar las novedades después de actualizar",
     "showWhatsNewHint": "Un resumen de lo que trae cada versión nueva, la primera vez que abres Murmur.",
-    "showWhatsNewNow": "Mostrarlas"
+    "showWhatsNewNow": "Mostrarlas",
+    "log": "Registro",
+    "logHint": "Un archivo con lo que hace Murmur por dentro (grabaciones, modelos, errores), para enviarlo si algo falla. No hay nada de lo que se dice en las reuniones, ni títulos, ni nombres, y no sale del ordenador si no lo envías tú.",
+    "showLog": "Mostrar el registro"
   },
   "calendar": {
     "footnote": "Murmur lee los calendarios que tienes en la app Calendario de macOS. Para añadir Google Calendar, añade la cuenta en Ajustes del Sistema › Cuentas de Internet.",

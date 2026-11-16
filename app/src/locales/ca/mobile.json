@@ -107,7 +107,14 @@
     "unpairConfirm": "Les reunions que ja hi són s'hi queden. Per tornar-lo a connectar caldrà el codi QR.",
     "unreachable": "No el trobo a la xarxa. Comprova que és a la mateixa wifi i que Murmur hi és obert.",
     "notPaired": "Aquest ordinador ja no està connectat. Torna'l a connectar amb el codi QR.",
-    "failed": "No s'ha pogut sincronitzar: {{reason}}"
+    "failed": "No s'ha pogut sincronitzar: {{reason}}",
+    "toSendRow": "Per enviar",
+    "waiting": "Esperant la passada final",
+    "last": "Última sincronització",
+    "lastNever": "Encara no",
+    "settings": "Configuració de l'ordinador",
+    "upToDate": "Al dia",
+    "a11y": "Ordinador: {{state}}"
   },
   "pair": {
     "title": "Connecta l'ordinador",

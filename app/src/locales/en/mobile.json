@@ -107,7 +107,14 @@
     "unpairConfirm": "Meetings already there stay there. To connect it again you'll need the QR code.",
     "unreachable": "Can't find it on the network. Check it's on the same Wi-Fi and Murmur is open.",
     "notPaired": "This computer isn't connected any more. Connect it again with the QR code.",
-    "failed": "Couldn't sync: {{reason}}"
+    "failed": "Couldn't sync: {{reason}}",
+    "toSendRow": "To send",
+    "waiting": "Waiting for the final pass",
+    "last": "Last sync",
+    "lastNever": "Not yet",
+    "settings": "Computer settings",
+    "upToDate": "Up to date",
+    "a11y": "Computer: {{state}}"
   },
   "pair": {
     "title": "Connect your computer",

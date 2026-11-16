@@ -1933,6 +1933,29 @@
         }
       }
     },
+    "sync.a11y": {
+      "extractionState": "manual",
+      "localizations": {
+        "ca": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ordinador: %@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ordenador: %@"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Computer: %@"
+          }
+        }
+      }
+    },
     "sync.auto": {
       "extractionState": "manual",
       "localizations": {
@@ -1998,6 +2021,52 @@
           "stringUnit": {
             "state": "translated",
             "value": "Couldn't sync: %@"
+          }
+        }
+      }
+    },
+    "sync.last": {
+      "extractionState": "manual",
+      "localizations": {
+        "ca": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Última sincronització"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Última sincronización"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Last sync"
+          }
+        }
+      }
+    },
+    "sync.lastNever": {
+      "extractionState": "manual",
+      "localizations": {
+        "ca": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Encara no"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Todavía no"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not yet"
           }
         }
       }
@@ -2071,6 +2140,29 @@
         }
       }
     },
+    "sync.settings": {
+      "extractionState": "manual",
+      "localizations": {
+        "ca": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Configuració de l'ordinador"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ajustes del ordenador"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Computer settings"
+          }
+        }
+      }
+    },
     "sync.synced": {
       "extractionState": "manual",
       "localizations": {
@@ -2140,6 +2232,29 @@
         }
       }
     },
+    "sync.toSendRow": {
+      "extractionState": "manual",
+      "localizations": {
+        "ca": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Per enviar"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Por enviar"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "To send"
+          }
+        }
+      }
+    },
     "sync.unpair": {
       "extractionState": "manual",
       "localizations": {
@@ -2205,6 +2320,52 @@
           "stringUnit": {
             "state": "translated",
             "value": "Can't find it on the network. Check it's on the same Wi-Fi and Murmur is open."
+          }
+        }
+      }
+    },
+    "sync.upToDate": {
+      "extractionState": "manual",
+      "localizations": {
+        "ca": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Al dia"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Al día"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Up to date"
+          }
+        }
+      }
+    },
+    "sync.waiting": {
+      "extractionState": "manual",
+      "localizations": {
+        "ca": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esperant la passada final"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esperando la pasada final"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Waiting for the final pass"
           }
         }
       }

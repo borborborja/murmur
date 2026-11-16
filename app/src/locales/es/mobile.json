@@ -107,7 +107,14 @@
     "unpairConfirm": "Las reuniones que ya están ahí se quedan. Para volver a conectarlo hará falta el código QR.",
     "unreachable": "No lo encuentro en la red. Comprueba que está en la misma wifi y que Murmur está abierto.",
     "notPaired": "Este ordenador ya no está conectado. Vuelve a conectarlo con el código QR.",
-    "failed": "No se ha podido sincronizar: {{reason}}"
+    "failed": "No se ha podido sincronizar: {{reason}}",
+    "toSendRow": "Por enviar",
+    "waiting": "Esperando la pasada final",
+    "last": "Última sincronización",
+    "lastNever": "Todavía no",
+    "settings": "Ajustes del ordenador",
+    "upToDate": "Al día",
+    "a11y": "Ordenador: {{state}}"
   },
   "pair": {
     "title": "Conectar el ordenador",

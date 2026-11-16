@@ -40,7 +40,7 @@ struct RootView: View {
             ZStack(alignment: .bottom) {
                 palette.background.ignoresSafeArea()
                 switch tab {
-                case .meetings: HomeView(open: { path.append($0) })
+                case .meetings: HomeView(open: { path.append($0) }, openSettings: { tab = .settings })
                 case .settings: SettingsView()
                 }
                 Dock(tab: $tab, record: record, openRecording: { path.append(.recording) })
@@ -136,6 +136,7 @@ struct HomeView: View {
     @EnvironmentObject private var store: Store
     @Environment(\.murmur) private var palette
     var open: (Route) -> Void
+    var openSettings: () -> Void = {}
 
     var body: some View {
         VStack(spacing: 0) {
@@ -145,6 +146,8 @@ struct HomeView: View {
                     Text("murmur").font(.system(size: 24, weight: .bold)).tracking(-1.1)
                 }
                 Spacer()
+                // Where syncing with the computer is; it opens the computer's sheet.
+                SyncButton(openSettings: openSettings)
             }
             .padding(.horizontal, 20).frame(height: 56)
 

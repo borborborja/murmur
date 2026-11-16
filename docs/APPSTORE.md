@@ -59,7 +59,7 @@ L'App Store Connect accepta el català com a idioma de la fitxa; si no hi sortí
 ### Castellano
 
 - **Nombre:** Murmur
-- **Subtítulo:** Transcribe reuniones en directo
+- **Subtítulo:** Transcribe reuniones en vivo
 - **Texto promocional:** Graba la reunión con el teléfono sobre la mesa y léela mientras habláis. Todo se queda en el teléfono, y el ordenador puede revisarla y resumirla.
 - **Palabras clave:** transcripción,reuniones,actas,dictado,voz a texto,catalán,notas,resumen,hablantes,privado
 - **Descripción:**
@@ -92,7 +92,7 @@ L'App Store Connect accepta el català com a idioma de la fitxa; si no hi sortí
 - **Name:** Murmur
 - **Subtitle:** Live meeting transcription
 - **Promotional text:** Record the meeting with your phone on the table and read it as you talk. It all stays on the phone, and your computer can revise and summarise it.
-- **Keywords:** transcription,meetings,minutes,dictation,speech to text,catalan,spanish,notes,summary,speakers,private
+- **Keywords:** minutes,dictation,speech to text,catalan,spanish,notes,summary,speakers,private,offline,recorder
 - **Description:**
 
 > Murmur transcribes your meetings live, in Catalan and Spanish. Leave your phone on the table and read what's being said as you talk.
@@ -122,7 +122,7 @@ L'App Store Connect accepta el català com a idioma de la fitxa; si no hi sortí
 
 - **Dades recollides:** només **Dades d'ús › Interacció amb el producte** (les estadístiques anònimes d'Aptabase, `Sources/Analytics.swift`), **no vinculades** a la persona, **sense seguiment**, per a **Anàlisi**. Es poden desactivar.
 - **Cap altra dada:** l'àudio, el text, les notes, les fotos i l'empremta de la veu es queden al telèfon. El que passa a l'ordinador va directament entre els dos aparells de la persona, xifrat, sense passar per cap servidor: no és una recollida de dades.
-- **Política de privadesa:** https://murmur.quicodomingo.com/privacitat (cal crear-la, text més avall).
+- **Política de privadesa:** https://murmur.quicodomingo.com/privacitat/ (a murmur-web, en tres idiomes, amb l'avís legal a `/avis-legal/`).
 
 ## Encriptació (exportació)
 
@@ -142,7 +142,7 @@ L'app xifra el que passa entre el telèfon i l'ordinador de la persona (Noise: X
 
 ## Captures
 
-L'App Store en demana per a l'iPhone de 6,9 polzades (1320 × 2868). Són a `docs/appstore/<idioma>/`, fetes al simulador de l'iPhone 16 Pro Max amb les reunions de mostra (`-demo`, només en compilacions de desenvolupament: la gent i les reunions són inventades, com a la landing).
+L'App Store en demana per a l'iPhone de 6,9 polzades (1320 × 2868); les mides més petites les fa Apple. Són a `docs/appstore/<idioma>/` (ca, es, en), al costat dels textos de la fitxa en un fitxer per camp per copiar-los, amb els límits comprovats. L'iPhone només transcriu en català i castellà: a les angleses, la transcripció és en castellà i la resta (títols, notes i el resum que fa l'ordinador) en anglès. Es fan amb `-demo` i l'idioma del simulador, fetes al simulador de l'iPhone 16 Pro Max amb les reunions de mostra (`-demo`, només en compilacions de desenvolupament: la gent i les reunions són inventades, com a la landing).
 
 ## Política de privadesa (per a la web)
 

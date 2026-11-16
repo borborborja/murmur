@@ -1,0 +1,1 @@
+minutes,dictation,speech to text,catalan,spanish,notes,summary,speakers,private,offline,recorder

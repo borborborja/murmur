@@ -1,0 +1,1 @@
+Grava la reunió amb el telèfon damunt la taula i llegeix-la mentre parleu. Tot es queda al telèfon, i l'ordinador la pot revisar i resumir.

@@ -1,0 +1,20 @@
+Murmur transcribes your meetings live, in Catalan and Spanish. Leave your phone on the table and read what's being said as you talk.
+
+IT ALL STAYS ON THE PHONE
+Transcription happens on the phone, offline. Neither the audio nor the text goes to any server.
+
+WHO SAYS WHAT
+Murmur tells voices apart. Name each speaker, or let them name themselves by saying "Murmur, I'm Laia". Save your voice and it will know you as "You".
+
+NOTES AT THEIR MINUTE
+Write notes with headings, lists and checkboxes, take photos of the whiteboard and mark the important moments: all tied to the exact minute of the meeting.
+
+WITH THE PHONE LOCKED
+Recording goes on with the screen off. From the lock screen and the Dynamic Island you can mark a moment, pause or stop.
+
+AND ON YOUR COMPUTER
+With Murmur on your computer (macOS, Windows and Linux) on the same network, every meeting goes there on its own, encrypted. The computer listens to it again with Whisper, writes the summary, decisions and tasks, and sends them back to the phone.
+
+Also: search across all meetings, tags, sharing as text, three colour themes and dark mode.
+
+Recording a meeting needs the consent of everyone taking part.

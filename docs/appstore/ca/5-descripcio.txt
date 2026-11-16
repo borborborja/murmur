@@ -1,0 +1,20 @@
+Murmur transcriu les teves reunions en directe, amb el català al centre. Deixa el telèfon damunt la taula i llegeix el que es diu mentre parleu, en català i castellà.
+
+TOT ES QUEDA AL TELÈFON
+La transcripció es fa dins del telèfon, sense connexió. Ni l'àudio ni el text no van a cap servidor.
+
+QUI DIU QUÈ
+Murmur distingeix les veus. Posa nom a cada parlant, o que s'ho posi ell dient «Murmur, sóc la Laia». Desa la teva veu i et reconeixerà com a «Tu».
+
+NOTES AL MINUT
+Escriu notes amb títols, llistes i caselles, fes fotos de la pissarra i marca els moments importants: tot queda lligat al minut exacte de la reunió.
+
+AMB EL TELÈFON BLOQUEJAT
+La gravació continua amb la pantalla apagada. Des de la pantalla bloquejada i la Dynamic Island hi pots marcar un moment, posar-la en pausa o aturar-la.
+
+I A L'ORDINADOR
+Amb Murmur a l'ordinador (macOS, Windows i Linux) i a la mateixa xarxa, cada reunió hi passa sola, xifrada. L'ordinador la torna a escoltar amb Whisper, en fa el resum, les decisions i les tasques, i te les torna al telèfon.
+
+També: cerca en totes les reunions, etiquetes, compartir en text, tres temes de color i mode fosc.
+
+Per gravar una reunió cal el consentiment de tothom qui hi participa.

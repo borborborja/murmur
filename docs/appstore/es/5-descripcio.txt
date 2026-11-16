@@ -1,0 +1,20 @@
+Murmur transcribe tus reuniones en directo, en catalán y castellano. Deja el teléfono sobre la mesa y lee lo que se dice mientras habláis.
+
+TODO SE QUEDA EN EL TELÉFONO
+La transcripción se hace dentro del teléfono, sin conexión. Ni el audio ni el texto van a ningún servidor.
+
+QUIÉN DICE QUÉ
+Murmur distingue las voces. Pon nombre a cada hablante, o que se lo ponga él diciendo «Murmur, soy Laia». Guarda tu voz y te reconocerá como «Tú».
+
+NOTAS EN SU MINUTO
+Escribe notas con títulos, listas y casillas, haz fotos de la pizarra y marca los momentos importantes: todo queda ligado al minuto exacto de la reunión.
+
+CON EL TELÉFONO BLOQUEADO
+La grabación sigue con la pantalla apagada. Desde la pantalla bloqueada y la Dynamic Island puedes marcar un momento, pausarla o detenerla.
+
+Y EN EL ORDENADOR
+Con Murmur en el ordenador (macOS, Windows y Linux) y en la misma red, cada reunión pasa sola, cifrada. El ordenador la vuelve a escuchar con Whisper, hace el resumen, las decisiones y las tareas, y te las devuelve al teléfono.
+
+También: búsqueda en todas las reuniones, etiquetas, compartir en texto, tres temas de color y modo oscuro.
+
+Para grabar una reunión hace falta el consentimiento de todas las personas que participan.

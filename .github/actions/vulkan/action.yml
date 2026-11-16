@@ -1,0 +1,57 @@
+# El Vulkan SDK per compilar Whisper i Gemma amb la GPU (Windows x64 i Linux): les capçaleres,
+# glslc per als shaders de ggml i el carregador de Vulkan, que build.rs posa a l'instal·lador
+# (MURMUR_VULKAN_LOADER). Deixa MURMUR_VULKAN=1, que fa compilar murmur-whisper amb Vulkan
+# (scripts/build-whisper.mjs); l'app es compila amb `--features vulkan`.
+name: Vulkan SDK
+description: El Vulkan SDK i el carregador de Vulkan per compilar Murmur amb la GPU
+inputs:
+  version:
+    description: Versió del Vulkan SDK (https://vulkan.lunarg.com/sdk/home)
+    default: "1.4.363.1"
+runs:
+  using: composite
+  steps:
+    - name: Vulkan SDK (Windows)
+      if: runner.os == 'Windows'
+      shell: pwsh
+      env:
+        VERSION: ${{ inputs.version }}
+      run: |
+        $installer = "$env:RUNNER_TEMP\vulkan-sdk.exe"
+        curl.exe -sSfL -o $installer "https://sdk.lunarg.com/sdk/download/$env:VERSION/windows/vulkansdk-windows-X64-$env:VERSION.exe"
+        & $installer --root "C:\VulkanSDK\$env:VERSION" --accept-licenses --default-answer --confirm-command install
+        if ($LASTEXITCODE -ne 0) { throw "No s'ha pogut instal·lar el Vulkan SDK" }
+        $sdk = "C:\VulkanSDK\$env:VERSION"
+        $loader = @(Get-ChildItem $sdk -Recurse -Filter vulkan-1.dll -ErrorAction SilentlyContinue |
+          Where-Object { $_.DirectoryName -notmatch "ARM64|x86|32" }) + @(Get-Item "$env:SystemRoot\System32\vulkan-1.dll" -ErrorAction SilentlyContinue) |
+          Select-Object -First 1
+        if (-not $loader) { throw "El Vulkan SDK no porta vulkan-1.dll" }
+        Write-Host "Carregador de Vulkan: $($loader.FullName)"
+        "VULKAN_SDK=$sdk" | Out-File -FilePath $env:GITHUB_ENV -Append
+        "MURMUR_VULKAN_LOADER=$($loader.FullName)" | Out-File -FilePath $env:GITHUB_ENV -Append
+        "MURMUR_VULKAN=1" | Out-File -FilePath $env:GITHUB_ENV -Append
+        # Una carpeta curta per compilar murmur-whisper: els camins del generador de shaders de
+        # ggml-vulkan passen dels 260 caràcters de Windows (scripts/build-whisper.mjs).
+        # El mateix per a l'app (llama.cpp): els instal·ladors queden a C:/mt/release/bundle.
+        "MURMUR_WHISPER_TARGET_DIR=C:\mw" | Out-File -FilePath $env:GITHUB_ENV -Append
+        "CARGO_TARGET_DIR=C:/mt" | Out-File -FilePath $env:GITHUB_ENV -Append
+        "$sdk\Bin" | Out-File -FilePath $env:GITHUB_PATH -Append
+        # Ninja en comptes de MSBuild: amb MSBuild, el generador dels shaders no es compila.
+        & "$env:GITHUB_WORKSPACE\.github\scripts\msvc-ninja.ps1" x64
+    # A Linux, el carregador i la biblioteca per enllaçar són els d'Ubuntu (libvulkan-dev); del
+    # SDK només calen glslc i les capçaleres, que les d'Ubuntu 22.04 són massa antigues per a ggml.
+    - name: Vulkan SDK (Linux)
+      if: runner.os == 'Linux'
+      shell: bash
+      env:
+        VERSION: ${{ inputs.version }}
+      run: |
+        sudo apt-get install -y libvulkan-dev
+        mkdir -p "$RUNNER_TEMP/vulkan"
+        curl -sSfL "https://sdk.lunarg.com/sdk/download/$VERSION/linux/vulkansdk-linux-x86_64-$VERSION.tar.xz" | tar -xJ -C "$RUNNER_TEMP/vulkan"
+        sdk="$RUNNER_TEMP/vulkan/$VERSION/x86_64"
+        loader=$(readlink -f /usr/lib/x86_64-linux-gnu/libvulkan.so.1)
+        echo "VULKAN_SDK=$sdk" >> "$GITHUB_ENV"
+        echo "MURMUR_VULKAN_LOADER=$loader" >> "$GITHUB_ENV"
+        echo "MURMUR_VULKAN=1" >> "$GITHUB_ENV"
+        echo "$sdk/bin" >> "$GITHUB_PATH"

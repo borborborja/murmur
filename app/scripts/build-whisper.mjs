@@ -18,11 +18,29 @@ if (!target.includes("apple") && target.startsWith("x86_64")) {
   Object.assign(env, { GGML_NATIVE: "OFF", GGML_AVX: "ON", GGML_AVX2: "ON", GGML_FMA: "ON", GGML_F16C: "ON" });
 }
 
+// Windows on ARM: ggml can only target a given ARM CPU with clang (MSVC needs GGML_NATIVE, which on
+// the CI runner would pick its SVE that no Snapdragon has). ARMv8.2 with dotprod and fp16, which
+// every Windows ARM PC has (Snapdragon 8cx and X). With clang-cl and Ninja, in a Visual Studio
+// ARM64 environment, as the CI sets for llama.cpp (.github/scripts/msvc-ninja.ps1).
+if (target === "aarch64-pc-windows-msvc") {
+  Object.assign(env, { GGML_NATIVE: "OFF", GGML_CPU_ARM_ARCH: "armv8.2-a+dotprod+fp16" });
+  env.CMAKE_GENERATOR ??= "Ninja";
+  env.CMAKE_C_COMPILER ??= "clang-cl";
+  env.CMAKE_CXX_COMPILER ??= "clang-cl";
+}
+
 const args = ["build", "--release"];
 if (target !== host) args.push("--target", target);
+// Whisper on the GPU with Vulkan (Windows x64 and Linux releases): MURMUR_VULKAN=1, with the
+// Vulkan SDK installed. The app itself is built with `--features vulkan` at the same time.
+if (process.env.MURMUR_VULKAN === "1") args.push("--features", "vulkan");
+// MURMUR_WHISPER_TARGET_DIR: a short build folder. With Vulkan on Windows, the paths of ggml-vulkan's
+// shader generator go past MAX_PATH, and cl.exe fails (C1083); the CI uses C:\mw.
+const targetDir = process.env.MURMUR_WHISPER_TARGET_DIR || join(app, "whisper", "target");
+if (process.env.MURMUR_WHISPER_TARGET_DIR) args.push("--target-dir", targetDir);
 execFileSync("cargo", args, { cwd: join(app, "whisper"), stdio: "inherit", env });
 
-const built = join(app, "whisper", "target", target !== host ? target : "", "release", `murmur-whisper${exe}`);
+const built = join(targetDir, target !== host ? target : "", "release", `murmur-whisper${exe}`);
 const dest = join(app, "src-tauri", "binaries", `murmur-whisper-${target}${exe}`);
 mkdirSync(dirname(dest), { recursive: true });
 copyFileSync(built, dest);

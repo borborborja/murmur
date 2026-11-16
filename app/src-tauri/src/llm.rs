@@ -1,4 +1,4 @@
-//! Local LLM (Gemma 4 E4B via llama.cpp, Metal on Apple). A `Session` reads a document (the
+//! Local LLM (Gemma 4 E4B via llama.cpp: Metal on Apple, Vulkan on PCs built with it). A `Session` reads a document (the
 //! transcript) once and then answers several questions about it, reusing that prefix in the
 //! KV cache: on a meeting the costly part is reading it, not answering.
 
@@ -54,10 +54,20 @@ impl Llm {
         if !path.exists() {
             return Err(anyhow!(tr!("model_missing", path = path.display())));
         }
-        let params = LlamaModelParams::default().with_n_gpu_layers(999);
-        let model = LlamaModel::load_from_file(backend()?, path, &params)
-            .context(tr!("llm_load_failed"))?;
-        Ok(Self { model })
+        let load = |layers: u32| {
+            let params = LlamaModelParams::default().with_n_gpu_layers(layers);
+            LlamaModel::load_from_file(backend()?, path, &params).context(tr!("llm_load_failed"))
+        };
+        // Everything on the GPU (Metal, or Vulkan if built with it; without a usable one,
+        // llama.cpp stays on the CPU by itself), and on the CPU if the GPU can't take it: too
+        // little video memory, or a driver that fails. `MURMUR_NO_GPU` skips the GPU.
+        if std::env::var_os("MURMUR_NO_GPU").is_none() {
+            match load(999) {
+                Ok(model) => return Ok(Self { model }),
+                Err(e) => eprintln!("Gemma a la GPU: {e:#}; es fa amb el processador"),
+            }
+        }
+        Ok(Self { model: load(0)? })
     }
 
     /// Reads `system` + `document` into a fresh context. Questions are then asked in the same
@@ -67,14 +77,21 @@ impl Llm {
         let prefix = format!("<bos><|turn>system\n{system}<turn|>\n<|turn>user\n{document}\n\n---\n");
         let tokens = self.model.vocab().tokenize(prefix.as_bytes(), false, true);
         let n_ctx = (tokens.len() as u32 + ANSWER_ROOM).next_multiple_of(256);
-        let params = LlamaContextParams::default()
-            .with_n_ctx(NonZeroU32::new(n_ctx))
-            .with_n_batch(BATCH as u32)
-            .with_n_ubatch(BATCH as u32);
-        let ctx = self
-            .model
-            .new_context(backend()?, params)
-            .context(tr!("llm_context_failed"))?;
+        let params = || {
+            LlamaContextParams::default()
+                .with_n_ctx(NonZeroU32::new(n_ctx))
+                .with_n_batch(BATCH as u32)
+                .with_n_ubatch(BATCH as u32)
+        };
+        // A long meeting's KV cache may not fit next to the model in video memory: then it goes
+        // to RAM, and the model stays on the GPU.
+        let ctx = match self.model.new_context(backend()?, params()) {
+            Ok(ctx) => ctx,
+            Err(_) => self
+                .model
+                .new_context(backend()?, params().with_offload_kqv(false))
+                .context(tr!("llm_context_failed"))?,
+        };
         let mut session = Session { model: &self.model, ctx, prefix_len: 0, read_seconds: 0.0, pausable };
         let t0 = Instant::now();
         session.feed(&tokens, 0, false)?;

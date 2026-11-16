@@ -340,7 +340,8 @@
     "copyCode": "Copiar el código",
     "paired": "«{{name}}» se ha conectado con este ordenador.",
     "privacy": "El móvil y el ordenador se hablan directamente por tu red, cifrados, sin pasar por ningún servidor. La huella de tu voz nunca sale del aparato.",
-    "copyFailed": "No se ha podido copiar el código."
+    "copyFailed": "No se ha podido copiar el código.",
+    "windowsNetwork": "Si Windows pregunta si Murmur puede comunicarse por la red, permítelo en las redes privadas. Si el móvil no encuentra el ordenador, comprueba que la red Wi-Fi sea privada (Configuración › Red e Internet)."
   },
   "export": {
     "intro": "Adónde van las reuniones, además de Murmur: archivos Markdown en una carpeta, tu bóveda de Obsidian y Notion. Cada uno puede recibir cada reunión solo, cuando termina.",

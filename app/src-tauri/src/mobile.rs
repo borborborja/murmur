@@ -38,13 +38,26 @@ pub struct Phone {
     pub last_seen: Option<f64>,
 }
 
-/// What the settings show.
+/// What the settings and the sidebar show ("mobile-status" event, whenever it changes).
 #[derive(Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Status {
     pub computer: String,
     pub phones: Vec<Phone>,
     pub pairing: bool,
+    /// A phone connected right now (it only stays while syncing, a few seconds).
+    pub activity: Option<Activity>,
+    /// Why phones can't reach this computer: "offline" (no local network) or "listen" (the port
+    /// couldn't be opened).
+    pub problem: Option<&'static str>,
+}
+
+/// A phone syncing now, and the meeting it's sending, if any.
+#[derive(Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Activity {
+    pub phone: String,
+    pub receiving: Option<String>,
 }
 
 /// A code on screen, waiting for a phone.
@@ -73,6 +86,11 @@ struct Inner {
     phones: Option<Vec<Phone>>,
     pairing: Option<Pairing>,
     server: Option<Server>,
+    /// The phones connected now, by connection.
+    sessions: Vec<(u64, Activity)>,
+    next_session: u64,
+    /// The last time listening was tried, it failed.
+    cant_listen: bool,
 }
 
 #[derive(Default)]
@@ -111,7 +129,7 @@ fn keys() -> Result<Keys> {
     Ok(keys)
 }
 
-/// The name people know this computer by ("MacBook de Quico").
+/// The name people know this computer by ("MacBook de Quico"), which the phone shows.
 pub fn computer_name() -> String {
     #[cfg(target_os = "macos")]
     if let Ok(out) = std::process::Command::new("/usr/sbin/scutil").args(["--get", "ComputerName"]).output() {
@@ -121,10 +139,43 @@ pub fn computer_name() -> String {
         }
     }
     #[cfg(windows)]
-    if let Ok(name) = std::env::var("COMPUTERNAME") {
+    if let Some(name) = windows_name() {
+        return name;
+    }
+    // Linux: the "pretty" name, if it has one (Settings › About on GNOME), then the hostname.
+    #[cfg(target_os = "linux")]
+    if let Some(name) = std::fs::read_to_string("/etc/machine-info").ok().and_then(|s| {
+        s.lines().find_map(|l| l.strip_prefix("PRETTY_HOSTNAME=")).map(|v| v.trim().trim_matches('"').to_string()).filter(|v| !v.is_empty())
+    }) {
         return name;
     }
     std::fs::read_to_string("/etc/hostname").map(|s| s.trim().to_string()).ok().filter(|s| !s.is_empty()).unwrap_or_else(|| "Murmur".into())
+}
+
+/// Windows: the device name as Settings › System › About shows it (`COMPUTERNAME` is in capitals
+/// and cut at 15 letters). The one Windows makes up ("DESKTOP-4F2K1QX") says nothing on the
+/// phone: then "PC de Quico", with the user's name.
+#[cfg(windows)]
+fn windows_name() -> Option<String> {
+    use windows_sys::Win32::System::SystemInformation::{ComputerNameDnsHostname, GetComputerNameExW};
+    let mut buffer = [0u16; 256];
+    let mut len = buffer.len() as u32;
+    let ok = unsafe { GetComputerNameExW(ComputerNameDnsHostname, buffer.as_mut_ptr(), &mut len) } != 0;
+    let name = ok.then(|| String::from_utf16_lossy(&buffer[..len as usize])).or_else(|| std::env::var("COMPUTERNAME").ok())?;
+    if !is_default_windows_name(&name) {
+        return Some(name);
+    }
+    let user = std::env::var("USERNAME").ok().filter(|u| !u.is_empty())?;
+    Some(tr!("mobile_computer_of", name = user))
+}
+
+/// "DESKTOP-4F2K1QX", "LAPTOP-8KJ2M1A0": the name Windows gives a computer nobody has renamed.
+#[cfg(any(windows, test))]
+fn is_default_windows_name(name: &str) -> bool {
+    let upper = name.to_ascii_uppercase();
+    ["DESKTOP-", "LAPTOP-"].iter().any(|prefix| {
+        upper.strip_prefix(prefix).is_some_and(|rest| (7..=8).contains(&rest.len()) && rest.chars().all(|c| c.is_ascii_alphanumeric()))
+    })
 }
 
 /// This computer's address on the local network (the one it would use to go out; nothing is sent).
@@ -158,6 +209,47 @@ impl Mobile {
         let inner = self.0.lock().unwrap();
         inner.pairing.as_ref().filter(|p| p.until > Instant::now()).map(|p| p.secret)
     }
+
+    /// A phone connected: it shows as syncing until the returned guard is dropped.
+    fn begin(&self, app: &AppHandle, phone: &str) -> Syncing {
+        let id = {
+            let mut inner = self.0.lock().unwrap();
+            inner.next_session += 1;
+            let id = inner.next_session;
+            inner.sessions.push((id, Activity { phone: phone.to_string(), receiving: None }));
+            id
+        };
+        changed(app);
+        Syncing { app: app.clone(), id }
+    }
+}
+
+/// While a phone is connected; dropping it (the connection ends, however it ends) clears it.
+struct Syncing {
+    app: AppHandle,
+    id: u64,
+}
+
+impl Syncing {
+    /// The meeting being received now, or `None` once it's stored.
+    fn receiving(&self, title: Option<String>) {
+        if let Some((_, a)) = self.app.state::<Mobile>().0.lock().unwrap().sessions.iter_mut().find(|(id, _)| *id == self.id) {
+            a.receiving = title;
+        }
+        changed(&self.app);
+    }
+}
+
+impl Drop for Syncing {
+    fn drop(&mut self) {
+        self.app.state::<Mobile>().0.lock().unwrap().sessions.retain(|(id, _)| *id != self.id);
+        changed(&self.app);
+    }
+}
+
+/// Tells the interface (the sidebar, the settings) that something in `status` changed.
+fn changed(app: &AppHandle) {
+    let _ = app.emit("mobile-status", status(app));
 }
 
 /// At startup: listen if there are phones.
@@ -169,7 +261,22 @@ pub fn init(app: &AppHandle) {
 
 pub fn status(app: &AppHandle) -> Status {
     let mobile = app.state::<Mobile>();
-    Status { computer: computer_name(), phones: mobile.phones(app), pairing: mobile.pairing_secret().is_some() }
+    let phones = mobile.phones(app);
+    let pairing = mobile.pairing_secret().is_some();
+    let (activity, cant_listen) = {
+        let inner = mobile.0.lock().unwrap();
+        (inner.sessions.first().map(|(_, a)| a.clone()), inner.cant_listen)
+    };
+    let problem = if phones.is_empty() {
+        None
+    } else if cant_listen {
+        Some("listen")
+    } else if local_address().is_none() {
+        Some("offline")
+    } else {
+        None
+    };
+    Status { computer: computer_name(), phones, pairing, activity, problem }
 }
 
 /// "Connecta un mòbil": a new one-time code, valid for a few minutes.
@@ -222,6 +329,13 @@ pub fn unpair(app: &AppHandle, id: &str) -> Result<()> {
 /// Starts or stops listening (and announcing) to match: on while there are phones or a code on
 /// screen. Returns the port when listening.
 fn refresh(app: &AppHandle) -> Result<Option<u16>> {
+    let result = listen(app);
+    app.state::<Mobile>().0.lock().unwrap().cant_listen = result.is_err();
+    changed(app);
+    result
+}
+
+fn listen(app: &AppHandle) -> Result<Option<u16>> {
     let mobile = app.state::<Mobile>();
     let wanted = !mobile.phones(app).is_empty() || mobile.pairing_secret().is_some();
     let mut inner = mobile.0.lock().unwrap();
@@ -315,6 +429,7 @@ fn handle(app: &AppHandle, stream: TcpStream) -> Result<()> {
     }
     mobile.save_phones(app, phones)?;
     let device = json!({ "id": id, "name": session.remote_name });
+    let syncing = mobile.begin(app, &session.remote_name);
 
     loop {
         match session.recv() {
@@ -325,6 +440,7 @@ fn handle(app: &AppHandle, stream: TcpStream) -> Result<()> {
                     continue;
                 }
                 let dir = data_dir(app)?.join("incoming").join(&meeting_id);
+                syncing.receiving(Some(meeting.get("title").and_then(Value::as_str).unwrap_or_default().to_string()));
                 let receiving = Receiving::new(dir.clone(), files)?;
                 session.send(&Msg::Have { meeting_id: meeting_id.clone(), files: receiving.progress() })?;
                 while !receiving.finish()? {
@@ -333,7 +449,9 @@ fn handle(app: &AppHandle, stream: TcpStream) -> Result<()> {
                         Incoming::Msg(m) => return Err(anyhow!("expected a file chunk, got {m:?}")),
                     }
                 }
-                match place(app, meeting, &dir, &device) {
+                let placed = place(app, meeting, &dir, &device);
+                syncing.receiving(None);
+                match placed {
                     Ok(fresh) => {
                         session.send(&Msg::Stored { meeting_id: meeting_id.clone() })?;
                         if fresh {
@@ -411,6 +529,15 @@ fn for_phone(mut meeting: Value) -> Value {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn windows_default_names() {
+        assert!(is_default_windows_name("DESKTOP-4F2K1QX"));
+        assert!(is_default_windows_name("laptop-8kj2m1a0"));
+        assert!(!is_default_windows_name("Portatil-Quico"));
+        assert!(!is_default_windows_name("DESKTOP-DE-LA-FEINA"));
+        assert!(!is_default_windows_name("DESKTOP"));
+    }
 
     #[test]
     fn hex_round_trips_and_rejects_junk() {

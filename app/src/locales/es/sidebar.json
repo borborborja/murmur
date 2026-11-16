@@ -14,5 +14,27 @@
   "results": "Resultados de la búsqueda",
   "note": "nota",
   "moreHits_one": "y {{count}} más",
-  "moreHits_other": "y {{count}} más"
+  "moreHits_other": "y {{count}} más",
+  "mobile": {
+    "label": "Móvil: {{state}}",
+    "upToDate": "Al día",
+    "syncing": "Sincronizando…",
+    "receiving": "Recibiendo «{{title}}»…",
+    "receivingUntitled": "Recibiendo una reunión…",
+    "waitingShort_one": "{{count}} reunión por pasar",
+    "waitingShort_other": "{{count}} reuniones por pasar",
+    "problem": {
+      "offline": "Sin red: el móvil no puede encontrar este ordenador.",
+      "listen": "No se puede abrir la conexión con el móvil en este ordenador."
+    },
+    "phones_one": "{{count}} móvil",
+    "phones_other": "{{count}} móviles",
+    "waiting": "Esperando la pasada final",
+    "meetings_one": "{{count}} reunión",
+    "meetings_other": "{{count}} reuniones",
+    "none": "Ninguna",
+    "lastSync": "Última sincronización",
+    "never": "Todavía no",
+    "settings": "Configuración del móvil"
+  }
 }

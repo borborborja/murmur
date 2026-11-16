@@ -56,9 +56,9 @@ Va néixer per a reunions en **català**, on la majoria de serveis de transcripc
 ## Requisits
 
 - **macOS:** un Mac amb Apple Silicon (M1 o posterior) i macOS 14.2 o posterior.
-- **Windows:** Windows 10 o 11 de 64 bits (x86-64), amb un processador amb AVX2 (Intel des del 2013, AMD des del 2015). WebView2 ja ve amb Windows, i si no hi és l'instal·lador l'afegeix.
+- **Windows:** Windows 10 o 11 de 64 bits, en un PC x86-64 amb un processador amb AVX2 (Intel des del 2013, AMD des del 2015) o en un PC amb ARM (Snapdragon), amb Windows 11. WebView2 ja ve amb Windows, i si no hi és l'instal·lador l'afegeix.
 - **Linux:** una distribució de 64 bits (x86-64) amb WebKitGTK 4.1, com Ubuntu 22.04 o posterior, Debian 12 o Fedora 38 o posterior, amb un processador amb AVX2. Per desar les claus, un Secret Service (GNOME Keyring o KWallet).
-- 8 GB de memòria. Per al resum local se'n recomanen 16. A Windows i Linux tot va pel processador, i la passada final i el resum són més lents que en un Mac.
+- 8 GB de memòria. Per al resum local se'n recomanen 16. A Windows x64 i a Linux, la passada final i el resum fan servir la targeta gràfica si n'hi ha (Vulkan: NVIDIA, AMD o Intel, amb els controladors al dia), i si no, el processador. Als PC amb ARM, de moment, sempre el processador.
 - Uns 600 MB de disc per als models bàsics. Els opcionals n'ocupen més: anglès, 458 MB; Whisper català, 1,1 GB; Whisper per al castellà i l'anglès, 574 MB; Gemma, 5,2 GB.
 
 ## Instal·lació
@@ -72,7 +72,7 @@ Tot és a [Releases](https://github.com/quicodomingo/murmur-releases/releases/la
 - **Calendari**, opcional.
 - **Gravació de pantalla**, només si vols fer captures d'una pantalla compartida.
 
-**Windows.** Descarrega `Murmur_<versió>_x64-setup.exe` i executa'l. S'instal·la només per al teu usuari, sense permisos d'administrador. L'instal·lador encara no està signat amb un certificat de Windows, i és possible que SmartScreen t'avisi el primer cop: fes clic a *Més informació › Executa igualment*. Si Windows no deixa que Murmur faci servir el micròfon, activa-ho a Configuració › Privadesa i seguretat › Micròfon.
+**Windows.** Descarrega `Murmur_<versió>_x64-setup.exe` (o `Murmur_<versió>_arm64-setup.exe` en un PC amb ARM, com els Snapdragon) i executa'l. S'instal·la només per al teu usuari, sense permisos d'administrador. L'instal·lador encara no està signat amb un certificat de Windows, i és possible que SmartScreen t'avisi el primer cop: fes clic a *Més informació › Executa igualment*. Si Windows no deixa que Murmur faci servir el micròfon, activa-ho a Configuració › Privadesa i seguretat › Micròfon.
 
 **Linux.** Tria el paquet de la teva distribució:
 
@@ -103,7 +103,7 @@ Els paquets `.deb` i `.rpm` no s'actualitzen sols: instal·la la versió nova de
 | Parlants, passada final | pyannote segmentation 3.0 + ERes2Net | pyannote, 3D-Speaker | MIT, Apache 2.0 |
 | Resum | Gemma 4 E4B | Google | Apache 2.0 |
 
-La veu i els parlants funcionen amb [sherpa-onnx](https://github.com/k2-fsa/sherpa-onnx). Whisper funciona amb [whisper.cpp](https://github.com/ggml-org/whisper.cpp), i Gemma amb [llama.cpp](https://github.com/ggml-org/llama.cpp). Tots dos fan servir Metal al Mac, i el processador (AVX2) a Windows i Linux.
+La veu i els parlants funcionen amb [sherpa-onnx](https://github.com/k2-fsa/sherpa-onnx). Whisper funciona amb [whisper.cpp](https://github.com/ggml-org/whisper.cpp), i Gemma amb [llama.cpp](https://github.com/ggml-org/llama.cpp). Tots dos fan servir Metal al Mac, Vulkan a Windows x64 i a Linux (o el processador, amb AVX2, si no hi ha gràfica), i el processador als PC amb ARM.
 
 ## Compilar-la
 

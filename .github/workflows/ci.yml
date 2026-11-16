@@ -1,5 +1,6 @@
-# Proves de cada canvi a macOS, Windows i Linux: tipus i traduccions de la interfície, tests del
-# motor i les proves e2e de l'app compilada (Windows i Linux: tauri-driver no funciona a macOS).
+# Proves de cada canvi a macOS, Windows (x64 i ARM) i Linux: tipus i traduccions de la interfície,
+# tests del motor i les proves e2e de l'app compilada (Windows i Linux: tauri-driver no funciona a
+# macOS).
 name: CI
 
 on:
@@ -44,7 +45,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-latest, windows-2022, ubuntu-22.04]
+        os: [macos-latest, windows-2022, windows-11-arm, ubuntu-22.04]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
@@ -69,7 +70,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-latest, windows-2022, ubuntu-22.04]
+        os: [macos-latest, windows-2022, windows-11-arm, ubuntu-22.04]
     runs-on: ${{ matrix.os }}
     env:
       MURMUR_E2E_MODELS: ${{ github.workspace }}/e2e-models
@@ -111,8 +112,11 @@ jobs:
             echo "{\"jsonrpc\":\"2.0\",\"id\":2,\"method\":\"tools/call\",\"params\":{\"name\":\"transcribe_file\",\"arguments\":{\"path\":\"$f\",\"language\":\"ca\"}}}"
             sleep 60 ) > input.fifo &
           TRANSCRIPTOR_MODELS=$MURMUR_E2E_MODELS gdb -batch -ex "run --mcp < input.fifo" -ex "thread apply all bt 25" ../src-tauri/target/debug/transcriptor 2>&1 | tail -150
+      # La interfície no es prova a Windows ARM: el msedgedriver no hi arrenca el WebView2
+      # («DevToolsActivePort file doesn't exist»). És la mateixa que a x64, i la prova del motor i
+      # la dels paquets ja hi proven l'app.
       - name: Eines de WebDriver
-        if: runner.os != 'macOS'
+        if: runner.os != 'macOS' && runner.arch != 'ARM64'
         shell: bash
         run: |
           cargo install tauri-driver --locked
@@ -120,7 +124,7 @@ jobs:
             sudo apt-get install -y webkit2gtk-driver xvfb
           fi
       - name: msedgedriver de la mateixa versió que WebView2
-        if: runner.os == 'Windows'
+        if: runner.os == 'Windows' && runner.arch != 'ARM64'
         shell: pwsh
         run: |
           $version = (Get-ItemProperty "HKLM:\SOFTWARE\WOW6432Node\Microsoft\EdgeUpdate\Clients\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}").pv
@@ -129,7 +133,7 @@ jobs:
           Expand-Archive edgedriver.zip -DestinationPath "$env:RUNNER_TEMP\edgedriver"
           "$env:RUNNER_TEMP\edgedriver" | Out-File -FilePath $env:GITHUB_PATH -Append
       - name: Proves de la interfície
-        if: runner.os != 'macOS'
+        if: runner.os != 'macOS' && runner.arch != 'ARM64'
         working-directory: app/e2e
         shell: bash
         run: |
@@ -148,16 +152,23 @@ jobs:
           path: app/e2e/captures
           if-no-files-found: ignore
 
-  # Els instal·ladors de veritat (compilació de release, com a la publicació), instal·lats i
-  # provats: les biblioteques de sherpa-onnx han d'anar dins del paquet. Signats amb una clau
-  # d'un sol ús; no es publica res.
+  # Els instal·ladors de veritat (compilació de release, com a la publicació, amb Vulkan on toca),
+  # instal·lats i provats: les biblioteques de sherpa-onnx i el carregador de Vulkan han d'anar
+  # dins del paquet. Els executors no tenen GPU: es prova que, sense, tot va pel processador.
+  # Signats amb una clau d'un sol ús; no es publica res.
   paquets:
     name: Paquets (${{ matrix.os }})
     needs: interficie
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-2022, ubuntu-22.04]
+        include:
+          - os: windows-2022
+            vulkan: true
+          - os: windows-11-arm
+            vulkan: false
+          - os: ubuntu-22.04
+            vulkan: true
     runs-on: ${{ matrix.os }}
     env:
       MURMUR_E2E_MODELS: ${{ github.workspace }}/e2e-models
@@ -172,9 +183,25 @@ jobs:
           npx tauri signer generate --ci -w "$RUNNER_TEMP/prova.key" -p prova >/dev/null
           { echo "TAURI_SIGNING_PRIVATE_KEY<<FI"; cat "$RUNNER_TEMP/prova.key"; echo; echo "FI"; } >> "$GITHUB_ENV"
           echo "TAURI_SIGNING_PRIVATE_KEY_PASSWORD=prova" >> "$GITHUB_ENV"
+      - uses: ./.github/actions/vulkan
+        if: matrix.vulkan
       - name: Fa els instal·ladors
         working-directory: app
-        run: npm run tauri build
+        shell: bash
+        env:
+          FEATURES: ${{ matrix.vulkan && '--features vulkan' || '' }}
+        run: npm run tauri build -- $FEATURES
+      # Per provar-los en PC de veritat sense publicar res (Actions › la feina › Artifacts). No
+      # s'actualitzen sols: la clau és d'un sol ús.
+      - name: Desa els instal·ladors
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: installadors-${{ matrix.os }}
+          path: |
+            ${{ env.CARGO_TARGET_DIR || 'app/src-tauri/target' }}/release/bundle/nsis/*-setup.exe
+            ${{ env.CARGO_TARGET_DIR || 'app/src-tauri/target' }}/release/bundle/appimage/*.AppImage
+            ${{ env.CARGO_TARGET_DIR || 'app/src-tauri/target' }}/release/bundle/deb/*.deb
+          retention-days: 30
       - name: Model de transcripció (memòria cau)
         id: models
         uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
@@ -194,18 +221,19 @@ jobs:
         if: runner.os == 'Linux'
         shell: bash
         run: |
-          b=app/src-tauri/target/release/bundle
+          b=${{ env.CARGO_TARGET_DIR || 'app/src-tauri/target' }}/release/bundle
           ls -la $b/deb $b/rpm $b/appimage
           ls $b/deb/*.deb.sig $b/appimage/*.AppImage.sig
           sudo apt-get install -y ./$b/deb/*.deb
           app=$(dpkg -L murmur | grep -m1 '^/usr/bin/')
-          echo "Instal·lada: $app"; ldd "$app" | grep -i "onnx\|not found" || true
+          echo "Instal·lada: $app"; ldd "$app" | grep -i "onnx\|vulkan\|not found" || true
+          test -f /usr/lib/Murmur/libvulkan.so.1 || { echo "Falta libvulkan.so.1 a /usr/lib/Murmur"; exit 1; }
           cd app/e2e && MURMUR_E2E_APP="$app" MURMUR_E2E_REQUIRE_MODELS=1 npm run motor
       - name: Prova l'AppImage
         if: runner.os == 'Linux'
         shell: bash
         run: |
-          image=$(ls $PWD/app/src-tauri/target/release/bundle/appimage/*.AppImage)
+          image=$(ls $PWD/${{ env.CARGO_TARGET_DIR || 'app/src-tauri/target' }}/release/bundle/appimage/*.AppImage)
           chmod +x "$image"
           printf '#!/bin/sh\nexec "%s" --appimage-extract-and-run "$@"\n' "$image" > "$RUNNER_TEMP/murmur-appimage"
           chmod +x "$RUNNER_TEMP/murmur-appimage"
@@ -214,13 +242,14 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          $setup = Get-ChildItem app/src-tauri/target/release/bundle/nsis/*-setup.exe | Select-Object -First 1
-          Get-ChildItem app/src-tauri/target/release/bundle/nsis/*-setup.exe.sig | Out-Null
+          $setup = Get-ChildItem ${{ env.CARGO_TARGET_DIR || 'app/src-tauri/target' }}/release/bundle/nsis/*-setup.exe | Select-Object -First 1
+          Get-ChildItem ${{ env.CARGO_TARGET_DIR || 'app/src-tauri/target' }}/release/bundle/nsis/*-setup.exe.sig | Out-Null
           Start-Process $setup.FullName -ArgumentList "/S" -Wait
           $dir = Join-Path $env:LOCALAPPDATA "Murmur"
           Get-ChildItem $dir | Format-Table Name, Length
           $app = Get-ChildItem $dir -Filter *.exe | Where-Object { $_.Name -notmatch "uninstall|whisper" } | Select-Object -First 1
           if (-not (Test-Path (Join-Path $dir "sherpa-onnx-c-api.dll"))) { throw "Falta sherpa-onnx-c-api.dll a la instal·lació" }
+          if ("${{ matrix.vulkan }}" -eq "true" -and -not (Test-Path (Join-Path $dir "vulkan-1.dll"))) { throw "Falta vulkan-1.dll a la instal·lació" }
           Write-Host "Instal·lada: $($app.FullName)"
           $env:MURMUR_E2E_APP = $app.FullName
           cd app/e2e

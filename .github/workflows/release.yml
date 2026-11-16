@@ -1,5 +1,5 @@
 # Publica una versió: en pujar l'etiqueta v<versió> (scripts/publish.sh ho fa) compila Murmur per
-# a Windows i Linux, i també per a macOS si hi ha els secrets d'Apple (variable MACOS_CI = true).
+# a Windows (x64 i ARM) i Linux, i també per a macOS si hi ha els secrets d'Apple (variable MACOS_CI = true).
 # Ho puja tot a la release de quicodomingo/murmur-releases, que és d'on s'actualitzen les apps, i
 # a la del repositori del codi. El latest.json hi afegeix les plataformes noves sense treure les
 # que ja hi ha (el Mac, si l'ha publicat publish.sh). Tot el procés és a docs/PUBLICAR.md.
@@ -47,19 +47,29 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        # vulkan: Whisper i Gemma amb la GPU (docs/ARQUITECTURA.md › GPU). Windows ARM, de
+        # moment, amb el processador.
         include:
           - name: Windows
             os: windows-2022
             bundles: windows
+            vulkan: true
+          - name: Windows ARM
+            os: windows-11-arm
+            bundles: windows-arm
+            vulkan: false
           - name: Linux
             os: ubuntu-22.04
             bundles: linux
+            vulkan: true
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           ref: ${{ env.TAG }}
       - uses: ./.github/actions/preparar
+      - uses: ./.github/actions/vulkan
+        if: matrix.vulkan
       - name: La versió de l'etiqueta és la de l'app
         shell: bash
         run: |
@@ -70,12 +80,14 @@ jobs:
         env:
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
-        run: npm run tauri build
+          FEATURES: ${{ matrix.vulkan && '--features vulkan' || '' }}
+        shell: bash
+        run: npm run tauri build -- $FEATURES
       - name: Recull els fitxers
         shell: bash
         run: |
           mkdir -p dist
-          b=app/src-tauri/target/release/bundle
+          b="${{ env.CARGO_TARGET_DIR || 'app/src-tauri/target' }}/release/bundle"
           if [ "$RUNNER_OS" = "Windows" ]; then
             cp $b/nsis/*-setup.exe $b/nsis/*-setup.exe.sig dist/
           else

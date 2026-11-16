@@ -1,6 +1,6 @@
 [package]
 name = "transcriptor"
-version = "0.14.0"
+version = "0.15.0"
 description = "Transcriptor de reunions en català, local"
 authors = ["Quico Domingo"]
 edition = "2024"
@@ -18,6 +18,11 @@ resolver = "3"
 # This seems to be only an issue on Windows, see https://github.com/rust-lang/cargo/issues/8519
 name = "transcriptor_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
+
+[features]
+# Gemma on the GPU with Vulkan (Windows x64 and Linux; the release builds turn it on, see
+# docs/ARQUITECTURA.md › GPU). Needs the Vulkan SDK to build; build.rs ships its loader.
+vulkan = ["llama-cpp-2/vulkan"]
 
 [build-dependencies]
 tauri-build = { version = "2", features = [] }
@@ -93,7 +98,7 @@ sherpa-onnx = { version = "1.13.8", default-features = false, features = ["share
 sherpa-onnx-sys = { version = "1.13.8", default-features = false, features = ["shared"] }
 
 [target.'cfg(windows)'.dependencies]
-windows-sys = { version = "0.60", features = ["Win32_Foundation", "Win32_System_Threading", "Win32_Storage_FileSystem"] }
+windows-sys = { version = "0.60", features = ["Win32_Foundation", "Win32_System_Threading", "Win32_Storage_FileSystem", "Win32_System_SystemInformation"] }
 
 
 [dev-dependencies]

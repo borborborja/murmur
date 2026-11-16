@@ -90,8 +90,11 @@ pub fn wait() {
     }
 }
 
+/// One meeting's turn for the heavy work, held until it's dropped.
+pub type Heavy = MutexGuard<'static, ()>;
+
 /// Holds the heavy work of one meeting; others wait for it to be dropped.
-pub fn heavy() -> MutexGuard<'static, ()> {
+pub fn heavy() -> Heavy {
     HEAVY.lock().unwrap_or_else(|e| e.into_inner())
 }
 

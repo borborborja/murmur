@@ -288,6 +288,7 @@ fn strings(key: &str) -> Option<[&'static str; 3]> {
         "notion_untitled" => ["Sense títol", "Sin título", "Untitled"],
         "notion_export_failed" => ["No s'ha pogut desar a Notion: {error}", "No se ha podido guardar en Notion: {error}", "Couldn't save to Notion: {error}"],
         "notion_transcript" => ["Transcripció", "Transcripción", "Transcript"],
+        "mobile_computer_of" => ["PC de {name}", "PC de {name}", "{name}'s PC"],
         "mobile_no_network" => [
             "No es pot obrir la connexió amb el mòbil en aquest ordinador",
             "No se puede abrir la conexión con el móvil en este ordenador",

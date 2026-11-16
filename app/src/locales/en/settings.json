@@ -340,7 +340,8 @@
     "copyCode": "Copy Code",
     "paired": "“{{name}}” is now connected to this computer.",
     "privacy": "Your phone and this computer talk directly over your network, encrypted, through no server. Your voiceprint never leaves the device.",
-    "copyFailed": "Couldn't copy the code."
+    "copyFailed": "Couldn't copy the code.",
+    "windowsNetwork": "If Windows asks whether Murmur can communicate on the network, allow it on private networks. If the phone can't find the computer, check that your Wi-Fi network is set to private (Settings › Network & internet)."
   },
   "export": {
     "intro": "Where meetings go besides Murmur: Markdown files in a folder, your Obsidian vault and Notion. Each can take every meeting on its own when it ends.",

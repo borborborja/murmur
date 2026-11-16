@@ -356,7 +356,7 @@ async fn start_recording(
         // Without it, "final-pass-done" still follows so the UI can go on (punctuation, cover).
         match tapped.is_empty() {
             false => {
-                std::thread::spawn(move || final_pass(app, final_pass_meeting, tapped, plan));
+                std::thread::spawn(move || final_pass(app, final_pass_meeting, tapped, plan, gate::heavy()));
             }
             true => {
                 save_glossary_hits(&app);
@@ -685,8 +685,9 @@ struct FinalPlan {
     text_from: f32,
 }
 
-/// After a recording: re-check who spoke when, then improve the text with Whisper.
-fn final_pass(app: AppHandle, meeting_id: String, tapped: Vec<pipeline::Tapped>, plan: FinalPlan) {
+/// After a recording: re-check who spoke when, then improve the text with Whisper. `_heavy` is the
+/// meeting's turn (gate.rs), taken by the caller: a retranscription takes it before decoding.
+fn final_pass(app: AppHandle, meeting_id: String, tapped: Vec<pipeline::Tapped>, plan: FinalPlan, _heavy: gate::Heavy) {
     let started = |stage: &'static str, seconds: f32| {
         let _ = app.emit(
             "final-pass",
@@ -694,7 +695,6 @@ fn final_pass(app: AppHandle, meeting_id: String, tapped: Vec<pipeline::Tapped>,
         );
     };
     let mut errors = vec![];
-    let _heavy = gate::heavy();
 
     if let Some((channel, max_speakers)) = plan.speakers {
         gate::wait();
@@ -800,6 +800,10 @@ async fn retranscribe_meeting(
     let tmp = app.path().app_cache_dir().map_err(|e| e.to_string())?.join("retranscribe");
     let glossary = glossary::with_guests(&with_db(&app, |db| db.glossary()).unwrap_or_default(), &guests);
     std::thread::spawn(move || {
+        // Decoding waits for its turn too: several meetings from a phone arrive together, and each
+        // decoded hour is ~230 MB. Nor while Murmur records or there's a call.
+        let heavy = gate::heavy();
+        gate::wait();
         let tapped = (|| -> anyhow::Result<Vec<pipeline::Tapped>> {
             let decoded = playback::decode_channels(&ogg)?;
             std::fs::create_dir_all(&tmp)?;
@@ -825,7 +829,7 @@ async fn retranscribe_meeting(
             // A meeting from a phone also gets its speakers checked, as after a recording here.
             Ok(tapped) => {
                 let speakers = max_speakers.map(|n| (engine::Channel::Mic, n));
-                final_pass(app, meeting_id, tapped, FinalPlan { speakers, language, glossary, text_from: 0.0 })
+                final_pass(app, meeting_id, tapped, FinalPlan { speakers, language, glossary, text_from: 0.0 }, heavy)
             }
             Err(e) => {
                 let _ = app.emit("final-pass-done", FinalPassDone { meeting_id, error: Some(tr!("final_pass_error", error = format!("{e:#}"))) });

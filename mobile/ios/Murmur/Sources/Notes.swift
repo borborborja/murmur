@@ -59,6 +59,10 @@ enum NotesDoc {
                 } else {
                     content.append(["type": list, "content": [item]])
                 }
+            case .mark:
+                // The mark goes in the paragraph itself (`attrs.mark`): the database keeps the
+                // document, and has nowhere for a separate list of marks. The computer shows the text.
+                content.append(["type": "paragraph", "attrs": attrs(block).merging(["mark": true]) { a, _ in a }, "content": text(block.text)])
             default:
                 content.append(["type": "paragraph", "attrs": attrs(block), "content": text(block.text)])
             }
@@ -95,7 +99,8 @@ enum NotesDoc {
                 }
             default:
                 let text = flat(node)
-                if let at = t(node), marks.contains(at) {
+                let marked = (node["attrs"] as? [String: Any])?["mark"] as? Bool ?? false
+                if let at = t(node), marked || marks.contains(at) {
                     blocks.append(NoteBlock(kind: .mark, text: text, t: at))
                 } else if !text.isEmpty {
                     blocks.append(NoteBlock(kind: .paragraph, text: text, t: t(node)))

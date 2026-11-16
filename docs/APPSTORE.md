@@ -15,7 +15,9 @@ Tot el que demana l'App Store Connect per publicar l'app de l'iPhone (`mobile/io
 2. **Pujar la compilació:** a Xcode, l'esquema Murmur amb **Any iOS Device (arm64)**, *Product › Archive*, i a l'Organizer *Distribute App › App Store Connect › Upload*. Xcode crea els certificats i els perfils de distribució (signatura automàtica).
 3. **La fitxa:** els textos, les captures (`docs/appstore/`), la privadesa, la classificació per edats i les notes per a la revisió, tot d'aquest document.
 4. **Exportació:** a la compilació, la pregunta de l'encriptació (més avall).
-5. **Envia a revisió.** Sol trigar d'un a tres dies.
+5. **Publicació manual:** a *Version Release*, tria **Manually release this version**. Així, quan Apple l'aprovi, no surt sola a la botiga.
+6. **Envia a revisió.** Sol trigar d'un a tres dies.
+7. **Quan estigui aprovada:** primer es publica la versió de l'ordinador que ensenya Configuració › Mòbil, i després es prem *Release This Version*. Al revés, qui baixés l'app no la podria connectar.
 
 ## La fitxa
 
@@ -134,7 +136,7 @@ L'app xifra el que passa entre el telèfon i l'ordinador de la persona (Noise: X
 >
 > Background audio is used only to keep recording with the screen locked.
 >
-> Pairing with a computer (Settings › Ordinador) is optional and needs the free Murmur desktop app (https://murmur.quicodomingo.com) on the same network; it uses the camera only to read its QR code, and the local network only to talk to that computer. Nothing goes through any server.
+> The app is fully functional on its own. Pairing with a computer (Settings › Ordinador) is an optional extra for users of the free Murmur desktop app (https://murmur.quicodomingo.com); the desktop update that enables it ships together with this release. It uses the camera only to read the computer's QR code, and the local network only to talk to that computer. Nothing goes through any server.
 >
 > Usage statistics are anonymous (Aptabase) and can be turned off in Settings.
 

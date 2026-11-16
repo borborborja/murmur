@@ -44,6 +44,35 @@
   .logo { width: 34px; height: 34px; border-radius: 9px; background: var(--mm-logo-background); box-shadow: 0 0 0 1px var(--mm-logo-ring); display: grid; place-items: center; }
   .wordmark { font-family: "Space Grotesk", sans-serif; font-weight: 700; font-size: 24px; letter-spacing: -0.045em; }
   .circle { width: 44px; height: 44px; border-radius: 22px; display: grid; place-items: center; background: var(--mm-fill-subtle); color: var(--mm-text-primary); }
+  /* The computer in the top bar: where syncing is (not "connected": the phone only connects while it syncs). */
+  .tools { display: flex; gap: 8px; }
+  .circle.sync { position: relative; }
+  .circle.sync .badge { position: absolute; top: -3px; right: -3px; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; box-sizing: border-box;
+    display: grid; place-items: center; font-size: 11px; font-weight: 700; font-variant-numeric: tabular-nums;
+    background: var(--mm-text-primary); color: var(--mm-background); border: 2px solid var(--mm-background); }
+  .circle.sync .badge.problem { background: var(--mm-recording-label); }
+  .circle.sync.syncing::after { content: ""; position: absolute; inset: -3px; border-radius: 50%;
+    border: 2px solid transparent; border-top-color: var(--mm-text-primary); border-right-color: var(--mm-text-primary); animation: spin 1.1s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .states { display: flex; flex-wrap: wrap; gap: 28px; margin: 4px 0 18px; }
+  .states figure { margin: 0; display: grid; justify-items: center; gap: 8px; width: 120px; text-align: center; font-size: 13px; color: var(--mm-text-secondary); }
+  .states .circle { background: rgba(0,0,0,.06); }
+  .sheet { position: absolute; left: 8px; right: 8px; bottom: 8px; border-radius: 34px; padding: 10px 20px 26px; background: var(--mm-background);
+    box-shadow: 0 -10px 40px rgba(0,0,0,.18); display: grid; gap: 14px; }
+  .sheet .grab { width: 36px; height: 5px; border-radius: 3px; background: var(--mm-separator); justify-self: center; }
+  .sheet .who { display: flex; gap: 12px; align-items: center; }
+  .sheet .who .circle { width: 48px; height: 48px; border-radius: 14px; }
+  .sheet { color: var(--mm-text-primary); text-align: left; }
+  .sheet .who > div:last-child { text-align: left; opacity: 1; }
+  .sheet .who b { font-size: 19px; display: block; color: var(--mm-text-primary); }
+  .sheet .who small { font-size: 14px; color: var(--mm-text-secondary); }
+  .sheet .lines { display: grid; gap: 10px; font-size: 15px; }
+  .sheet .lines div { display: flex; justify-content: space-between; }
+  .sheet .lines span:last-child { color: var(--mm-text-secondary); font-variant-numeric: tabular-nums; }
+  .sheet .acts { display: grid; grid-template-columns: 1fr; gap: 8px; }
+  .sheet .acts .btn { height: 52px; border-radius: 26px; }
+  .sheet .link { text-align: center; font-size: 15px; color: var(--mm-text-secondary); }
+  .scrim { position: absolute; inset: 0; background: rgba(0,0,0,.28); }
 
   /* Meetings list */
   .section { font-size: 13px; font-weight: 600; color: var(--mm-text-secondary); padding: 20px 24px 8px; }
@@ -370,6 +399,16 @@
   </div>
 </div>
 
+<!-- 15. The computer in the top bar -->
+<div class="row">
+  <div class="screen">
+    <h2>15 · L'ordinador, a dalt de tot</h2>
+    <p class="note">Al costat de la cerca, la icona de l'ordinador diu en quin punt és la sincronització. No diu «connectat»: el telèfon només s'hi connecta mentre sincronitza, uns segons. Tocar-la obre el full de sota; sense cap ordinador, va directa a connectar-ne un (pantalla 8).</p>
+    <div class="pair states" id="sync-states"></div>
+    <div class="pair" id="s-syncsheet"></div>
+  </div>
+</div>
+
 <!-- 9. Settings -->
 <div class="row">
   <div class="screen">
@@ -439,6 +478,7 @@ const icon = {
   mic: '<svg class="i" viewBox="0 0 24 24" style="width:20px;height:20px"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>',
   phone: '<svg class="i" viewBox="0 0 24 24" style="width:20px;height:20px"><rect x="6" y="2.5" width="12" height="19" rx="2.5"/><path d="M11 18.5h2"/></svg>',
   laptop: '<svg class="i" viewBox="0 0 24 24" style="width:20px;height:20px"><rect x="4" y="5" width="16" height="11" rx="1.5"/><path d="M2 19h20"/></svg>',
+  sync: '<svg class="i" viewBox="0 0 24 24" style="width:20px;height:20px"><path d="M20 11a8 8 0 0 0-14.5-4.5L4 8"/><path d="M4 3v5h5"/><path d="M4 13a8 8 0 0 0 14.5 4.5L20 16"/><path d="M20 21v-5h-5"/></svg>',
   back: '<svg class="i" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg>',
   more: '<svg class="i" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.2" fill="currentColor"/><circle cx="12" cy="12" r="1.2" fill="currentColor"/><circle cx="19" cy="12" r="1.2" fill="currentColor"/></svg>',
   flag: '<svg class="i" viewBox="0 0 24 24"><path d="M5 21V4m0 0h11l-2 4 2 4H5"/></svg>',
@@ -459,14 +499,41 @@ function dock({ recording = false, active = "list" } = {}) {
   return `<div class="dock"><div class="side ${active === "list" ? "on" : ""}">${icon.list}</div>${main}<div class="side ${active === "settings" ? "on" : ""}">${icon.gear}</div></div>`;
 }
 
-function brandbar() {
-  return `<div class="brandbar"><div class="brand"><div class="logo">${icon.logo}</div><span class="wordmark">murmur</span></div><div class="circle">${icon.search}</div></div>`;
+/** The computer's circle: "none" (no computer yet), "ok", a number to send, "syncing" or "problem". */
+function syncCircle(state) {
+  const badge = state === "none" ? '<span class="badge">+</span>'
+    : state === "problem" ? '<span class="badge problem">!</span>'
+    : typeof state === "number" ? `<span class="badge">${state}</span>` : "";
+  return `<div class="circle sync ${state === "syncing" ? "syncing" : ""}" aria-label="Ordinador">${icon.laptop}${badge}</div>`;
+}
+
+function brandbar(sync = "ok") {
+  return `<div class="brandbar"><div class="brand"><div class="logo">${icon.logo}</div><span class="wordmark">murmur</span></div><div class="tools">${syncCircle(sync)}<div class="circle">${icon.search}</div></div></div>`;
 }
 
 const screens = {
+  syncsheet: () => `
+    <div class="content">
+      ${brandbar("syncing")}
+      <div class="section">Avui</div>
+      <div class="card"><div class="ic">${icon.phone}</div><div class="body"><div class="top"><div class="title">Seguiment setmanal</div><span class="dur tab">25 min</span></div><div class="meta">8:30</div><div class="snippet">Els preus els tanquem dilluns amb direcció.</div></div></div>
+    </div>
+    <div class="scrim"></div>
+    <div class="sheet">
+      <div class="grab"></div>
+      <div class="who"><div class="circle">${icon.laptop}</div><div><b>MacBook de Quico</b><small>Enviant «Seguiment setmanal»…</small></div></div>
+      <div class="lines">
+        <div><span>Per enviar</span><span>1 reunió</span></div>
+        <div><span>Esperant la passada final</span><span>2 reunions</span></div>
+        <div><span>Última sincronització</span><span>fa 5 min</span></div>
+      </div>
+      <div class="acts"><div class="btn ghost">${icon.sync} Sincronitza ara</div></div>
+      <div class="link">Configuració de l'ordinador ›</div>
+    </div>`,
+
   empty: () => `
     <div class="content">
-      ${brandbar()}
+      ${brandbar("none")}
       <div class="empty">
         <div style="display:inline-grid;place-items:center;width:84px;height:84px;border-radius:22px;background:var(--mm-logo-background);box-shadow:0 0 0 1px var(--mm-logo-ring)">${icon.logoBig}</div>
         <h1>Grava la primera reunió</h1>
@@ -480,7 +547,7 @@ const screens = {
 
   list: () => `
     <div class="content">
-      ${brandbar()}
+      ${brandbar(1)}
       <div class="section">Avui</div>
       <div class="card live">
         <div class="ic">${levels([9, 15, 11])}</div>
@@ -740,6 +807,13 @@ const duofold = (typing) => `
   </div>`;
 
 const chrome = document.getElementById("t-chrome").innerHTML;
+document.getElementById("sync-states").innerHTML = [
+  ["none", "Sense ordinador: toca per connectar-ne un"],
+  ["ok", "Al dia"],
+  [2, "Reunions per enviar"],
+  ["syncing", "Enviant o rebent"],
+  ["problem", "No el troba, o ja no el coneix"],
+].map(([state, label]) => `<figure>${syncCircle(state)}<figcaption>${label}</figcaption></figure>`).join("");
 for (const [key, renders] of Object.entries(extra)) {
   const pair = document.getElementById(`s-${key}`);
   const list = renders.length === 1 ? [renders[0], renders[0]] : renders;

@@ -68,19 +68,29 @@ pub fn transcribe(models: &Path, language: &str, channels: &[(&Path, &[Span])], 
     if !model.is_file() {
         return Err(anyhow!(tr!("model_missing", path = model.display())));
     }
-    let job = serde_json::json!({
-        "channels": channels.iter().map(|(pcm, spans)| serde_json::json!({
-            "pcm": pcm,
-            "spans": spans.iter().map(|s| serde_json::json!({ "start": s.start, "end": s.end })).collect::<Vec<_>>(),
-        })).collect::<Vec<_>>(),
-    });
-    let mut result = with_cpu_fallback(models, |cpu| {
+    let channels_job: Vec<_> = channels
+        .iter()
+        .map(|(pcm, spans)| {
+            serde_json::json!({
+                "pcm": pcm,
+                "spans": spans.iter().map(|s| serde_json::json!({ "start": s.start, "end": s.end })).collect::<Vec<_>>(),
+            })
+        })
+        .collect();
+    // What's done survives a crash: the retry on the CPU goes on from the next chunk.
+    let mut done = Done { texts: vec![vec![]; channels.len()], chunks: 0 };
+    with_cpu_fallback(models, |cpu| {
+        if done.chunks > 0 {
+            log::info!("murmur-whisper goes on after the {} chunks already done", done.chunks);
+        }
+        let job = serde_json::json!({ "channels": channels_job, "skip": done.chunks });
         let mut child = spawn(&model, language, cpu, Stdio::piped())?;
         crate::gate::whisper(Some(child.id()));
-        let result = read_replies(&mut child, &job.to_string(), channels.len(), &mut progress);
+        let result = read_replies(&mut child, &job.to_string(), &mut done, &mut progress);
         crate::gate::whisper(None);
         result
     })?;
+    let mut result = done.texts;
     for text in result.iter_mut().flatten() {
         text.text = crate::glossary::correct(&text.text, glossary);
     }
@@ -169,8 +179,14 @@ fn with_cpu_fallback<T>(models: &Path, mut attempt: impl FnMut(bool) -> Result<T
     }
 }
 
-/// Sends the job to the Whisper process and collects its texts, one list per channel.
-fn read_replies(child: &mut Child, job: &str, channels: usize, mut progress: impl FnMut(f32)) -> Result<Vec<Vec<Text>>> {
+/// What a transcription has so far: the texts of each channel, and how many chunks they came from.
+struct Done {
+    texts: Vec<Vec<Text>>,
+    chunks: usize,
+}
+
+/// Sends the job to the Whisper process and adds the texts of each chunk to `done` as they come.
+fn read_replies(child: &mut Child, job: &str, done: &mut Done, mut progress: impl FnMut(f32)) -> Result<()> {
     child.stdin.take().unwrap().write_all(job.as_bytes())?;
     let log = watch_stderr(child);
 
@@ -180,19 +196,19 @@ fn read_replies(child: &mut Child, job: &str, channels: usize, mut progress: imp
         channel: Option<usize>,
         texts: Option<Vec<Text>>,
     }
-    let mut out: Vec<Vec<Text>> = vec![vec![]; channels];
-    let mut done = 0.0;
+    let mut share = 0.0;
     let read = (|| -> Result<()> {
         for line in BufReader::new(child.stdout.take().unwrap()).lines() {
             let line: Line = serde_json::from_str(&line?).context(tr!("whisper_bad_reply"))?;
             if let Some(p) = line.progress {
-                done = p;
+                share = p;
                 progress(p);
             }
             if let (Some(i), Some(texts)) = (line.channel, line.texts) {
-                if let Some(slot) = out.get_mut(i) {
-                    *slot = texts;
+                if let Some(slot) = done.texts.get_mut(i) {
+                    slot.extend(texts);
                 }
+                done.chunks += 1;
             }
         }
         Ok(())
@@ -201,7 +217,7 @@ fn read_replies(child: &mut Child, job: &str, channels: usize, mut progress: imp
     let status = child.wait()?;
     let tail = log.join().unwrap_or_default();
     if crashed(status) {
-        log::warn!("murmur-whisper ended with {status} at {:.0}% of the job; its last lines: {}", done * 100.0, tail.join(" | "));
+        log::warn!("murmur-whisper ended with {status} at {:.0}% of the job; its last lines: {}", share * 100.0, tail.join(" | "));
         return Err(Crashed(tr!("whisper_failed", error = tail.last().cloned().unwrap_or_else(|| status.to_string()))).into());
     }
     read?;
@@ -209,7 +225,7 @@ fn read_replies(child: &mut Child, job: &str, channels: usize, mut progress: imp
         return Err(anyhow!(tr!("whisper_failed", error = tail.last().cloned().unwrap_or_default())));
     }
     log::info!("murmur-whisper finished");
-    Ok(out)
+    Ok(())
 }
 
 /// What Whisper hears in each window of `pcm` (16 kHz mono s16le): its language probabilities.

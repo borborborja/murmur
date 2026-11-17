@@ -164,7 +164,7 @@
     "thresholdHint": "Més alt separa més les veus; més baix les agrupa.",
     "thresholdDefault": "Torna al valor per defecte ({{value}})",
     "reset": "Restableix",
-    "afterRecording": "En acabar la gravació",
+    "afterRecording": "En acabar una reunió",
     "verifySpeakers": "Verificació de parlants",
     "verifySpeakersHint": "Torna a analitzar tota la reunió per separar millor les veus. Pot trigar uns minuts (uns 7 per hora de reunió), però pots continuar treballant mentrestant.",
     "finalPass": "Torna a escoltar amb Whisper",
@@ -193,7 +193,15 @@
       "summary": "Resum i notes",
       "transcript": "Transcripció"
     },
-    "markdownContentHint": "«Tot» desa dos fitxers: el resum amb les notes i la transcripció. Si una reunió no té resum, s'hi desa tot en un de sol."
+    "markdownContentHint": "«Tot» desa dos fitxers: el resum amb les notes i la transcripció. Si una reunió no té resum, s'hi desa tot en un de sol.",
+    "askAfter": "Pregunta-m'ho en acabar",
+    "askAfterHint": "Una targeta a dalt de la reunió diu què farà, i ho pots canviar. Si no hi toques res, comença sola en 10 segons.",
+    "afterWhat": "Què fa",
+    "afterRecordings": "Gravacions",
+    "afterFiles": "Fitxers",
+    "afterFor": "{{step}}, per a {{kind}}",
+    "summarize": "Fes el resum",
+    "summarizeHint": "Títol, resum, decisions i tasques, amb el model triat a Intel·ligència."
   },
   "intelligence": {
     "cover": "Resum",

@@ -20,6 +20,7 @@ import type {
   LlmTask,
   Meeting,
   MeetingPart,
+  PostStage,
   MeetingSummary,
   ModelId,
   ModelStatus,
@@ -88,11 +89,16 @@ export const showStoppedToast = (meetingId: string, subtitle: string, seconds: n
 export const onMicLost = (fn: (lost: boolean) => void) => listen<boolean>("mic-lost", (e) => fn(e.payload));
 /** Opens the folder with Murmur's log (logfile.rs), to send it when something goes wrong. */
 export const showLog = () => invoke<void>("show_log");
+/** A recording stopped: what its final pass can do (`speakers`, `text`), until `runFinalPass` says. */
+export type FinalPassReady = { meetingId: string; speakers: boolean; text: boolean; speakersSeconds: number; textSeconds: number };
+export const onFinalPassReady = (fn: (e: FinalPassReady) => void) => listen<FinalPassReady>("final-pass-ready", (e) => fn(e.payload));
+/** The steps chosen when it ended: the speaker check and Whisper (each only if it could). */
+export const runFinalPass = (meetingId: string, speakers: boolean, text: boolean) => invoke<void>("run_final_pass", { meetingId, speakers, text });
 export const onContinueRequest = (fn: (meetingId: string) => void) => listen<string>("continue-recording", (e) => fn(e.payload));
 
 /** One batch of edits to a meeting (db.rs `Changes`). */
 export type Changes = {
-  meta?: Partial<Pick<Meeting, "title" | "duration" | "status" | "speakerNames" | "sources" | "language" | "tags">> & { audioPath?: string | null; cover?: Cover | null; guests?: string[]; screens?: Screen[]; shares?: ShareLink[]; parts?: MeetingPart[]; translation?: Translation | null };
+  meta?: Partial<Pick<Meeting, "title" | "duration" | "status" | "speakerNames" | "sources" | "language" | "tags">> & { audioPath?: string | null; cover?: Cover | null; guests?: string[]; screens?: Screen[]; shares?: ShareLink[]; parts?: MeetingPart[]; translation?: Translation | null; pending?: PostStage[] };
   utterances?: Utterance[];
   notes?: { doc: JSONContent; blocks: { t: number; text: string }[] };
 };

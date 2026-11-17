@@ -133,6 +133,7 @@ Entre reunions (bloc 5):
 - [ ] Google Calendar directe (OAuth) per a Windows, si cal.
 - [x] Intel·ligència: la portada amb el model local o amb Claude / OpenAI / Gemini / OpenRouter i la clau pròpia, desada al clauer del sistema, triant el model. Només s'envia text (transcripció i notes), mai àudio.
 - [ ] Provar la portada amb Claude, OpenAI, Gemini i OpenRouter amb claus reals i comparar-la amb Gemma (qualitat, temps i cost per reunió).
+- [x] En acabar una reunió, «Què en faig ara?»: els passos (parlants, Whisper, puntuació, resum) es trien cada cop, recordats per a gravacions i per a fitxers, i el que no es fa queda pendent per a «Acaba de processar…».
 - [ ] Whisper frase a frase per a les reunions en català i castellà, només amb GPU: mesurar-lo amb `examples/mixed_probe.rs` (WER i RTF) en reunions reals barrejades i, si val la pena, fer-lo servir a la passada final i oferir els dos Whisper a qui tingui «Català + castellà».
 - [ ] Mesurar els models «Recomanats» d'OpenRouter (`RECOMMENDED`, `lib/cloud.ts`) amb el banc de proves abans de deixar-los com a recomanació: ara són un model conegut per empresa.
 - [ ] Vocabulari personalitzat (marques i noms propis: WordPress, WooCommerce, noms de l'equip…).

@@ -19,7 +19,7 @@ import { coverDocument, llmTasks, PROMPTS, promptText, type PromptId } from "@/l
 import { syncCalendars, useCalendarSync } from "@/lib/calendar";
 import { spellingNote } from "@/lib/glossary";
 import { bytes, deleteModel, downloadModel, useModels } from "@/lib/models";
-import { DEFAULT_SETTINGS, type Settings } from "@/lib/settings";
+import { DEFAULT_SETTINGS, type AfterSteps, type Settings } from "@/lib/settings";
 import { connectShare, disconnectShare, setupShare, useShareStatus } from "@/lib/share";
 import type { CloudProvider, Language, LlmProgress, LlmResult, Meeting, ModelId } from "@/lib/types";
 import { preferredFinalModel } from "@/lib/finalpass";
@@ -860,31 +860,84 @@ function TranscriptionTab({ settings, onChange, recording }: { settings: Setting
         </Row>
       </Group>
       <Group title={t("transcription.afterRecording")}>
-        <Row
-          label={t("transcription.verifySpeakers")}
-          hint={t("transcription.verifySpeakersHint")}
-        >
-          <Switch checked={settings.verifySpeakers} onCheckedChange={(verifySpeakers) => onChange({ verifySpeakers })} />
+        <Row label={t("transcription.askAfter")} hint={t("transcription.askAfterHint")}>
+          <Switch checked={settings.askAfter} onCheckedChange={(askAfter) => onChange({ askAfter })} />
         </Row>
-        {/* Both Whispers always in view, each saying what it's for: not tied to today's language. */}
-        <Row label={t("transcription.finalPass")} hint={t("transcription.finalPassHint")}>
-          <Switch
-            checked={settings.finalPass}
-            onCheckedChange={(on) => {
-              onChange({ finalPass: on });
-              const final = on ? preferredFinalModel(settings.language) : null;
-              if (final) enableWithModel(models, final, true, () => {});
-            }}
-          />
-        </Row>
+        <AfterTable settings={settings} onChange={onChange} />
         <ModelRow id="whisper-ca" name={t("transcription.whisperCaModel")} purpose={t("transcription.whisperCaPurpose")} enabled={settings.finalPass} onDisable={() => {}} />
         <ModelRow id="whisper" name={t("transcription.whisperModel")} purpose={t("transcription.whisperPurpose")} enabled={settings.finalPass} onDisable={() => {}} />
         <Row label={t("transcription.punctuate")} hint={t("transcription.punctuateHint")}>
           <Switch checked={settings.punctuate} onCheckedChange={(on) => enableWithModel(models, "punctuation", on, () => onChange({ punctuate: on }))} />
         </Row>
-        <ModelRow id="punctuation" name={t("transcription.punctuationModel")} enabled={settings.punctuate} onDisable={() => onChange({ punctuate: false })} />
+        <ModelRow id="punctuation" name={t("transcription.punctuationModel")} enabled={settings.punctuate || settings.fileSteps.punctuate} onDisable={() => onChange({ punctuate: false, fileSteps: { ...settings.fileSteps, punctuate: false } })} />
       </Group>
     </>
+  );
+}
+
+/**
+ * What's done when a meeting ends, for recordings (and phones) and for files: what the card
+ * "Què en faig ara?" starts ticked, and what's done without asking if it's off. The card changes
+ * it each time. Turning on a step that needs a model downloads it.
+ */
+function AfterTable({ settings, onChange }: { settings: Settings; onChange: Props["onChange"] }) {
+  const { t } = useTranslation("settings");
+  const models = useModels();
+  const rows: { key: keyof AfterSteps; name: string; hint: string; model: () => ModelId | null }[] = [
+    { key: "verifySpeakers", name: t("transcription.verifySpeakers"), hint: t("transcription.verifySpeakersHint"), model: () => null },
+    { key: "finalPass", name: t("transcription.finalPass"), hint: t("transcription.finalPassHint"), model: () => preferredFinalModel(settings.language) },
+    { key: "punctuate", name: t("transcription.punctuate"), hint: t("transcription.punctuateHint"), model: () => "punctuation" },
+    { key: "summarize", name: t("transcription.summarize"), hint: t("transcription.summarizeHint"), model: () => (settings.coverEngine === "local" ? "llm" : null) },
+  ];
+  const set = (key: keyof AfterSteps, file: boolean, on: boolean) => {
+    const apply = () => onChange(file ? { fileSteps: { ...settings.fileSteps, [key]: on } } : { [key]: on });
+    const model = on ? rows.find((r) => r.key === key)!.model() : null;
+    if (model) enableWithModel(models, model, true, apply);
+    else apply();
+  };
+  const box = (key: keyof AfterSteps, file: boolean, label: string) => {
+    const on = file ? settings.fileSteps[key] : settings[key];
+    return (
+      <label className="grid size-6 cursor-default place-items-center">
+        <input type="checkbox" className="peer sr-only" checked={on} aria-label={label} onChange={(e) => set(key, file, e.target.checked)} />
+        <span
+          aria-hidden
+          className={cn(
+            "grid size-4 place-items-center rounded-[4px] peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-ring",
+            on ? "bg-foreground text-background" : "shadow-[inset_0_0_0_1.5px_var(--mm-separator)]",
+          )}
+        >
+          {on && <Check className="size-[11px]" strokeWidth={3.2} />}
+        </span>
+      </label>
+    );
+  };
+  return (
+    <table className="w-full border-collapse">
+      <thead>
+        <tr className="text-[11px] font-semibold text-muted-foreground">
+          <th className="py-1.5 pl-3 text-left font-semibold">{t("transcription.afterWhat")}</th>
+          <th className="w-24 py-1.5 font-semibold">{t("transcription.afterRecordings")}</th>
+          <th className="w-20 py-1.5 pr-2 font-semibold">{t("transcription.afterFiles")}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {rows.map((r) => (
+          <tr key={r.key} className="border-t border-border">
+            <td className="py-2 pl-3 pr-2">
+              <div className="text-[13px]">{r.name}</div>
+              <div className="mt-0.5 text-[11px] leading-snug text-muted-foreground">{r.hint}</div>
+            </td>
+            <td className="text-center align-middle">
+              <div className="inline-grid">{box(r.key, false, t("transcription.afterFor", { step: r.name, kind: t("transcription.afterRecordings") }))}</div>
+            </td>
+            <td className="pr-2 text-center align-middle">
+              <div className="inline-grid">{box(r.key, true, t("transcription.afterFor", { step: r.name, kind: t("transcription.afterFiles") }))}</div>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
   );
 }
 

@@ -60,6 +60,8 @@ export type Meeting = {
   parts?: MeetingPart[];
   /** The phone it was recorded on, if it came from one (mobile.rs). */
   device?: MeetingDevice | null;
+  /** Steps left undone when it ended that can still be done ("Acaba de processar…"). */
+  pending?: PostStage[];
 };
 
 /** A paired phone, as a meeting remembers it: its key (hex) and its name. */
@@ -106,7 +108,7 @@ export type Cover = {
 };
 
 /** What the sidebar shows; the full meeting is loaded when opened. */
-export type MeetingSummary = Pick<Meeting, "id" | "title" | "createdAt" | "duration" | "status" | "tags" | "shares" | "device">;
+export type MeetingSummary = Pick<Meeting, "id" | "title" | "createdAt" | "duration" | "status" | "tags" | "shares" | "device" | "pending">;
 
 /** A full-text search result (db.rs `Hit`). Matches are wrapped in \u0002 … \u0003. */
 export type SearchHit = {

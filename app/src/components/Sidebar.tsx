@@ -198,6 +198,10 @@ export function Sidebar({ meetings, selectedId, canCreate, starting, importingId
                         <span className="flex-1 truncate">{m.title}</span>
                         {m.device && <Smartphone className="size-3 shrink-0 text-text-secondary" aria-label={translate("app:fromPhone", { phone: m.device.name })} />}
                         {activeShares(m).length > 0 && <Link2 className="size-3 shrink-0 text-text-secondary" aria-label={translate("share:shared")} />}
+                        {/* Steps left undone when it ended (the meeting's "Acaba de processar…"). */}
+                        {!!m.pending?.length && m.status === "done" && (
+                          <span className="size-1.5 shrink-0 rounded-full bg-mm-text-tertiary" role="img" aria-label={translate("app:after.pendingLabel")} title={translate("app:after.pendingLabel")} />
+                        )}
                         {m.status === "recording" && m.id !== importingId ? (
                           <span className="flex items-center gap-[5px] text-[10px] font-bold tracking-[0.06em] text-mm-recording-label" aria-label={t("recording")}>
                             <span className="mm-rec size-2 rounded-full bg-mm-recording-dot" aria-hidden />

@@ -51,6 +51,9 @@ struct AppState {
     punctuator: Mutex<Option<punctuate::Punctuator>>,
     /// Downloads in progress, by model id, with their cancel flag.
     downloads: Mutex<HashMap<String, Arc<AtomicBool>>>,
+    /// Recordings that stopped, by meeting: their audio for the final pass and what it could do,
+    /// until the interface says which steps to run ("Què en faig ara?", `run_final_pass`).
+    waiting: Mutex<HashMap<String, (Vec<pipeline::Tapped>, FinalPlan)>>,
 }
 
 struct Recording {
@@ -409,20 +412,11 @@ async fn start_recording(
         if !importing {
             shell::set_recording(&app, false);
         }
-        // Runs on its own thread so stopping returns at once; the UI shows its progress.
-        // Without it, "final-pass-done" still follows so the UI can go on (punctuation, cover).
-        match tapped.is_empty() {
-            false => {
-                std::thread::spawn(move || final_pass(app, final_pass_meeting, tapped, plan, gate::heavy()));
-            }
-            true => {
-                save_glossary_hits(&app);
-                let _ = app.emit(
-                    "final-pass-done",
-                    FinalPassDone { meeting_id: final_pass_meeting, error: None },
-                );
-            }
-        }
+        // The interface asks which steps to run ("Què en faig ara?") and answers with
+        // `run_final_pass`; meanwhile the audio waits here.
+        let ready = FinalPassReady::new(final_pass_meeting.clone(), &tapped, &plan);
+        app.state::<AppState>().waiting.lock().unwrap().insert(final_pass_meeting, (tapped, plan));
+        let _ = app.emit("final-pass-ready", ready);
     });
 
     *state.recording.lock().unwrap() = Some(Recording {
@@ -735,6 +729,65 @@ fn print_page(window: tauri::WebviewWindow) -> Result<(), String> {
     window.print().map_err(|e| e.to_string())
 }
 
+/// A recording stopped: what its final pass can do, for the interface to choose.
+#[derive(Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct FinalPassReady {
+    meeting_id: String,
+    speakers: bool,
+    text: bool,
+    /// How long each would take, roughly (s), as the final pass will estimate it.
+    speakers_seconds: f32,
+    text_seconds: f32,
+}
+
+impl FinalPassReady {
+    fn new(meeting_id: String, tapped: &[pipeline::Tapped], plan: &FinalPlan) -> Self {
+        // The tapped audio's length, from its file (16-bit mono at SAMPLE_RATE).
+        let length = |t: &pipeline::Tapped| std::fs::metadata(&t.path).map(|m| m.len() as f32 / 2.0 / SAMPLE_RATE as f32).unwrap_or(0.0);
+        let speakers_seconds = plan
+            .speakers
+            .and_then(|(channel, _)| tapped.iter().find(|t| t.channel == channel))
+            .map_or(0.0, |t| length(t) * DIARIZE_RTF_ESTIMATE);
+        let speech: f32 = tapped.iter().flat_map(|t| &t.spans).filter(|s| s.start >= plan.text_from).map(|s| s.end - s.start).sum();
+        let text_seconds = plan.language.as_deref().map_or(0.0, |l| 5.0 + speech * retranscribe::rtf_estimate(&models_dir(), l));
+        Self {
+            meeting_id,
+            speakers: plan.speakers.is_some() && tapped.iter().any(|t| !t.spans.is_empty()),
+            text: plan.language.is_some() && tapped.iter().any(|t| !t.spans.is_empty()),
+            speakers_seconds,
+            text_seconds,
+        }
+    }
+}
+
+/// The steps chosen after a recording: the speaker check and Whisper, if each can and was chosen.
+/// Neither: its audio is dropped and "final-pass-done" follows at once, so the interface goes on
+/// (punctuation, cover). Unknown meeting (already run): nothing.
+#[tauri::command]
+fn run_final_pass(app: AppHandle, state: State<'_, AppState>, meeting_id: String, speakers: bool, text: bool) {
+    let Some((tapped, mut plan)) = state.waiting.lock().unwrap().remove(&meeting_id) else {
+        return;
+    };
+    if !speakers {
+        plan.speakers = None;
+    }
+    if !text {
+        plan.language = None;
+    }
+    log::info!("final pass chosen: speakers={speakers} text={text}");
+    if tapped.is_empty() || (plan.speakers.is_none() && plan.language.is_none()) {
+        for t in &tapped {
+            let _ = std::fs::remove_file(&t.path);
+        }
+        save_glossary_hits(&app);
+        let _ = app.emit("final-pass-done", FinalPassDone { meeting_id, error: None });
+        return;
+    }
+    // Its own thread: the meeting's turn (gate.rs) may have to wait for another one.
+    std::thread::spawn(move || final_pass(app, meeting_id, tapped, plan, gate::heavy()));
+}
+
 /// What the final pass does after a recording.
 struct FinalPlan {
     /// Re-check who spoke when on this channel, with the user's maximum number of speakers.
@@ -896,7 +949,9 @@ async fn retranscribe_meeting(
         match tapped {
             // A meeting from a phone also gets its speakers checked, as after a recording here.
             Ok(tapped) => {
-                let speakers = max_speakers.map(|n| (engine::Channel::Mic, n));
+                // As after recording: the other side of a call if there is one, else everyone on the mic.
+                let checked = if tapped.iter().any(|t| t.channel == engine::Channel::System) { engine::Channel::System } else { engine::Channel::Mic };
+                let speakers = max_speakers.map(|n| (checked, n));
                 final_pass(app, meeting_id, tapped, FinalPlan { speakers, language, glossary, text_from: 0.0 }, heavy)
             }
             Err(e) => {
@@ -1976,6 +2031,7 @@ pub fn run() {
             shell::toast_start,
             shell::toast_continue,
             shell::toast_open,
+            run_final_pass,
             show_log,
             shell::show_stopped_toast,
             shell::set_meeting_detection,

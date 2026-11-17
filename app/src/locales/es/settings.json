@@ -164,7 +164,7 @@
     "thresholdHint": "Más alto separa más las voces; más bajo las agrupa.",
     "thresholdDefault": "Volver al valor por defecto ({{value}})",
     "reset": "Restablecer",
-    "afterRecording": "Al terminar la grabación",
+    "afterRecording": "Al terminar una reunión",
     "verifySpeakers": "Verificación de hablantes",
     "verifySpeakersHint": "Vuelve a analizar toda la reunión para separar mejor las voces. Puede tardar unos minutos (unos 7 por hora de reunión), pero puedes seguir trabajando mientras tanto.",
     "finalPass": "Volver a escuchar con Whisper",
@@ -193,7 +193,15 @@
       "summary": "Resumen y notas",
       "transcript": "Transcripción"
     },
-    "markdownContentHint": "«Todo» guarda dos archivos: el resumen con las notas y la transcripción. Si una reunión no tiene resumen, se guarda todo en uno solo."
+    "markdownContentHint": "«Todo» guarda dos archivos: el resumen con las notas y la transcripción. Si una reunión no tiene resumen, se guarda todo en uno solo.",
+    "askAfter": "Preguntármelo al terminar",
+    "askAfterHint": "Una tarjeta encima de la reunión dice qué hará, y puedes cambiarlo. Si no tocas nada, empieza sola en 10 segundos.",
+    "afterWhat": "Qué hace",
+    "afterRecordings": "Grabaciones",
+    "afterFiles": "Archivos",
+    "afterFor": "{{step}}, para {{kind}}",
+    "summarize": "Haz el resumen",
+    "summarizeHint": "Título, resumen, decisiones y tareas, con el modelo elegido en Inteligencia."
   },
   "intelligence": {
     "cover": "Resumen",

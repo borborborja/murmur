@@ -164,7 +164,7 @@
     "thresholdHint": "Higher separates voices more; lower groups them.",
     "thresholdDefault": "Back to the default value ({{value}})",
     "reset": "Reset",
-    "afterRecording": "When Recording Ends",
+    "afterRecording": "When a Meeting Ends",
     "verifySpeakers": "Speaker Verification",
     "verifySpeakersHint": "Analyzes the whole meeting again to separate voices better. It can take a few minutes (about 7 per hour of meeting), but you can keep working meanwhile.",
     "finalPass": "Listen again with Whisper",
@@ -193,7 +193,15 @@
       "summary": "Summary and notes",
       "transcript": "Transcript"
     },
-    "markdownContentHint": "“Everything” saves two files: the summary with the notes, and the transcript. If a meeting has no summary, everything goes in one."
+    "markdownContentHint": "“Everything” saves two files: the summary with the notes, and the transcript. If a meeting has no summary, everything goes in one.",
+    "askAfter": "Ask me when it ends",
+    "askAfterHint": "A card above the meeting says what it'll do, and you can change it. If you touch nothing, it starts by itself after 10 seconds.",
+    "afterWhat": "What it does",
+    "afterRecordings": "Recordings",
+    "afterFiles": "Files",
+    "afterFor": "{{step}}, for {{kind}}",
+    "summarize": "Write the summary",
+    "summarizeHint": "Title, summary, decisions and tasks, with the model chosen in Intelligence."
   },
   "intelligence": {
     "cover": "Summary",

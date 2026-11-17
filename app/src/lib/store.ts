@@ -107,7 +107,13 @@ export type Action =
   | { type: "shares"; id: string; shares: ShareLink[] }
   | { type: "language"; id: string; language: Language }
   | { type: "removeScreen"; id: string; path: string }
-  | { type: "postDone"; id: string };
+  | { type: "postDone"; id: string }
+  /** The steps left undone when it ended, that can still be done later. */
+  | { type: "pending"; id: string; steps: PostStage[] };
+
+/** A step done: it's no longer pending. */
+const done = (m: Meeting, stage: PostStage | null): Meeting =>
+  stage && m.pending?.includes(stage) ? { ...m, pending: m.pending.filter((s) => s !== stage) } : m;
 
 const summaryOf = (m: Meeting): MeetingSummary => ({
   id: m.id,
@@ -118,6 +124,7 @@ const summaryOf = (m: Meeting): MeetingSummary => ({
   tags: m.tags,
   shares: m.shares,
   device: m.device,
+  pending: m.pending,
 });
 
 /** Tag names ignore capitals: the first spelling of each one stays. */
@@ -262,32 +269,44 @@ export function reducer(state: State, action: Action): State {
       );
       return { ...state, finalPass, postPause: action.reason };
     }
+    case "pending":
+      return updateMeeting(state, action.id, (m) => ({ ...m, pending: action.steps }));
     case "speakersVerified":
-      return updateMeeting(state, action.id, (m) => relabel(m, action.base, action.assignments));
+      return updateMeeting(state, action.id, (m) => done(relabel(m, action.base, action.assignments), "speakers"));
     case "retranscribed": {
       const byStart = new Map(action.texts.map((t) => [t.start.toFixed(2), t.text]));
       const inChannel = (speaker: number) => (action.base >= SYSTEM_SPEAKER_BASE) === (speaker >= SYSTEM_SPEAKER_BASE);
-      return updateMeeting(state, action.id, (m) => ({
-        ...m,
-        // Lines the user corrected keep their text.
-        utterances: m.utterances.map((u) => {
-          const text = inChannel(u.speaker) && !u.edited ? byStart.get(u.start.toFixed(2)) : undefined;
-          return text && text !== u.text ? { ...u, text } : u;
-        }),
-      }));
+      return updateMeeting(state, action.id, (m) =>
+        done(
+          {
+            ...m,
+            // Lines the user corrected keep their text.
+            utterances: m.utterances.map((u) => {
+              const text = inChannel(u.speaker) && !u.edited ? byStart.get(u.start.toFixed(2)) : undefined;
+              return text && text !== u.text ? { ...u, text } : u;
+            }),
+          },
+          "text",
+        ),
+      );
     }
     case "punctuated": {
       const byId = new Map(action.changes.map((c) => [c.utteranceId, c]));
-      return updateMeeting(state, action.id, (m) => ({
-        ...m,
-        utterances: m.utterances.map((u) => {
-          const c = byId.get(u.id);
-          return c && !u.edited && u.text === c.from && c.to !== u.text ? { ...u, text: c.to } : u;
-        }),
-      }));
+      return updateMeeting(state, action.id, (m) =>
+        done(
+          {
+            ...m,
+            utterances: m.utterances.map((u) => {
+              const c = byId.get(u.id);
+              return c && !u.edited && u.text === c.from && c.to !== u.text ? { ...u, text: c.to } : u;
+            }),
+          },
+          "punctuation",
+        ),
+      );
     }
     case "cover":
-      return updateMeeting(state, action.id, (m) => ({ ...m, cover: action.cover, title: action.title ?? m.title }));
+      return updateMeeting(state, action.id, (m) => done({ ...m, cover: action.cover, title: action.title ?? m.title }, action.cover ? "cover" : null));
     case "translation":
       return updateMeeting(state, action.id, (m) => ({ ...m, translation: action.translation }));
     case "tags":
@@ -474,6 +493,7 @@ function diff(saved: Meeting, next: Meeting): backend.Changes | null {
   if (saved.tags !== next.tags && next.tags) meta.tags = next.tags;
   if (saved.shares !== next.shares && next.shares) meta.shares = next.shares;
   if (saved.parts !== next.parts && next.parts) meta.parts = next.parts;
+  if (saved.pending !== next.pending && next.pending) meta.pending = next.pending;
   if (Object.keys(meta).length) changes.meta = meta;
   if (saved.utterances !== next.utterances) {
     const before = new Map(saved.utterances.map((u) => [u.id, u]));

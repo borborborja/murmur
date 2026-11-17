@@ -432,6 +432,8 @@ function Models({
       analytics,
       language,
       ...(whisperIds.length ? { finalPass: true } : {}),
+      // Files (often voice notes) get the same clean text, without a summary (AfterCard).
+      fileSteps: { verifySpeakers: true, finalPass: whisperIds.length > 0, punctuate: toolIds.includes("punctuation"), summarize: false },
       ...(coverEngine ? { punctuate: toolIds.includes("punctuation"), summarize: true, coverEngine } : {}),
       ...(coverEngine === "openrouter" && routerModel ? { cloudModels: { ...cloudModels, openrouter: routerModel } } : {}),
     });

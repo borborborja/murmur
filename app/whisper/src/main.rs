@@ -118,11 +118,16 @@ fn load(model: &str, configure: impl Fn(&mut WhisperContextParameters)) -> Resul
     };
     if std::env::var_os("MURMUR_NO_GPU").is_none() {
         match with(true) {
-            Ok(ctx) => return Ok(ctx),
+            Ok(ctx) => {
+                eprintln!("Whisper: model carregat amb la GPU activada");
+                return Ok(ctx);
+            }
             Err(e) => eprintln!("Whisper a la GPU: {e}; es fa amb el processador"),
         }
     }
-    with(false).context("no s'ha pogut carregar Whisper")
+    let ctx = with(false).context("no s'ha pogut carregar Whisper")?;
+    eprintln!("Whisper: model carregat amb el processador (sense GPU)");
+    Ok(ctx)
 }
 
 fn run() -> Result<()> {

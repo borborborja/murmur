@@ -94,7 +94,36 @@ fn spawn(model: &Path, arg: &str, cpu: bool, stderr: Stdio) -> Result<Child> {
     if cpu {
         command.env("MURMUR_NO_GPU", "1");
     }
+    let name = model.file_name().map(|n| n.to_string_lossy().into_owned()).unwrap_or_default();
+    log::info!("murmur-whisper {name} {arg}, {}", if cpu { "on the CPU" } else { "on the GPU if there is one" });
     command.spawn().context(tr!("whisper_start_failed"))
+}
+
+/// Reads the sidecar's stderr as it runs. whisper.cpp logs a lot: the lines about the GPU (which
+/// devices Vulkan or Metal found, which one it took, its memory) go to Murmur's log as they come,
+/// to tell later which card a crash was on; the last few lines are returned, to explain a failure.
+fn watch_stderr(child: &mut Child) -> std::thread::JoinHandle<Vec<String>> {
+    let stderr = child.stderr.take().unwrap();
+    std::thread::spawn(move || {
+        let mut tail: Vec<String> = vec![];
+        let mut logged = 0;
+        for line in BufReader::new(stderr).lines().map_while(Result::ok) {
+            if logged < 30 && about_the_gpu(&line) {
+                log::info!("murmur-whisper: {}", line.trim());
+                logged += 1;
+            }
+            tail.push(line);
+            if tail.len() > 8 {
+                tail.remove(0);
+            }
+        }
+        tail
+    })
+}
+
+fn about_the_gpu(line: &str) -> bool {
+    let line = line.to_ascii_lowercase();
+    ["vulkan", "metal", "gpu", "backend", "device", "vram", "processador"].iter().any(|word| line.contains(word))
 }
 
 /// The sidecar died instead of ending with an error of its own (exit code 1): a crash, which on
@@ -143,18 +172,7 @@ fn with_cpu_fallback<T>(models: &Path, mut attempt: impl FnMut(bool) -> Result<T
 /// Sends the job to the Whisper process and collects its texts, one list per channel.
 fn read_replies(child: &mut Child, job: &str, channels: usize, mut progress: impl FnMut(f32)) -> Result<Vec<Vec<Text>>> {
     child.stdin.take().unwrap().write_all(job.as_bytes())?;
-    // whisper.cpp logs a lot: keep the end, to explain a failure.
-    let stderr = child.stderr.take().unwrap();
-    let log = std::thread::spawn(move || {
-        let mut tail: Vec<String> = vec![];
-        for line in BufReader::new(stderr).lines().map_while(Result::ok) {
-            tail.push(line);
-            if tail.len() > 8 {
-                tail.remove(0);
-            }
-        }
-        tail
-    });
+    let log = watch_stderr(child);
 
     #[derive(Deserialize)]
     struct Line {
@@ -163,10 +181,12 @@ fn read_replies(child: &mut Child, job: &str, channels: usize, mut progress: imp
         texts: Option<Vec<Text>>,
     }
     let mut out: Vec<Vec<Text>> = vec![vec![]; channels];
+    let mut done = 0.0;
     let read = (|| -> Result<()> {
         for line in BufReader::new(child.stdout.take().unwrap()).lines() {
             let line: Line = serde_json::from_str(&line?).context(tr!("whisper_bad_reply"))?;
             if let Some(p) = line.progress {
+                done = p;
                 progress(p);
             }
             if let (Some(i), Some(texts)) = (line.channel, line.texts) {
@@ -181,13 +201,14 @@ fn read_replies(child: &mut Child, job: &str, channels: usize, mut progress: imp
     let status = child.wait()?;
     let tail = log.join().unwrap_or_default();
     if crashed(status) {
-        log::warn!("murmur-whisper ended with {status}: {}", tail.join(" | "));
+        log::warn!("murmur-whisper ended with {status} at {:.0}% of the job; its last lines: {}", done * 100.0, tail.join(" | "));
         return Err(Crashed(tr!("whisper_failed", error = tail.last().cloned().unwrap_or_else(|| status.to_string()))).into());
     }
     read?;
     if !status.success() {
         return Err(anyhow!(tr!("whisper_failed", error = tail.last().cloned().unwrap_or_default())));
     }
+    log::info!("murmur-whisper finished");
     Ok(out)
 }
 
@@ -203,7 +224,8 @@ pub fn detect(models: &Path, pcm: &Path, windows: &[Vec<Span>]) -> Result<Vec<cr
         "windows": windows.iter().map(|w| w.iter().map(|s| serde_json::json!({ "start": s.start, "end": s.end })).collect::<Vec<_>>()).collect::<Vec<_>>(),
     });
     with_cpu_fallback(models, |cpu| {
-        let mut child = spawn(&model, "detect", cpu, Stdio::null())?;
+        let mut child = spawn(&model, "detect", cpu, Stdio::piped())?;
+        let log = watch_stderr(&mut child);
         crate::gate::whisper(Some(child.id()));
         let result = (|| -> Result<Vec<crate::import::Heard>> {
             child.stdin.take().unwrap().write_all(job.to_string().as_bytes())?;
@@ -215,7 +237,9 @@ pub fn detect(models: &Path, pcm: &Path, windows: &[Vec<Span>]) -> Result<Vec<cr
                 Ok(())
             })();
             let status = child.wait()?;
+            let tail = log.join().unwrap_or_default();
             if crashed(status) {
+                log::warn!("murmur-whisper (detect) ended with {status}; its last lines: {}", tail.join(" | "));
                 return Err(Crashed(tr!("whisper_failed", error = status.to_string())).into());
             }
             read?;

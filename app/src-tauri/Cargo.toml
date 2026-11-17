@@ -97,6 +97,12 @@ keyring = { version = "3", features = ["windows-native", "sync-secret-service", 
 sherpa-onnx = { version = "1.13.8", default-features = false, features = ["shared"] }
 sherpa-onnx-sys = { version = "1.13.8", default-features = false, features = ["shared"] }
 
+# System audio on Linux: the default output's monitor through PulseAudio (or PipeWire's
+# pipewire-pulse). Links libpulse.so.0 and libpulse-simple.so.0 (libpulse0 / pulseaudio-libs).
+[target.'cfg(target_os = "linux")'.dependencies]
+libpulse-binding = "2.30"
+libpulse-simple-binding = "2.29"
+
 [target.'cfg(windows)'.dependencies]
 windows-sys = { version = "0.60", features = ["Win32_Foundation", "Win32_System_Threading", "Win32_Storage_FileSystem", "Win32_System_SystemInformation", "Win32_System_Power"] }
 

@@ -51,8 +51,7 @@ describe("Murmur a " + process.platform, () => {
     const text = await pageText();
     if (text.includes(ca("settings:permissions.title"))) throw new Error("Els permisos són de macOS");
     const system = text.includes(ca("settings:audio.system"));
-    // A Windows, l'àudio de l'altra banda de la trucada (WASAPI); a Linux encara no.
-    if (linux && system) throw new Error("A Linux no hi ha àudio del sistema");
-    if (!linux && !system) throw new Error("A Windows hi ha d'haver l'àudio del sistema");
+    // L'àudio de l'altra banda de la trucada: WASAPI a Windows, el monitor de PulseAudio a Linux.
+    if (!system) throw new Error("Hi ha d'haver l'àudio del sistema");
   });
 });

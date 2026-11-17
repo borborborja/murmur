@@ -182,12 +182,13 @@ Entre reunions (bloc 5):
 - [x] Windows: àudio del sistema amb loopback WASAPI.
 - [x] CI a macOS, Windows i Linux, i publicació automàtica de les versions en pujar l'etiqueta.
 - [x] Proves e2e: el motor transcriu un àudio de veritat a les tres plataformes, i la interfície amb `tauri-driver` a Windows i Linux.
-- [ ] Linux: àudio del sistema (el monitor de PipeWire o PulseAudio).
+- [x] Linux: àudio del sistema (el monitor de la sortida per defecte, amb PulseAudio o PipeWire).
 - [ ] Windows i Linux: captures de pantalla (`xcap` o similar).
 - [ ] Windows i Linux: «Reunió detectada» (qui fa servir el micròfon).
 - [ ] Windows i Linux: calendari (Google o Outlook directes, amb OAuth).
 - [ ] Windows: signar l'instal·lador perquè SmartScreen no avisi.
 - [x] Windows i Linux: acceleració per GPU (Vulkan) per a Whisper i Gemma, amb el processador si no hi ha gràfica o no hi cap.
+- [x] Si `murmur-whisper` peta a la gràfica (Vulkan a Linux amb el Whisper del BSC, #9), es repeteix amb el processador, i fins a la versió següent ja hi va directament.
 - [ ] Mesurar Vulkan en PC de veritat (NVIDIA, AMD, Intel integrada) amb el banc de proves: factor de temps real de Whisper i velocitat del resum, comparats amb el processador.
 - [x] Windows ARM (Snapdragon): compilació nativa, instal·lador `_arm64-setup.exe` i actualitzacions.
 - [ ] Windows ARM: provar-la en un Snapdragon de veritat i mesurar; si cal, Gemma a la GPU Adreno amb OpenCL.

@@ -24,7 +24,7 @@ It started as a tool for meetings in **Catalan**, where most transcription servi
 ## Features
 
 - **Live transcription** in Catalan, Spanish, Catalan + Spanish mixed, or English. You pick the language and whether there are more people in the room when you start, and you can transcribe a meeting again in another language later.
-- **Your mic and the call, separately.** Murmur records your microphone and the system audio (Zoom, Meet, Teams…) as two channels and removes the echo, so it works with speakers too, not just headphones. It never records the screen: it only takes a screenshot when you ask for one. System audio works on macOS and Windows; on Linux Murmur records the microphone for now.
+- **Your mic and the call, separately.** Murmur records your microphone and the system audio (Zoom, Meet, Teams…) as two channels and removes the echo, so it works with speakers too, not just headphones. It never records the screen: it only takes a screenshot when you ask for one. On Linux, system audio comes from PulseAudio or PipeWire.
 - **Speakers.** Voices are grouped live. When the meeting ends, a second pass over the whole recording checks who said what. Rename “Speaker 1” to a real name, or pick one from the calendar event's guests, and if one person shows up as two speakers, merge them in one click. If there's more than one of you in the room, each can say “Murmur, I'm Marta” and Murmur will name their speaker, matching the calendar guests too. And if you like, Murmur can save a print of your voice (only on your computer, and you can delete it) to always recognize you as “You”.
 - **Final pass with Whisper.** For single-language meetings, Whisper listens again after you stop and rewrites the text. It doesn't touch the lines you corrected by hand. In Catalan, that's a Whisper by the Barcelona Supercomputing Center, the best in our tests for Central, Valencian and Balearic Catalan. In Spanish and English, Whisper large-v3-turbo, which also adds punctuation and proper names. While it finishes, the summary's place shimmers, and the new text and summary come in as a light runs down over them.
 - **You choose what happens when it ends.** When a meeting ends, Murmur says what it'll do (check who speaks, Whisper, punctuation and the summary) and you can change it before it starts. It remembers this separately for recordings and for files, and anything you skip can be done later with “Finish Processing…”.
@@ -171,7 +171,7 @@ The interface is available in Catalan, Spanish and English. Strings are in `app/
 
 ## Roadmap
 
-Next: the calendar and screenshots on Windows and Linux, system audio on Linux, and better speaker detection. The full list is in [docs/ROADMAP.md](docs/ROADMAP.md).
+Next: the calendar and screenshots on Windows and Linux, and better speaker detection. The full list is in [docs/ROADMAP.md](docs/ROADMAP.md).
 
 ## Contributing
 

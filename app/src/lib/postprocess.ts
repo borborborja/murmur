@@ -103,10 +103,22 @@ export function usePostProcess(state: State, dispatch: Dispatch<Action>, setting
     ];
   }, []);
 
+  /** Every step a meeting that ended could still go through, as `pending`: from the moment it ends,
+   * so that "Acaba de processar…" has them even if Murmur closes before the choice. */
+  const remember = useCallback(
+    (id: string, steps: AfterStep[]) => {
+      const audio = !!latest.current.open[id]?.audioPath;
+      const left = steps.filter((s) => s.possible && (audio || s.stage === "punctuation" || s.stage === "cover")).map((s) => s.stage);
+      dispatch({ type: "pending", id, steps: left });
+    },
+    [dispatch],
+  );
+
   /**
    * The steps chosen for a meeting that ended: the speaker check and Whisper go to Rust, the rest
-   * waits for them. The ones not chosen that could still be done later are remembered on the
-   * meeting (`pending`); without its audio saved, the speaker check and Whisper can't.
+   * waits for them. Every step that could be done is remembered on the meeting (`pending`), the
+   * chosen ones too until they're done: if Murmur closes or updates halfway, they're still there
+   * for "Acaba de processar…". Without its audio saved, the speaker check and Whisper can't.
    */
   const choose = useCallback(
     (id: string, steps: AfterStep[], chosen: Set<PostStage>) => {
@@ -115,9 +127,7 @@ export function usePostProcess(state: State, dispatch: Dispatch<Action>, setting
       wants.current.set(id, { punctuation: chosen.has("punctuation"), cover: chosen.has("cover") });
       const rust: PostStage[] = [...(speakers ? (["speakers"] as const) : []), ...(text ? (["text"] as const) : [])];
       plans.current.set(id, [...rust, ...optionalStages(rust, languages.current.get(id) ?? config.current.language, id)]);
-      const audio = !!latest.current.open[id]?.audioPath;
-      const later = steps.filter((s) => s.possible && !chosen.has(s.stage) && (audio || s.stage === "punctuation" || s.stage === "cover")).map((s) => s.stage);
-      dispatch({ type: "pending", id, steps: later });
+      remember(id, steps);
       track("after_chosen", { speakers, text, punctuation: chosen.has("punctuation"), summary: chosen.has("cover"), file: files.current.has(id) });
       backend.runFinalPass(id, speakers, text).catch((e) => toast.error(String(e)));
     },
@@ -260,5 +270,5 @@ export function usePostProcess(state: State, dispatch: Dispatch<Action>, setting
   /** "Acaba de processar…" without audio work: punctuation and the cover, from the saved transcript. */
   const finishText = useCallback((id: string, stages: PostStage[]) => run(id, stages, stages), [run]);
 
-  return { planRecording, planRetranscribe, punctuatesAfter, rustStageStarted, rustDone, generateCover, isFile, stepsFor, choose, planLater, finishText };
+  return { planRecording, planRetranscribe, punctuatesAfter, rustStageStarted, rustDone, generateCover, isFile, stepsFor, remember, choose, planLater, finishText };
 }

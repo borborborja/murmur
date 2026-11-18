@@ -84,9 +84,10 @@ Per organitzar les reunions (per client, projecte…). Totes grises, sense color
 - **Pausa** (una reunió que ha continuat): línia discontínua (`separator`) a banda i banda d'una tassa i «Pausa de 13:05 a 14:10 · 1 h 5 min», 12 pt en `textSecondary`. La primera frase de després torna a portar l'etiqueta del parlant.
 
 ### Parlants
-- Colors: `speaker1` violeta, `speaker2` corall (ambre a Formigó), `speaker3` turquesa, `speaker4` magenta. **"Tu" sempre és `you`** (l'accent del tema). Els colors es reparteixen per ordre: primer la gent de la sala i després la de la trucada. Així no se'n repeteix cap fins al cinquè parlant.
+- Colors: `speaker1` violeta, `speaker2` corall (ambre a Formigó), `speaker3` turquesa, `speaker4` magenta. **"Tu" sempre és `you`** (l'accent del tema). Mentre es grava, els colors es reparteixen per ordre d'arribada: primer la gent de la sala i després la de la trucada, perquè el color de ningú canviï mentre parla. Quan s'acaba, per temps parlat: els quatre que més parlen tenen sempre quatre colors diferents.
+- **Fragments:** un parlant amb menys d'un 2% del temps parlat (`MINOR_SHARE`) sol ser un tros de veu de més, no una persona. Va en gris (`textTertiary` sòlid, `fillSubtle` de fons i `textSecondary` de text), i al gràfic «Qui ha parlat» tots junts són una sola entrada, «Altres (5)».
 - Al gràfic "Qui ha parlat", cada segment és el color sòlid; a les etiquetes i tasques, el tint amb el text fosc corresponent.
-- Més de quatre parlants: repeteix la paleta en ordre.
+- Més de quatre parlants amb més d'un 2%: es repeteix la paleta en ordre.
 - **Presentacions:** «Murmur, sóc la Marta» posa el nom al parlant d'aquella frase. Avís «"Parlant 2" és la Marta» amb Desfés. A la pantalla de començar, amb «Hi ha més gent amb mi a la sala», una línia sota el recordatori de consentiment: «Si sou més d'un a la sala, cadascú pot dir "Murmur, sóc…" i Murmur hi posarà el nom».
 - **Menú de l'etiqueta del parlant:** els parlants (per a aquella frase, amb un punt del seu color i ✓ a l'actual); els convidats del calendari sense parlant; «Totes les frases de «Parlant 3» són de…» › (els altres parlants, amb el seu punt), per ajuntar-ne dos que són la mateixa persona; Reanomena…; Nou parlant…. Si una frase passa a un altre parlant, un avís ofereix «I les altres 4 de Parlant 3». Reanomenar un parlant amb el nom d'un altre els ajunta.
 

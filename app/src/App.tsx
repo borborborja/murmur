@@ -412,6 +412,7 @@ export default function App() {
       post.choose(id, steps, chosen);
       return;
     }
+    post.remember(id, steps);
     setAfter({ id, steps, chosen, deadline: Date.now() + AFTER_COUNTDOWN_MS, file });
   };
 
@@ -1836,7 +1837,13 @@ export default function App() {
           }}
         />
       )}
-      {!recording && <UpdatesDialog run={updates.run} manual={updates.manual} onClose={() => {}} />}
+      <UpdatesDialog
+        run={updates.run}
+        manual={updates.manual}
+        idle={!recording && !busy && !importing && !after && !Object.keys(state.finalPass).length}
+        hidden={!!recording}
+        onClose={() => {}}
+      />
       {onboarding.open && <Onboarding open onClose={closeOnboarding} onChange={updateSettings} startAtModels={onboarding.atModels} cloudModels={settings.cloudModels} language={settings.language} />}
       {calendarSync.syncing && !showSettings && !showSidebar && (
         <button

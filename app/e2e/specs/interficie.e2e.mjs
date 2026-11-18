@@ -39,9 +39,11 @@ describe("Murmur a " + process.platform, () => {
     await browser.waitUntil(async () => (await pageText()).includes(ca("settings:tabs.audio")), { timeoutMsg: "No s'ha obert la configuració" });
   });
 
-  it("no ofereix el calendari de macOS", async () => {
-    const labels = await browser.execute(() => [...document.querySelectorAll("[role=dialog] button")].map((b) => b.innerText.trim()));
-    if (labels.includes(ca("settings:tabs.calendar"))) throw new Error("La pestanya Calendari només és per a macOS");
+  it("el calendari, amb enllaços iCal i sense el de macOS", async () => {
+    const tab = await $(`button=${ca("settings:tabs.calendar")}`);
+    await tab.click();
+    await browser.waitUntil(async () => (await pageText()).includes(ca("settings:calendar.ical")), { timeoutMsg: "No hi ha els enllaços iCal" });
+    if ((await pageText()).includes(ca("settings:calendar.macCalendar"))) throw new Error("El calendari del sistema només és per a macOS");
   });
 
   it("a la pestanya Àudio, sense els permisos de macOS", async () => {

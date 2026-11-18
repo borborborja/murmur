@@ -24,7 +24,7 @@ Nació para reuniones en **catalán**, donde la mayoría de servicios de transcr
 ## Qué hace
 
 - **Transcripción en directo** en catalán, en castellano, en catalán y castellano mezclados o en inglés. Al empezar eliges el idioma y si hay más gente en la sala, y más adelante puedes volver a transcribir una reunión en otro idioma.
-- **El micrófono y la llamada, por separado.** Murmur graba el micrófono y el audio del sistema (Zoom, Meet, Teams…) en dos canales y elimina el eco. Por eso funciona también con altavoces, no solo con auriculares. Nunca graba la pantalla: solo hace una captura cuando tú la pides. El audio del sistema funciona en macOS y en Windows; en Linux, de momento, Murmur graba solo el micrófono.
+- **El micrófono y la llamada, por separado.** Murmur graba el micrófono y el audio del sistema (Zoom, Meet, Teams…) en dos canales y elimina el eco. Por eso funciona también con altavoces, no solo con auriculares. Nunca graba la pantalla: solo hace una captura cuando tú la pides. En Linux, el audio del sistema llega de PulseAudio o PipeWire.
 - **Hablantes.** Las voces se agrupan en directo. Al terminar, una segunda pasada por toda la grabación comprueba quién ha dicho cada cosa. Puedes cambiar «Hablante 1» por el nombre real o elegirlo entre los invitados del evento del calendario, y si una misma persona sale como dos hablantes, los juntas con un clic. Si sois más de uno en la sala, cada uno puede decir «Murmur, soy Marta» y Murmur pondrá el nombre a su hablante, también si es uno de los invitados. Y si quieres, Murmur puede guardar una huella de tu voz (solo en el ordenador, y se puede borrar) para reconocerte siempre como «Tú».
 - **Pasada final con Whisper.** Cuando la reunión es en una sola lengua, Whisper la vuelve a escuchar cuando detienes la grabación y reescribe el texto. No toca las frases que hayas corregido a mano. En catalán, lo hace un Whisper del Barcelona Supercomputing Center, que en nuestras pruebas ha sido el mejor con el catalán central, el valenciano y el balear. En castellano e inglés, Whisper large-v3-turbo, que además pone la puntuación y los nombres propios. Mientras termina, el sitio del resumen brilla, y el texto y el resumen nuevos aparecen cuando una luz los recorre de arriba abajo.
 - **Tú eliges qué hace al terminar.** Cuando termina una reunión, Murmur dice qué hará (revisar quién habla, Whisper, puntuación y resumen) y puedes cambiarlo antes de que empiece. Lo recuerda por separado para las grabaciones y para los archivos, y lo que no hagas puedes hacerlo más tarde con «Terminar de procesar…».
@@ -172,7 +172,7 @@ La interfaz está en catalán, castellano e inglés. Los textos están en `app/s
 
 ## Hoja de ruta
 
-Los próximos pasos son el calendario y las capturas en Windows y Linux, el audio del sistema en Linux y mejorar la detección de hablantes. La lista completa está en [docs/ROADMAP.md](docs/ROADMAP.md).
+Los próximos pasos son el calendario y las capturas en Windows y Linux, y mejorar la detección de hablantes. La lista completa está en [docs/ROADMAP.md](docs/ROADMAP.md).
 
 ## Colaborar
 

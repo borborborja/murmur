@@ -45,7 +45,7 @@ export interface Capabilities {
 /** Until the backend answers (or in a browser), what this OS can do in this version. */
 export let capabilities: Capabilities = {
   os: OS,
-  systemAudio: OS !== "linux",
+  systemAudio: true,
   screenshots: isMac,
   calendar: true,
   systemCalendar: isMac,

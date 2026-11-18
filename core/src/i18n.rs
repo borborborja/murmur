@@ -143,6 +143,11 @@ fn strings(key: &str) -> Option<[&'static str; 3]> {
             "El audio del sistema aún no está disponible en esta plataforma",
             "System audio isn't available on this platform yet",
         ],
+        "system_audio_stream" => [
+            "Àudio del sistema per a Murmur",
+            "Audio del sistema para Murmur",
+            "System audio for Murmur",
+        ],
         "system_audio_unavailable" => [
             "No es pot gravar el que sona als altaveus",
             "No se puede grabar lo que suena en los altavoces",

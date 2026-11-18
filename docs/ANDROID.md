@@ -12,6 +12,8 @@ La [validació local registrada](ANDROID_VALIDACIO.md) inclou 7 tests Rust, 37 J
 
 L'app és per a Android 10 o posterior, ARM64. L'APK es pot instal·lar directament; no requereix root, cap servidor propi ni Murmur d'escriptori. La variant de desenvolupament té l'identificador `dev.murmur.android.debug`; la variant de release, `dev.murmur.android`. Android les considera aplicacions diferents i no comparteixen dades.
 
+L'APK signat i la suma SHA-256 es poden baixar de [l'última release del fork](https://github.com/borborborja/murmur/releases/latest). Si ja tens `0.16.0-android.1` instal·lada amb el mateix certificat, instal·la l'APK al damunt per conservar les reunions i la configuració.
+
 El fork desa la versió completa a `android/full-parity`. Cada canvi a la branca genera un APK ARM64 de proves. Obre una execució superada de l'Action i descarrega l'artefacte `murmur-android-arm64-debug`. El ZIP inclou l'APK instal·lable, el SHA-256 i els informes de verificació. Els artefactes es conserven 30 dies. [Action APK Android](https://github.com/borborborja/murmur/actions/workflows/android.yml)
 
 Els APK de la branca del fork comparteixen una clau de proves exclusiva i es poden actualitzar entre si. La release `dev.murmur.android` que es va instal·lar al Pixel té la seva pròpia signatura i es compila localment amb `mobile/android/scripts/build-release.sh`.

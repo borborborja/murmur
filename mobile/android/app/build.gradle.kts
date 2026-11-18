@@ -12,8 +12,8 @@ android {
         applicationId = "dev.murmur.android"
         minSdk = 29
         targetSdk = 36
-        versionCode = 1
-        versionName = "0.16.0-android.1"
+        versionCode = 2
+        versionName = "0.16.0-android.2"
         val analyticsKey = providers.environmentVariable("MURMUR_APTABASE_KEY").orElse("").get()
         buildConfigField("String", "APTABASE_KEY", "\"${analyticsKey.replace("\\", "\\\\").replace("\"", "\\\"")}\"")
         ndk { abiFilters += "arm64-v8a" }

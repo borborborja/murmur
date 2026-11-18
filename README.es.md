@@ -19,7 +19,7 @@
 
 ## Android en este repositorio
 
-[Descarga el APK de pruebas desde GitHub Actions.](https://github.com/borborborja/murmur/actions/workflows/android.yml) Abre una ejecución completada y descarga el artefacto `murmur-android-arm64-debug`.
+[Descarga el APK firmado de la última versión.](https://github.com/borborborja/murmur/releases/latest) Las compilaciones de pruebas están también en [GitHub Actions](https://github.com/borborborja/murmur/actions/workflows/android.yml), en el artefacto `murmur-android-arm64-debug`.
 
 Esta copia incorpora una app Android nativa y autónoma, con el núcleo Rust original, notas con formato, hablantes, pasadas finales, resúmenes, traducción, exportaciones e integraciones. El dispositivo de referencia es el Pixel 8a. Permite usar un modelo local o configurar Claude, OpenAI, OpenRouter, Ollama Cloud o Gemini con una clave propia. El APK es para Android 10 o posterior y ARM64; los modelos se descargan por separado.
 

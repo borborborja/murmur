@@ -17,6 +17,7 @@ import { MarkerBackground, useMarker } from "@/lib/motion";
 import { MobileSync } from "./MobileSync";
 import { StartOptionsCompact, type StartChoice } from "./StartOptions";
 import { hasTag, tagCounts, type TagCount } from "./Tags";
+import { PHONE_APP } from "@/lib/features";
 
 type Props = {
   meetings: MeetingSummary[];
@@ -247,7 +248,7 @@ export function Sidebar({ meetings, selectedId, canCreate, starting, importingId
         ) : (
           <span className="flex-1 text-[11px]">{t("localOnly")}</span>
         )}
-        <MobileSync meetings={meetings} onSettings={onMobileSettings} />
+        {PHONE_APP && <MobileSync meetings={meetings} onSettings={onMobileSettings} />}
         <button type="button" onClick={onSettings} aria-label={t("settings")} title={t("settingsShortcut")} className="grid size-7 place-items-center rounded-md text-muted-foreground hover:bg-black/5 hover:text-foreground dark:hover:bg-white/10">
           <Settings className="size-4" />
         </button>

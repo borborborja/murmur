@@ -36,6 +36,9 @@ Windows i Linux tenen **la seva pròpia clau d'actualitzacions**, perquè la del
    | `TAURI_SIGNING_PRIVATE_KEY` | `gh secret set TAURI_SIGNING_PRIVATE_KEY --env publica < ~/.tauri/murmur-updater-pc.key` |
    | `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` | `gh secret set TAURI_SIGNING_PRIVATE_KEY_PASSWORD --env publica` (la demana) |
    | `RELEASES_TOKEN` | Un *fine-grained token* de `quicodomingo` només per a `murmur-releases`, amb *Contents: read and write* i caducitat d'un any: `gh secret set RELEASES_TOKEN --env publica` |
+   | `MURMUR_GOOGLE_CLIENT_ID` i `MURMUR_GOOGLE_CLIENT_SECRET` | El client OAuth de Google Calendar (projecte `murmur-515015` de Google Cloud, client «Desktop»): `jq -r .installed.client_id app/src-tauri/google-oauth.json \| gh secret set MURMUR_GOOGLE_CLIENT_ID --env publica`, i igual amb `client_secret`. Sense, la versió surt sense Google. |
+
+   Al Mac, `release.sh` el llegeix de `app/src-tauri/google-oauth.json`, el JSON que dona Google Cloud, que no es puja al repositori: si no hi és, la versió del Mac surt sense Google.
 
 4. **La variable** `PC_RELEASE` = `true` (Settings › Secrets and variables › Actions › Variables). Sense ella, l'etiqueta no compila res i el Mac es publica com sempre.
 

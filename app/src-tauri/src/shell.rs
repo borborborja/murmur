@@ -382,7 +382,7 @@ fn upcoming_meeting(app: &AppHandle) -> Option<calendar::EventInfo> {
     }
     let now = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).ok()?.as_secs_f64() * 1000.0;
     let announced = shell(app).announced.lock().unwrap().clone();
-    calendar::events(now - CALENDAR_LATE_S * 1000.0, now + CALENDAR_LEAD_S * 1000.0, watch.calendar_ids.as_deref())
+    calendar::events(now - CALENDAR_LATE_S * 1000.0, now + CALENDAR_LEAD_S * 1000.0, watch.calendar_ids.as_deref(), watch.system)
         .into_iter()
         .filter(|e| e.start >= now - CALENDAR_LATE_S * 1000.0 && e.start <= now + CALENDAR_LEAD_S * 1000.0)
         .filter(|e| watch.include_no_guests || e.is_meeting())

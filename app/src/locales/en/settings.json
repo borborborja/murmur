@@ -53,8 +53,7 @@
     "showLog": "Show Log"
   },
   "calendar": {
-    "footnote": "Murmur reads the calendars in the macOS Calendar app. To add Google Calendar, add the account in System Settings › Internet Accounts.",
-    "connection": "Connection",
+    "connection": "Connections",
     "macCalendar": "macOS Calendar",
     "denied": "Denied. Turn on Murmur in System Settings › Privacy & Security › Calendars.",
     "disconnected": "Disconnected: Murmur doesn't read it. macOS still gives it permission; you can remove it in System Settings.",
@@ -72,8 +71,58 @@
     "all": "All",
     "syncing": "Syncing calendars…",
     "empty": "No calendars",
-    "emptyHint": "Add one in the macOS Calendar app.",
-    "watch": "Watch {{name}}"
+    "emptyHint": "Add one in the macOS Calendar app or with an iCal link.",
+    "watch": "Watch {{name}}",
+    "privacy": "Murmur only reads your calendars (title, time, guests and the video call link) to alert you and name the meeting. It never writes anything to them, and the links and the Google access are saved in the system keychain.",
+    "privacyMac": "Murmur only reads your calendars (title, time, guests and the video call link) to alert you and name the meeting. It never writes anything to them. The macOS one includes the accounts added in System Settings › Internet Accounts, and the links and the Google access are saved in the keychain.",
+    "google": "Google Calendar",
+    "googleHint": "Sign in with your Google account. It only reads your calendars.",
+    "googleSignIn": "Sign in…",
+    "googleWaiting": "Continue in the browser: sign in and allow reading your calendars.",
+    "googleConnected": "Connected",
+    "googleConnectedToast": "Google Calendar connected ({{email}})",
+    "googleDisconnectTitle": "Disconnect Google Calendar?",
+    "googleDisconnectMessage": "Murmur will stop reading your Google calendars and delete its access from the keychain. The calendars don't change.",
+    "fromGoogle": "Google · {{email}}",
+    "ical": "iCal Link",
+    "icalHint": "Google, Outlook, iCloud or any calendar that gives an .ics link.",
+    "icalAdd": "Add a Link…",
+    "icalLabel": "The calendar's link in iCal format",
+    "icalChecking": "Checking…",
+    "icalAddButton": "Add",
+    "icalWhere": "Where do I find the link?",
+    "icalHelp": {
+      "google": {
+        "name": "Google",
+        "steps": [
+          "Open Google Calendar in your browser and go to Settings (the gear).",
+          "On the left, under “Settings for my calendars”, pick the calendar.",
+          "Under “Integrate calendar”, copy the “Secret address in iCal format”."
+        ]
+      },
+      "outlook": {
+        "name": "Outlook",
+        "steps": [
+          "Open Outlook in your browser and go to Settings › Calendar › Shared calendars.",
+          "Under “Publish a calendar”, pick the calendar and “Can view all details”, then Publish.",
+          "Copy the ICS link."
+        ]
+      },
+      "icloud": {
+        "name": "iCloud",
+        "steps": [
+          "In the iPhone's Calendar app, tap Calendars and the “i” next to the calendar.",
+          "Turn on “Public Calendar” and tap “Share Link” to copy it.",
+          "Paste it here: it starts with webcal://."
+        ]
+      }
+    },
+    "icalRead": "{{host}} · read {{when}}",
+    "icalRemove": "Remove",
+    "icalRemoveTitle": "Remove this calendar?",
+    "icalRemoveMessage": "Murmur will stop reading “{{name}}” and delete its link from the keychain. The calendar itself doesn't change.",
+    "icalAdded": "“{{name}}” added",
+    "fromLink": "iCal link · {{host}}"
   },
   "appearance": {
     "theme": "Theme",

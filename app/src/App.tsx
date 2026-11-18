@@ -37,7 +37,7 @@ import { Transcript } from "@/components/Transcript";
 import { Toaster } from "@/components/ui/sonner";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import * as backend from "@/lib/backend";
-import { currentEvent, guestNames, useCalendarSync } from "@/lib/calendar";
+import { currentEvent, guestNames, systemCalendarOn, useCalendarSync } from "@/lib/calendar";
 import { clock, duration, speakerIds, speakerName } from "@/lib/format";
 import { exportMeeting, saveMarkdown, toMarkdown, type ExportContent, type ExportFormat } from "@/lib/export";
 import { defaultTitle } from "@/lib/cover";
@@ -555,7 +555,7 @@ export default function App() {
   useEffect(() => {
     if (!backend.isTauri()) return;
     backend
-      .setCalendarWatch({ enabled: settings.calendarEnabled && settings.calendarAlerts, calendarIds: settings.calendarIds, includeNoGuests: settings.calendarNoGuests })
+      .setCalendarWatch({ enabled: settings.calendarAlerts, system: systemCalendarOn(settings), calendarIds: settings.calendarIds, includeNoGuests: settings.calendarNoGuests })
       .catch(() => {});
   }, [settings.calendarEnabled, settings.calendarAlerts, settings.calendarIds, settings.calendarNoGuests]);
 

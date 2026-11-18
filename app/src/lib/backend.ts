@@ -159,7 +159,7 @@ export const requestSystemAudio = () => invoke<Access>("request_system_audio");
 export const requestScreen = () => invoke<boolean>("request_screen");
 export const openPrivacySettings = (pane: "microphone" | "systemAudio" | "screen" | "calendars") => invoke<void>("open_privacy_settings", { pane });
 
-/** The macOS calendar (calendar.rs): every account added to the system. */
+/** Calendars (calendar.rs): the system's (macOS) and the iCal links' (ics.rs, id "ics:…"). */
 export type CalendarInfo = { id: string; title: string; account: string; color: string };
 export type CalendarEvent = {
   id: string;
@@ -174,12 +174,26 @@ export type CalendarEvent = {
 export const calendarAccess = () => invoke<Access>("calendar_access");
 /** Shows the system's calendar dialog (only the first time) and resolves with the answer. */
 export const requestCalendarAccess = () => invoke<Access>("request_calendar_access");
-export const listCalendars = () => invoke<CalendarInfo[]>("list_calendars");
-export const calendarEvents = (from: number, to: number, calendarIds: string[] | null) =>
-  invoke<CalendarEvent[]>("calendar_events", { from, to, calendarIds });
+/** `system`: also the system's calendars (macOS, when connected). */
+export const listCalendars = (system = true) => invoke<CalendarInfo[]>("list_calendars", { system });
+export const calendarEvents = (from: number, to: number, calendarIds: string[] | null, system = true) =>
+  invoke<CalendarEvent[]>("calendar_events", { from, to, calendarIds, system });
 /** "Comença d'aquí a 2 minuts": which calendars the alert watches. */
-export const setCalendarWatch = (watch: { enabled: boolean; calendarIds: string[] | null; includeNoGuests: boolean }) =>
+export const setCalendarWatch = (watch: { enabled: boolean; system: boolean; calendarIds: string[] | null; includeNoGuests: boolean }) =>
   invoke<void>("set_calendar_watch", { watch });
+/** A calendar from an iCal link: never its URL (it's the secret), only where it's from. */
+export type IcalFeed = { id: string; name: string; host: string; readAt: number | null; error: string | null };
+export const icalFeeds = () => invoke<IcalFeed[]>("ical_feeds");
+/** Reads the link to check it's a calendar, then saves it to the keychain. */
+export const icalAdd = (url: string) => invoke<IcalFeed>("ical_add", { url });
+export const icalRemove = (id: string) => invoke<void>("ical_remove", { id });
+/** Google Calendar (google.rs). `available`: this build has the OAuth client. */
+export type GoogleStatus = { available: boolean; connected: boolean; email: string | null; error: string | null };
+export const googleStatus = () => invoke<GoogleStatus>("google_status");
+/** Opens the browser to sign in; resolves with the account's address once it's back. */
+export const googleConnect = () => invoke<string>("google_connect");
+export const googleCancel = () => invoke<void>("google_cancel");
+export const googleDisconnect = () => invoke<void>("google_disconnect");
 
 /** The pill on the right edge of the screen while recording. */
 export const setIndicator = (enabled: boolean, compact: boolean) => invoke<void>("set_indicator", { enabled, compact });

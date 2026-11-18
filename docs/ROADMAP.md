@@ -130,10 +130,12 @@ Entre reunions (bloc 5):
 - [x] Actualitzacions de l'app i dels models en obrir Murmur (repositori `quicodomingo/murmur-releases`), descàrregues amb comprovació d'espai i SHA-256. Versió 0.2.0.
 - [ ] Primera publicació (0.2.0) i provar una actualització real amb la 0.2.1.
 - [x] Portada: tasques editables, notes com a font, avís de portada desactualitzada i «PDF o envia…».
-- [ ] Google Calendar directe (OAuth) per a Windows, si cal.
 - [x] Intel·ligència: la portada amb el model local o amb Claude / OpenAI / Gemini / OpenRouter i la clau pròpia, desada al clauer del sistema, triant el model. Només s'envia text (transcripció i notes), mai àudio.
 - [ ] Provar la portada amb Claude, OpenAI, Gemini i OpenRouter amb claus reals i comparar-la amb Gemma (qualitat, temps i cost per reunió).
 - [x] En acabar una reunió, «Què en faig ara?»: els passos (parlants, Whisper, puntuació, resum) es trien cada cop, recordats per a gravacions i per a fitxers, i el que no es fa queda pendent per a «Acaba de processar…».
+- [x] Calendaris amb un enllaç iCal a tots els sistemes (Google, Outlook, iCloud), amb els esdeveniments que es repeteixen i les zones d'Outlook.
+- [x] Google Calendar amb el seu inici de sessió (OAuth) a tots els sistemes: projecte de Google Cloud, client «Desktop», permisos `calendar.calendarlist.readonly` i `calendar.events.readonly`.
+- [ ] La verificació de Google (pàgina de privadesa amb el paràgraf de *Limited Use*, vídeo, justificació dels permisos) per sortir del mode de proves: fins llavors només hi poden entrar els usuaris de prova i la sessió caduca cada 7 dies. Mentrestant, a l'app publicada no surt (`GOOGLE_CALENDAR`, a `app/src/lib/features.ts`): quan Google ho aprovi, es posa a `true` i es torna a explicar als README.
 - [ ] Whisper frase a frase per a les reunions en català i castellà, només amb GPU: mesurar-lo amb `examples/mixed_probe.rs` (WER i RTF) en reunions reals barrejades i, si val la pena, fer-lo servir a la passada final i oferir els dos Whisper a qui tingui «Català + castellà».
 - [ ] Mesurar els models «Recomanats» d'OpenRouter (`RECOMMENDED`, `lib/cloud.ts`) amb el banc de proves abans de deixar-los com a recomanació: ara són un model conegut per empresa.
 - [ ] Vocabulari personalitzat (marques i noms propis: WordPress, WooCommerce, noms de l'equip…).
@@ -213,6 +215,7 @@ Entre reunions (bloc 5):
   - [x] Provar l'emparellament amb l'app de l'ordinador i un iPhone de debò.
   - [x] Configuració › Mòbil i la icona de la barra lateral, visibles per a tothom (abans, només en desenvolupament).
   - [x] Preparar l'App Store: 1.0 només per a iPhone, la fitxa en tres idiomes, la privadesa, les notes per a la revisió i les captures en català ([`docs/APPSTORE.md`](APPSTORE.md)).
+  - [ ] Quan l'app de l'iPhone sigui a l'App Store de la UE: `PHONE_APP` a `true` (`app/src/lib/features.ts`; amaga Configuració › Mòbil i la icona de sincronització a l'app publicada), el paràgraf dels README que està comentat, i la novetat de l'iPhone amb la imatge (la de la 0.16.0, que no va sortir).
   - [ ] La pàgina de privadesa a la web, les captures en castellà i anglès, i enviar-la a revisió.
   - [ ] Publicar la versió de l'ordinador que ensenya Configuració › Mòbil abans que l'app surti a la botiga.
   - [ ] Les edicions després de revisar en tots dos sentits (avui el mòbil només conserva el títol i els noms que hi canvies).

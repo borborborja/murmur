@@ -53,8 +53,7 @@
     "showLog": "Mostrar el registro"
   },
   "calendar": {
-    "footnote": "Murmur lee los calendarios que tienes en la app Calendario de macOS. Para añadir Google Calendar, añade la cuenta en Ajustes del Sistema › Cuentas de Internet.",
-    "connection": "Conexión",
+    "connection": "Conexiones",
     "macCalendar": "Calendario de macOS",
     "denied": "Denegado. Activa Murmur en Ajustes del Sistema › Privacidad y seguridad › Calendarios.",
     "disconnected": "Desconectado: Murmur no lo lee. macOS aún le da permiso; puedes retirarlo en Ajustes del Sistema.",
@@ -72,8 +71,58 @@
     "all": "Todos",
     "syncing": "Sincronizando los calendarios…",
     "empty": "No hay ningún calendario",
-    "emptyHint": "Añade uno en la app Calendario de macOS.",
-    "watch": "Vigilar {{name}}"
+    "emptyHint": "Añade uno en la app Calendario de macOS o con un enlace iCal.",
+    "watch": "Vigilar {{name}}",
+    "privacy": "Murmur solo lee los calendarios (título, hora, invitados y el enlace de la videollamada) para avisarte y ponerle nombre a la reunión. Nunca escribe nada en ellos, y los enlaces y el acceso a Google se guardan en el llavero del sistema.",
+    "privacyMac": "Murmur solo lee los calendarios (título, hora, invitados y el enlace de la videollamada) para avisarte y ponerle nombre a la reunión. Nunca escribe nada en ellos. El de macOS incluye las cuentas añadidas en Ajustes del Sistema › Cuentas de Internet, y los enlaces y el acceso a Google se guardan en el llavero.",
+    "google": "Google Calendar",
+    "googleHint": "Inicia sesión con tu cuenta de Google. Solo lee los calendarios.",
+    "googleSignIn": "Iniciar sesión…",
+    "googleWaiting": "Sigue en el navegador: inicia sesión y da permiso para leer los calendarios.",
+    "googleConnected": "Conectado",
+    "googleConnectedToast": "Google Calendar conectado ({{email}})",
+    "googleDisconnectTitle": "¿Quieres desconectar Google Calendar?",
+    "googleDisconnectMessage": "Murmur dejará de leer tus calendarios de Google y borrará el acceso del llavero. Los calendarios no cambian.",
+    "fromGoogle": "Google · {{email}}",
+    "ical": "Enlace iCal",
+    "icalHint": "Google, Outlook, iCloud o cualquier calendario que dé un enlace .ics.",
+    "icalAdd": "Añadir un enlace…",
+    "icalLabel": "Enlace del calendario en formato iCal",
+    "icalChecking": "Comprobando…",
+    "icalAddButton": "Añadir",
+    "icalWhere": "¿Dónde encuentro el enlace?",
+    "icalHelp": {
+      "google": {
+        "name": "Google",
+        "steps": [
+          "Abre Google Calendar en el navegador y ve a Configuración (la rueda dentada).",
+          "A la izquierda, en «Configuración de mis calendarios», elige el calendario.",
+          "En «Integrar el calendario», copia la «Dirección secreta en formato iCal»."
+        ]
+      },
+      "outlook": {
+        "name": "Outlook",
+        "steps": [
+          "Abre Outlook en el navegador y ve a Configuración › Calendario › Calendarios compartidos.",
+          "En «Publicar un calendario», elige el calendario y «Puede ver todos los detalles», y pulsa Publicar.",
+          "Copia el enlace ICS."
+        ]
+      },
+      "icloud": {
+        "name": "iCloud",
+        "steps": [
+          "En la app Calendario del iPhone, toca Calendarios y la «i» del calendario.",
+          "Activa «Calendario público» y toca «Compartir enlace» para copiarlo.",
+          "Pégalo aquí: empieza por webcal://."
+        ]
+      }
+    },
+    "icalRead": "{{host}} · leído {{when}}",
+    "icalRemove": "Quitar",
+    "icalRemoveTitle": "¿Quieres quitar este calendario?",
+    "icalRemoveMessage": "Murmur dejará de leer «{{name}}» y borrará su enlace del llavero. El calendario no cambia.",
+    "icalAdded": "«{{name}}» añadido",
+    "fromLink": "Enlace iCal · {{host}}"
   },
   "appearance": {
     "theme": "Tema",

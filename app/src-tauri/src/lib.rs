@@ -6,6 +6,7 @@ pub mod awake;
 pub mod calendar;
 pub mod capture;
 pub mod gate;
+pub mod ics;
 pub mod import;
 pub mod keychain;
 pub mod logfile;
@@ -16,7 +17,9 @@ pub mod mcp;
 pub mod micwatch;
 pub mod mobile;
 pub mod obsidian;
+pub mod google;
 pub mod notion;
+pub mod oauth;
 pub mod permissions;
 pub mod retranscribe;
 pub mod shell;
@@ -546,8 +549,12 @@ struct Platform {
     system_audio: bool,
     /// Screenshots of the meeting window (capture.rs).
     screenshots: bool,
-    /// Reading the system calendar (calendar.rs).
+    /// Calendars at all: the system's, or iCal links (ics.rs) everywhere.
     calendar: bool,
+    /// Reading the system's own calendar (calendar.rs, EventKit).
+    system_calendar: bool,
+    /// Signing in with Google Calendar (google.rs): builds with the OAuth client.
+    google_calendar: bool,
     /// Noticing other apps using the microphone (micwatch.rs).
     meeting_detection: bool,
     /// The extension of the audio file to listen to or export (playback.rs).
@@ -561,7 +568,9 @@ fn platform() -> Platform {
         os: std::env::consts::OS,
         system_audio: audio::SYSTEM_AUDIO,
         screenshots: mac,
-        calendar: mac,
+        calendar: true,
+        system_calendar: mac,
+        google_calendar: google::available(),
         meeting_detection: mac,
         audio_extension: playback::EXTENSION,
     }
@@ -2052,6 +2061,13 @@ pub fn run() {
             calendar::request_calendar_access,
             calendar::list_calendars,
             calendar::calendar_events,
+            calendar::ical_feeds,
+            calendar::ical_add,
+            calendar::ical_remove,
+            calendar::google_status,
+            calendar::google_connect,
+            calendar::google_cancel,
+            calendar::google_disconnect,
             permissions::permission_status,
             permissions::request_microphone,
             permissions::request_system_audio,

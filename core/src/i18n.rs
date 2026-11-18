@@ -86,6 +86,43 @@ fn strings(key: &str) -> Option<[&'static str; 3]> {
         // Alerts. The app's name goes first: dismissed alerts are matched by it.
         "toast_detected" => ["Reunió detectada", "Reunión detectada", "Meeting detected"],
         "toast_stopped" => ["Gravació aturada", "Grabación detenida", "Recording stopped"],
+        // Calendars from an iCal link (ics.rs).
+        "ical_not_a_link" => ["Això no és un enllaç: ha de començar per https://", "Esto no es un enlace: tiene que empezar por https://", "That isn't a link: it should start with https://"],
+        "ical_already_added" => ["Aquest calendari ja hi és", "Este calendario ya está", "This calendar is already there"],
+        "ical_not_found" => [
+            "L'enllaç no porta a cap calendari. Comprova que l'has copiat sencer i que encara és vàlid.",
+            "El enlace no lleva a ningún calendario. Comprueba que lo has copiado entero y que sigue siendo válido.",
+            "The link doesn't lead to a calendar. Check that you copied all of it and that it's still valid.",
+        ],
+        "ical_offline" => ["No s'ha pogut llegir el calendari: no hi ha connexió", "No se ha podido leer el calendario: no hay conexión", "Couldn't read the calendar: no connection"],
+        "ical_not_a_calendar" => [
+            "L'enllaç funciona, però no és un calendari en format iCal (.ics)",
+            "El enlace funciona, pero no es un calendario en formato iCal (.ics)",
+            "The link works, but it isn't a calendar in iCal format (.ics)",
+        ],
+        "google_cancelled" => ["S'ha cancel·lat l'inici de sessió amb Google", "Se ha cancelado el inicio de sesión con Google", "Signing in with Google was cancelled"],
+        "google_timed_out" => [
+            "Google no ha respost a temps. Torna-ho a provar.",
+            "Google no ha respondido a tiempo. Vuelve a intentarlo.",
+            "Google didn't answer in time. Try again.",
+        ],
+        "google_signed_in_page" => [
+            "Murmur ja pot llegir el teu calendari de Google. Pots tancar aquesta pestanya i tornar a Murmur.",
+            "Murmur ya puede leer tu calendario de Google. Puedes cerrar esta pestaña y volver a Murmur.",
+            "Murmur can now read your Google Calendar. You can close this tab and go back to Murmur.",
+        ],
+        "google_refused" => ["Google no ha donat permís ({error})", "Google no ha dado permiso ({error})", "Google didn't allow it ({error})"],
+        "google_missing_scope" => [
+            "Cal marcar els dos permisos de calendari a la pàgina de Google. Torna-ho a provar.",
+            "Hay que marcar los dos permisos de calendario en la página de Google. Vuelve a intentarlo.",
+            "Both calendar permissions need to be ticked on Google's page. Try again.",
+        ],
+        "google_reconnect" => [
+            "La sessió amb Google ha caducat: torna a iniciar-la",
+            "La sesión con Google ha caducado: vuelve a iniciarla",
+            "The Google session has expired: sign in again",
+        ],
+        "calendar_untitled" => ["Sense títol", "Sin título", "Untitled"],
         "toast_mic_lost" => ["El micròfon no envia so", "El micrófono no envía sonido", "The microphone isn't sending sound"],
         "toast_mic_lost_detail" => [
             "Murmur l'està tornant a obrir. Comprova que està connectat.",

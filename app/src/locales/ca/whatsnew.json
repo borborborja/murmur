@@ -6,14 +6,22 @@
   "dontShow": "No ho tornis a mostrar",
   "ok": "Entesos",
   "releases": {
-    "0.16.0": [
+    "0.17.0": [
       {
-        "title": "Murmur per a iPhone",
-        "text": "Grava i transcriu al telèfon, sense connexió, quan no tens l'ordinador a mà. Connecta'l aquí amb un codi QR: les reunions hi passen soles per la xarxa local, xifrades, l'ordinador en fa la passada final i el resum, i tornen al telèfon revisades. Busca Murmur a l'App Store.",
-        "link": "mobile",
-        "linkLabel": "Connecta un mòbil",
-        "image": "/whatsnew/mobil-ca.png",
-        "imageDark": "/whatsnew/mobil-ca-fosc.png"
+        "title": "Tu tries què es fa en acabar",
+        "text": "En acabar una reunió o obrir un fitxer, tries quins passos vols: parlants, Whisper, puntuació i resum. Murmur recorda l'elecció, i el que deixis per a més tard ho pots fer des del menú de la reunió."
+      },
+      {
+        "title": "El calendari, també a Windows i Linux",
+        "text": "Afegeix l'enllaç iCal d'un calendari de Google, Outlook o iCloud i Murmur t'avisarà abans de cada reunió, amb el títol i els convidats. Al Mac, s'hi sumen els calendaris del sistema.",
+        "link": "calendar",
+        "linkLabel": "Configuració › Calendari"
+      },
+      {
+        "title": "A Linux, també l'àudio del sistema",
+        "text": "Murmur ja pot gravar el que sona a l'ordinador, com les veus d'una trucada, amb PulseAudio o PipeWire, i les separa de la teva.",
+        "link": "audio",
+        "linkLabel": "Configuració › Àudio"
       },
       {
         "title": "El resum, també amb Gemini o OpenRouter",

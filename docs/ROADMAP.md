@@ -216,9 +216,29 @@ Entre reunions (bloc 5):
   - [ ] La pàgina de privadesa a la web, les captures en castellà i anglès, i enviar-la a revisió.
   - [ ] Publicar la versió de l'ordinador que ensenya Configuració › Mòbil abans que l'app surti a la botiga.
   - [ ] Les edicions després de revisar en tots dos sentits (avui el mòbil només conserva el títol i els noms que hi canvies).
-  - [ ] iPad, iPhone Duo i Android.
+  - [ ] iPad i iPhone Duo. L’adaptació Android autònoma té el seu seguiment a la secció 7.
   - [x] Provar l'emparellament de punta a punta amb `fake_phone` i l'app: emparellar, enviar una reunió de 3 minuts, passada final (Whisper i dos parlants trobats) i recollir-ne el resultat.
   - [ ] La prova d'una tarda a l'iPhone (cal Xcode): velocitat, qualitat i bateria del Conformer.
   - [ ] Primera app en SwiftUI: gravar i text en directe, per TestFlight.
 - [ ] macOS amb Intel (x86_64), si algú ho demana.
-- [ ] iOS / Android reaprofitant el nucli Rust.
+- [x] Nucli Rust reutilitzat a l’adaptació Android nativa; la validació física i la paritat es documenten a la secció 7.
+
+
+## 7. Android autònom (aquesta adaptació)
+
+Referència: escriptori 0.16.0, commit `cfeda3e`. El perfil previst és el Pixel 8a de 8 GB. Les tasques marcades com a implementades no substitueixen les proves amb el dispositiu i els serveis reals. Guia a [ANDROID.md](ANDROID.md), i matriu detallada a [PARITAT_ANDROID.md](PARITAT_ANDROID.md).
+
+- [x] App nativa Kotlin/Jetpack Compose, SQLite/FTS5 compartit i pont UniFFI amb el motor real.
+- [x] Compilació ARM64 i biblioteques natives alineades a 16 KB; editor TipTap i traduccions empaquetats sense xarxa.
+- [x] Interfície de biblioteca, gravació, transcripció, notes, portada, tasques, etiquetes, configuració i permisos.
+- [x] Cua persistent de processament i serveis separats per a Whisper i llama.cpp.
+- [x] Perfil local compacte i proveïdors Claude, OpenAI, OpenRouter, Ollama Cloud i Gemini amb claus pròpies.
+- [x] Implementació d'exportacions, Obsidian, OAuth de Notion, enllaços xifrats i sincronització original.
+- [x] Connector MCP directe amb TLS i aparellament explícit, pont stdio per a l'ordinador i proves de protocol.
+- [x] Assistent inicial, calendari, càmera sense àudio, configuració de canal d'actualitzacions i analítica pròpia opcional.
+- [x] Workflow Android de compilació i proves del host, amb versions i sumes fixades; encara cal acreditar-ne l'execució remota.
+- [ ] Completar i registrar la prova instrumentada de cada funció amb els models que li corresponen, sense confondre omissions amb èxits.
+- [ ] Sessió d'una hora al Pixel 8a amb pantalla apagada, interrupcions i recuperació. Mesurar RAM, temperatura, bateria i retard.
+- [ ] Mesurar WER/F1 amb català central, valencià, balear, castellà i barreja. Validar qualitat dels resums i les traduccions amb el model compacte.
+- [ ] Verificar Claude Desktop/Code, sincronització amb escriptori, Notion, Cloudflare i cada compte d'IA amb configuració real.
+- [ ] Revisar permisos revocats, dispositius Bluetooth/USB, manca d'espai, mode d'estalvi i actualització entre dos APK signats.

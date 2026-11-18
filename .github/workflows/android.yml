@@ -1,0 +1,93 @@
+name: APK Android
+
+on:
+  push:
+    branches: ["android/full-parity"]
+  pull_request:
+    branches: ["android/full-parity"]
+  workflow_dispatch:
+
+concurrency:
+  group: android-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  apk:
+    name: Build and verify the ARM64 APK
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    env:
+      CARGO_TERM_COLOR: always
+      CMAKE_POLICY_VERSION_MINIMUM: "3.5"
+      BUILD_JOBS: "3"
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/setup-java@cf277c60eb25467037889841efdb72551f06f6c3
+        with:
+          distribution: temurin
+          java-version: "21"
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+      - name: Install native build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake ninja-build libclang-dev pkg-config libssl-dev libopus-dev
+          rustup toolchain install 1.100.0 --profile minimal
+          rustup default 1.100.0
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-36" "build-tools;35.0.0" "ndk;29.0.14206865" "cmake;3.22.1"
+      - name: Generate translated resources and offline notes editor
+        run: |
+          npm ci --prefix app
+          python3 mobile/android/scripts/generate-resources.py
+          node mobile/android/scripts/build-notes.mjs
+          npm run check-locales --prefix app
+      - name: Build actual native runtimes
+        run: |
+          scripts/build-native.sh
+          mobile/android/scripts/build-inference.sh
+      - name: Rust compatibility tests
+        run: |
+          export SHERPA_ONNX_LIB_DIR="$(scripts/sherpa-host.sh)"
+          export LD_LIBRARY_PATH="$SHERPA_ONNX_LIB_DIR${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+          unset SHERPA_ONNX_ARCHIVE_DIR
+          cargo test --locked --release --features punctuation --manifest-path mobile/ffi/Cargo.toml
+      - name: MCP bridge tests
+        run: node --test tools/android-mcp/test/*.test.mjs
+      - name: Verify Android release tooling
+        run: python3 -m unittest discover -s mobile/android/scripts -p test_release.py
+      - name: Restore the fork's Android debug signing key
+        if: github.repository == 'borborborja/murmur' && github.ref == 'refs/heads/android/full-parity' && github.event_name != 'pull_request'
+        env:
+          ANDROID_DEBUG_KEYSTORE_BASE64: ${{ secrets.ANDROID_DEBUG_KEYSTORE_BASE64 }}
+        run: |
+          test -n "$ANDROID_DEBUG_KEYSTORE_BASE64"
+          umask 077
+          mkdir -p "$HOME/.android"
+          printf '%s' "$ANDROID_DEBUG_KEYSTORE_BASE64" | base64 --decode > "$HOME/.android/debug.keystore"
+          keytool -list -keystore "$HOME/.android/debug.keystore" -storepass android -alias androiddebugkey >/dev/null
+      - name: Kotlin tests and installable debug APK
+        working-directory: mobile/android
+        run: ./gradlew --no-daemon :app:testDebugUnitTest :app:lintDebug :app:assembleDebug
+      - name: Verify signature, native runtimes and bundled resources
+        run: |
+          mkdir -p "$RUNNER_TEMP/android-apk"
+          cp mobile/android/app/build/outputs/apk/debug/app-debug.apk "$RUNNER_TEMP/android-apk/Murmur-Android-arm64-debug.apk"
+          cd "$RUNNER_TEMP/android-apk"
+          apk=Murmur-Android-arm64-debug.apk
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose --print-certs "$apk" | tee signature.txt
+          "$ANDROID_HOME/build-tools/35.0.0/zipalign" -c -P 16 4 "$apk"
+          python3 "$GITHUB_WORKSPACE/mobile/android/scripts/verify-apk.py" "$apk" > verification.json
+          sha256sum "$apk" > "$apk.sha256"
+      - name: Upload the installable APK
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: murmur-android-arm64-debug
+          path: ${{ runner.temp }}/android-apk/
+          if-no-files-found: error
+          retention-days: 30

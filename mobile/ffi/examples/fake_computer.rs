@@ -14,15 +14,27 @@ use murmur_core::sync::{self, Accept, Incoming, Keys, Msg, PairingCode, Receivin
 use serde_json::{Value, json};
 
 fn main() -> Result<()> {
-    let address = std::env::args().nth(1).unwrap_or_else(|| "127.0.0.1".into());
+    let address = std::env::args()
+        .nth(1)
+        .unwrap_or_else(|| "127.0.0.1".into());
     let keys = Keys::generate()?;
     let listener = TcpListener::bind("0.0.0.0:0")?;
     let port = listener.local_addr()?.port();
     let mut secret = [0u8; 32];
     for (i, b) in secret.iter_mut().enumerate() {
-        *b = (std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH)?.as_nanos() as u8).wrapping_add(i as u8 * 37);
+        *b = (std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)?
+            .as_nanos() as u8)
+            .wrapping_add(i as u8 * 37);
     }
-    let code = PairingCode { version: VERSION, name: "Ordinador de prova".into(), key: keys.public, secret, addrs: vec![address], port };
+    let code = PairingCode {
+        version: VERSION,
+        name: "Ordinador de prova".into(),
+        key: keys.public,
+        secret,
+        addrs: vec![address],
+        port,
+    };
     println!("{}", code.to_uri());
     let dest = std::env::temp_dir().join("fake_computer");
     let mut paired: Vec<[u8; 32]> = vec![];
@@ -31,7 +43,10 @@ fn main() -> Result<()> {
 
     for stream in listener.incoming() {
         let stream = stream?;
-        let rules = Accept { pairing_secret: Some(&secret), paired: &paired };
+        let rules = Accept {
+            pairing_secret: Some(&secret),
+            paired: &paired,
+        };
         let (mut s, arrival) = match sync::accept(stream, &keys, &rules, "Ordinador de prova") {
             Ok(x) => x,
             Err(e) => {
@@ -48,13 +63,27 @@ fn main() -> Result<()> {
                 Ok(Incoming::Msg(Msg::PutMeeting { meeting, files })) => {
                     let id = meeting["id"].as_str().unwrap_or_default().to_owned();
                     let r = Receiving::new(dest.join(&id), files)?;
-                    s.send(&Msg::Have { meeting_id: id.clone(), files: r.progress() })?;
+                    s.send(&Msg::Have {
+                        meeting_id: id.clone(),
+                        files: r.progress(),
+                    })?;
                     while !r.finish()? {
-                        let Incoming::Chunk { name, offset, data, .. } = s.recv()? else { anyhow::bail!("expected a chunk") };
+                        let Incoming::Chunk {
+                            name, offset, data, ..
+                        } = s.recv()?
+                        else {
+                            anyhow::bail!("expected a chunk")
+                        };
                         r.write(&name, offset, &data)?;
                     }
-                    s.send(&Msg::Stored { meeting_id: id.clone() })?;
-                    eprintln!("stored {id} «{}» in {}", meeting["title"].as_str().unwrap_or(""), dest.join(&id).display());
+                    s.send(&Msg::Stored {
+                        meeting_id: id.clone(),
+                    })?;
+                    eprintln!(
+                        "stored {id} «{}» in {}",
+                        meeting["title"].as_str().unwrap_or(""),
+                        dest.join(&id).display()
+                    );
                     received.push(meeting);
                 }
                 Ok(Incoming::Msg(Msg::GetResults { since })) => {
@@ -64,7 +93,8 @@ fn main() -> Result<()> {
                             continue;
                         }
                         let mut back = m.clone();
-                        back["title"] = json!(format!("{} (revisada)", m["title"].as_str().unwrap_or("")));
+                        back["title"] =
+                            json!(format!("{} (revisada)", m["title"].as_str().unwrap_or("")));
                         // A cover as the computer's language model writes it (app/src/lib/types.ts).
                         back["cover"] = json!({
                             "generatedAt": 0,
@@ -76,7 +106,10 @@ fn main() -> Result<()> {
                                       { "text": "Anunci a les xarxes", "owner": "Laia", "when": "divendres", "t": 30.0 }],
                             "parts": [{ "t": 0.0, "title": "El calendari", "points": ["Data de publicació", "Què falta"] }, { "t": 30.0, "title": "Els preus", "points": ["Es tanquen dilluns"] }],
                         });
-                        s.send(&Msg::Results { meeting: back, revised_at })?;
+                        s.send(&Msg::Results {
+                            meeting: back,
+                            revised_at,
+                        })?;
                     }
                     received.clear();
                     s.send(&Msg::Bye)?;

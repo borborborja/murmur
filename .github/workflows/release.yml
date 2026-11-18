@@ -42,7 +42,7 @@ env:
 jobs:
   compila:
     name: Compila (${{ matrix.name }})
-    if: vars.PC_RELEASE == 'true'
+    if: github.repository == 'quicodomingo/murmur' && vars.PC_RELEASE == 'true'
     environment: publica
     strategy:
       fail-fast: false
@@ -102,7 +102,7 @@ jobs:
 
   macos:
     name: Compila (macOS)
-    if: vars.MACOS_CI == 'true'
+    if: github.repository == 'quicodomingo/murmur' && vars.MACOS_CI == 'true'
     environment: publica
     runs-on: macos-latest
     steps:

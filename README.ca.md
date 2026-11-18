@@ -17,6 +17,15 @@
 
 ![Murmur transcrivint una reunió en directe, en mode clar i fosc](docs/design/screens/negre-i-acid/1-reunio-en-directe.png)
 
+## Android en aquest repositori
+
+[Descarrega l’APK de proves des de GitHub Actions.](https://github.com/borborborja/murmur/actions/workflows/android.yml) Obre una execució completada i baixa l’artefacte `murmur-android-arm64-debug`.
+
+Aquesta còpia incorpora una app Android nativa i autònoma, amb el nucli Rust original, notes riques, parlants, passades finals, resums, traduccions, exportacions i integracions. Està orientada al Pixel 8a i ofereix model local o Claude, OpenAI, OpenRouter, Ollama Cloud i Gemini amb clau pròpia. L'APK és per a Android 10 o posterior i ARM64; els models es descarreguen a part.
+
+El codi i les proves locals es distingeixen de la validació en un Pixel físic o amb comptes reals. Android imposa límits a les trucades protegides, les captures de pantalla i el segon pla. Consulta les [instruccions Android](docs/ANDROID.md) i la [matriu de paritat i verificació](docs/PARITAT_ANDROID.md). La resta d'aquest document descriu també el producte d'escriptori original.
+
+
 Murmur és una app per a macOS, Windows i Linux que transcriu les reunions mentre passen. Tot funciona a l'ordinador, i cap àudio va a cap servidor. També distingeix qui parla i et deixa prendre notes i captures de pantalla lligades al moment en què les fas. En acabar, pot escriure un resum amb el to, les decisions i les tasques. El pots compartir amb un enllaç o desar-lo en Markdown a la teva carpeta.
 
 Va néixer per a reunions en **català**, on la majoria de serveis de transcripció fallen. Sobretot quan la gent passa del català al castellà dins de la mateixa frase.

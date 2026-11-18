@@ -5,9 +5,10 @@ name: CI
 
 on:
   push:
-    branches: ["**"]
+    branches: ["**", "!android/full-parity"]
     tags-ignore: ["**"]
   pull_request:
+    branches-ignore: ["android/full-parity"]
   workflow_dispatch:
 
 concurrency:

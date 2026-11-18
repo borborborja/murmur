@@ -17,6 +17,15 @@
 
 ![Murmur transcribing a meeting live, in light and dark mode](docs/design/screens/negre-i-acid/1-reunio-en-directe.png)
 
+## Android in this repository
+
+[Download the test APK from GitHub Actions.](https://github.com/borborborja/murmur/actions/workflows/android.yml) Open a successful run and download the `murmur-android-arm64-debug` artifact.
+
+This checkout includes a native, standalone Android app built on the original Rust core, with rich notes, speakers, final passes, summaries, translation, exports and integrations. Its reference device is the Pixel 8a. Choose a local model or configure Claude, OpenAI, OpenRouter, Ollama Cloud or Gemini with your own key. The APK targets Android 10 or later on ARM64; models download separately.
+
+Implemented code and local tests are tracked separately from validation on a physical Pixel or with real service accounts. Android restricts protected calls, screenshots and background activity. See the [Android build and usage guide](docs/ANDROID.md) and the [parity and verification matrix](docs/PARITAT_ANDROID.md). The rest of this document also describes the original desktop product.
+
+
 Murmur is an app for macOS, Windows and Linux that transcribes your meetings as they happen. It runs fully on your computer, so no audio goes to a server. It also tells speakers apart, lets you take notes and screenshots tied to the moment they were written, and when the meeting ends it can write a summary with tone, decisions and tasks. You can share it with a link or keep it as Markdown in your own folder.
 
 It started as a tool for meetings in **Catalan**, where most transcription services struggle, especially when people switch between Catalan and Spanish in the same sentence.

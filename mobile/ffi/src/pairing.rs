@@ -81,25 +81,44 @@ pub fn new_sync_key() -> Result<Vec<u8>> {
 #[uniffi::export]
 pub fn read_pairing_code(uri: String) -> Result<PairingCodeInfo> {
     let code = PairingCode::parse(uri.trim()).map_err(|_| MurmurError::NotACode)?;
-    Ok(PairingCodeInfo { computer_name: code.name.clone(), addresses: addresses(&code) })
+    Ok(PairingCodeInfo {
+        computer_name: code.name.clone(),
+        addresses: addresses(&code),
+    })
 }
 
 fn addresses(code: &PairingCode) -> Vec<String> {
-    code.addrs.iter().map(|a| if a.contains(':') { format!("[{a}]:{}", code.port) } else { format!("{a}:{}", code.port) }).collect()
+    code.addrs
+        .iter()
+        .map(|a| {
+            if a.contains(':') {
+                format!("[{a}]:{}", code.port)
+            } else {
+                format!("{a}:{}", code.port)
+            }
+        })
+        .collect()
 }
 
 /// The first of `candidates` that answers and completes the handshake.
-fn reach<T>(candidates: &[String], mut handshake: impl FnMut(TcpStream) -> anyhow::Result<T>) -> Result<(String, T)> {
+fn reach<T>(
+    candidates: &[String],
+    mut handshake: impl FnMut(TcpStream) -> anyhow::Result<T>,
+) -> Result<(String, T)> {
     let mut refused = false;
     let mut seen = BTreeSet::new();
     for candidate in candidates {
         if !seen.insert(candidate.clone()) {
             continue;
         }
-        let Ok(addrs) = candidate.to_socket_addrs() else { continue };
+        let Ok(addrs) = candidate.to_socket_addrs() else {
+            continue;
+        };
         let addrs: Vec<SocketAddr> = addrs.collect();
         for addr in addrs {
-            let Ok(stream) = TcpStream::connect_timeout(&addr, CONNECT_TIMEOUT) else { continue };
+            let Ok(stream) = TcpStream::connect_timeout(&addr, CONNECT_TIMEOUT) else {
+                continue;
+            };
             let _ = stream.set_read_timeout(Some(IO_TIMEOUT));
             let _ = stream.set_write_timeout(Some(IO_TIMEOUT));
             match handshake(stream) {
@@ -113,7 +132,11 @@ fn reach<T>(candidates: &[String], mut handshake: impl FnMut(TcpStream) -> anyho
             }
         }
     }
-    Err(if refused { MurmurError::NotPaired } else { MurmurError::Unreachable })
+    Err(if refused {
+        MurmurError::NotPaired
+    } else {
+        MurmurError::Unreachable
+    })
 }
 
 fn log_debug(s: &str) {
@@ -123,19 +146,29 @@ fn log_debug(s: &str) {
 }
 
 fn key32(key: &[u8]) -> Result<[u8; 32]> {
-    key.try_into().map_err(|_| MurmurError::Failed("bad key".into()))
+    key.try_into()
+        .map_err(|_| MurmurError::Failed("bad key".into()))
 }
 
 #[uniffi::export]
 impl Murmur {
     /// Pairs with the computer of the QR's `uri`. `extra` are more addresses to try (the ones
     /// Bonjour found), after the code's own. Returns the computer, to remember.
-    pub fn pair(&self, uri: String, extra: Vec<String>, private_key: Vec<u8>, phone_name: String) -> Result<Computer> {
+    pub fn pair(
+        &self,
+        uri: String,
+        extra: Vec<String>,
+        private_key: Vec<u8>,
+        phone_name: String,
+    ) -> Result<Computer> {
         let code = PairingCode::parse(uri.trim()).map_err(|_| MurmurError::NotACode)?;
         let keys = Keys::from_private(&private_key)?;
         let mut candidates = addresses(&code);
         candidates.extend(extra);
-        let (address, session) = reach(&candidates, |stream| sync::pair(stream, &keys, &code, &phone_name)).map_err(|e| match e {
+        let (address, session) = reach(&candidates, |stream| {
+            sync::pair(stream, &keys, &code, &phone_name)
+        })
+        .map_err(|e| match e {
             // With a code, a refused handshake means the code isn't on screen any more.
             MurmurError::NotPaired => MurmurError::CodeExpired,
             e => e,
@@ -143,36 +176,70 @@ impl Murmur {
         let mut session = session;
         let _ = session.send(&Msg::Bye);
         // A new computer (or the same one again): everything goes to it from the start.
-        self.save_sync(&SyncState { revised: self.load_sync().revised, ..Default::default() })?;
-        Ok(Computer { name: session.remote_name.clone(), key: code.key.to_vec(), address })
+        self.save_sync(&SyncState {
+            revised: self.load_sync().revised,
+            ..Default::default()
+        })?;
+        Ok(Computer {
+            name: session.remote_name.clone(),
+            key: code.key.to_vec(),
+            address,
+        })
     }
 
     /// Unpaired on the phone: what was sent is forgotten (pairing again sends it all; the computer
     /// knows what it already has). What came back revised stays revised.
     pub fn forget_computer(&self) -> Result<()> {
         let state = self.load_sync();
-        self.save_sync(&SyncState { revised: state.revised, ..Default::default() })
+        self.save_sync(&SyncState {
+            revised: state.revised,
+            ..Default::default()
+        })
     }
 
     /// Finished meetings the computer doesn't have yet.
     pub fn unsent_count(&self) -> Result<u32> {
         let state = self.load_sync();
-        Ok(lock(&self.db).list()?.iter().filter(|m| m.status == "done" && !state.sent.contains(&m.id)).count() as u32)
+        Ok(lock(&self.db)
+            .list()?
+            .iter()
+            .filter(|m| m.status == "done" && !state.sent.contains(&m.id))
+            .count() as u32)
     }
 
     /// Sends the computer every finished meeting it doesn't have yet (with its audio, resuming a
     /// cut one), then picks up what it has revised. One sync at a time.
     /// `keep_audio` false (Configuració › Desa l'àudio al telèfon): a meeting's audio is deleted
     /// from the phone once the computer has stored it whole and checked.
-    pub fn sync(&self, candidates: Vec<String>, private_key: Vec<u8>, computer_key: Vec<u8>, phone_name: String, keep_audio: bool) -> Result<SyncReport> {
+    pub fn sync(
+        &self,
+        candidates: Vec<String>,
+        private_key: Vec<u8>,
+        computer_key: Vec<u8>,
+        phone_name: String,
+        keep_audio: bool,
+    ) -> Result<SyncReport> {
         let _one = self.syncing.try_lock().map_err(|_| MurmurError::Busy)?;
         let keys = Keys::from_private(&private_key)?;
         let computer = key32(&computer_key)?;
-        let (address, mut session) = reach(&candidates, |stream| sync::connect(stream, &keys, &computer, &phone_name))?;
-        let mut report = SyncReport { address, computer_name: session.remote_name.clone(), sent: 0, revised: 0, failed: 0 };
+        let (address, mut session) = reach(&candidates, |stream| {
+            sync::connect(stream, &keys, &computer, &phone_name)
+        })?;
+        let mut report = SyncReport {
+            address,
+            computer_name: session.remote_name.clone(),
+            sent: 0,
+            revised: 0,
+            failed: 0,
+        };
         let mut state = self.load_sync();
 
-        let pending: Vec<String> = lock(&self.db).list()?.into_iter().filter(|m| m.status == "done" && !state.sent.contains(&m.id)).map(|m| m.id).collect();
+        let pending: Vec<String> = lock(&self.db)
+            .list()?
+            .into_iter()
+            .filter(|m| m.status == "done" && !state.sent.contains(&m.id))
+            .map(|m| m.id)
+            .collect();
         for id in pending {
             match self.send_meeting(&mut session, &id)? {
                 true => {
@@ -191,10 +258,15 @@ impl Murmur {
             }
         }
 
-        session.send(&Msg::GetResults { since: state.since }).map_err(io)?;
+        session
+            .send(&Msg::GetResults { since: state.since })
+            .map_err(io)?;
         loop {
             match session.recv().map_err(io)? {
-                Incoming::Msg(Msg::Results { meeting, revised_at }) => {
+                Incoming::Msg(Msg::Results {
+                    meeting,
+                    revised_at,
+                }) => {
                     if self.take_results(meeting, &state)? {
                         report.revised += 1;
                     }
@@ -214,7 +286,11 @@ impl Murmur {
 
 /// A connection that drops halfway: the computer went away; next time it carries on.
 fn io(e: anyhow::Error) -> MurmurError {
-    if e.downcast_ref::<std::io::Error>().is_some() { MurmurError::Unreachable } else { e.into() }
+    if e.downcast_ref::<std::io::Error>().is_some() {
+        MurmurError::Unreachable
+    } else {
+        e.into()
+    }
 }
 
 impl Murmur {
@@ -223,12 +299,19 @@ impl Murmur {
     }
 
     pub(crate) fn load_sync(&self) -> SyncState {
-        std::fs::read_to_string(self.sync_file()).ok().and_then(|s| serde_json::from_str(&s).ok()).unwrap_or_default()
+        std::fs::read_to_string(self.sync_file())
+            .ok()
+            .and_then(|s| serde_json::from_str(&s).ok())
+            .unwrap_or_default()
     }
 
     pub(crate) fn save_sync(&self, state: &SyncState) -> Result<()> {
         let tmp = self.sync_file().with_extension("json.tmp");
-        std::fs::write(&tmp, serde_json::to_vec(state).map_err(|e| MurmurError::Failed(e.to_string()))?).map_err(|e| MurmurError::Failed(e.to_string()))?;
+        std::fs::write(
+            &tmp,
+            serde_json::to_vec(state).map_err(|e| MurmurError::Failed(e.to_string()))?,
+        )
+        .map_err(|e| MurmurError::Failed(e.to_string()))?;
         std::fs::rename(&tmp, self.sync_file()).map_err(|e| MurmurError::Failed(e.to_string()))
     }
 
@@ -242,7 +325,9 @@ impl Murmur {
 
     /// One meeting and its audio. True when the computer has it whole; false when it refused it.
     fn send_meeting(&self, session: &mut Session<TcpStream>, id: &str) -> Result<bool> {
-        let Some(mut meeting) = lock(&self.db).get(id)? else { return Ok(true) };
+        let Some(mut meeting) = lock(&self.db).get(id)? else {
+            return Ok(true);
+        };
         // Everything goes by a plain name: the audio, and the photos as the computer's screenshots
         // ("screens/<file>.jpg", which mobile.rs places with the meeting).
         let mut sending: Vec<(String, std::path::PathBuf)> = vec![];
@@ -251,8 +336,16 @@ impl Murmur {
         }
         if let Some(screens) = meeting.get_mut("screens").and_then(Value::as_array_mut) {
             screens.retain_mut(|screen| {
-                let Some(path) = screen["path"].as_str().map(|p| self.data_dir.join(p)).filter(|p| p.exists()) else { return false };
-                let Some(file) = path.file_name().map(|f| f.to_string_lossy().into_owned()) else { return false };
+                let Some(path) = screen["path"]
+                    .as_str()
+                    .map(|p| self.data_dir.join(p))
+                    .filter(|p| p.exists())
+                else {
+                    return false;
+                };
+                let Some(file) = path.file_name().map(|f| f.to_string_lossy().into_owned()) else {
+                    return false;
+                };
                 let name = format!("screens/{file}");
                 screen["path"] = Value::from(name.clone());
                 sending.push((name, path));
@@ -263,12 +356,21 @@ impl Murmur {
         if let Some(m) = meeting.as_object_mut() {
             m.remove("audioPath");
         }
-        let files = sending.iter().map(|(name, path)| sync::file_info(name, path)).collect::<anyhow::Result<Vec<_>>>()?;
-        session.send(&Msg::PutMeeting { meeting, files }).map_err(io)?;
+        let files = sending
+            .iter()
+            .map(|(name, path)| sync::file_info(name, path))
+            .collect::<anyhow::Result<Vec<_>>>()?;
+        session
+            .send(&Msg::PutMeeting { meeting, files })
+            .map_err(io)?;
         match session.recv_msg().map_err(io)? {
             Msg::Have { files, .. } => {
                 for (name, path) in &sending {
-                    let have = files.iter().find(|f| &f.name == name).map(|f| f.have).unwrap_or(0);
+                    let have = files
+                        .iter()
+                        .find(|f| &f.name == name)
+                        .map(|f| f.have)
+                        .unwrap_or(0);
                     sync::send_file(session, id, name, path, have).map_err(io)?;
                 }
             }
@@ -284,7 +386,9 @@ impl Murmur {
                 log_debug(&format!("{id} failed: {reason}"));
                 Ok(false)
             }
-            other => Err(MurmurError::Failed(format!("expected Stored, got {other:?}"))),
+            other => Err(MurmurError::Failed(format!(
+                "expected Stored, got {other:?}"
+            ))),
         }
     }
 
@@ -294,7 +398,9 @@ impl Murmur {
     fn take_results(&self, mut meeting: Value, state: &SyncState) -> Result<bool> {
         let id = meeting["id"].as_str().unwrap_or_default().to_owned();
         let mut db = lock(&self.db);
-        let Some(mine) = db.get(&id)? else { return Ok(false) };
+        let Some(mine) = db.get(&id)? else {
+            return Ok(false);
+        };
         meeting["audioPath"] = match self.audio_of(&mine) {
             Some(path) => Value::from(path.to_string_lossy().into_owned()),
             None => mine["audioPath"].clone(),
@@ -307,9 +413,17 @@ impl Murmur {
             meeting["notesDoc"] = mine["notesDoc"].clone();
             meeting["tags"] = mine["tags"].clone();
             // Tasks ticked on the phone stay ticked.
-            if let (Some(theirs), Some(ours)) = (meeting.pointer_mut("/cover/tasks").and_then(Value::as_array_mut), mine.pointer("/cover/tasks").and_then(Value::as_array)) {
+            if let (Some(theirs), Some(ours)) = (
+                meeting
+                    .pointer_mut("/cover/tasks")
+                    .and_then(Value::as_array_mut),
+                mine.pointer("/cover/tasks").and_then(Value::as_array),
+            ) {
                 for task in theirs.iter_mut() {
-                    if ours.iter().any(|o| o["text"] == task["text"] && o["done"] == Value::Bool(true)) {
+                    if ours
+                        .iter()
+                        .any(|o| o["text"] == task["text"] && o["done"] == Value::Bool(true))
+                    {
                         task["done"] = Value::Bool(true);
                     }
                 }

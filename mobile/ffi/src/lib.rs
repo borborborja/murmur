@@ -6,14 +6,14 @@
 //! starts, takes the microphone's 16 kHz samples and stops into a saved meeting.
 
 use std::path::{Path, PathBuf};
-use std::sync::Mutex;
+use std::sync::{Arc, Mutex};
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use murmur_core::db::Db;
 use murmur_core::engine::{Channel, Event, LiveModel, LoadOptions, Models, SAMPLE_RATE};
-use murmur_core::{glossary, voice};
 use murmur_core::pipeline::{Pipeline, Source};
 use murmur_core::recorder::Recorder;
+use murmur_core::{glossary, voice};
 use serde_json::{Value, json};
 
 uniffi::setup_scaffolding!();
@@ -22,8 +22,12 @@ uniffi::setup_scaffolding!();
 const THRESHOLD: f32 = 0.7;
 const MAX_SPEAKERS: usize = 6;
 /// On the phone the Conformer runs in int8 on the two fast cores (docs/MOBIL.md: 4 threads are slower).
-const LOAD: LoadOptions = LoadOptions { int8: true, threads: 2 };
+const LOAD: LoadOptions = LoadOptions {
+    int8: true,
+    threads: 2,
+};
 
+mod android;
 mod pairing;
 
 #[derive(Debug, thiserror::Error, uniffi::Error)]
@@ -108,15 +112,21 @@ pub struct SearchHit {
 
 /// The loaded models, shared by every recording. sherpa-onnx's objects aren't marked Send/Sync,
 /// but they're only used by one recording at a time, behind `Murmur.live`'s lock.
-struct SharedModels(&'static Models);
+struct SharedModels(Models);
 unsafe impl Send for SharedModels {}
 unsafe impl Sync for SharedModels {}
 
 /// The recording in progress. Moved between threads only behind the lock.
 struct Live {
+    // Drop the pipeline before the Arc that owns the stable Models allocation. The private
+    // self-reference is created only in start_with_sources and never escapes Live.
     pipeline: Pipeline<'static>,
+    _models: Arc<SharedModels>,
     meeting: Value,
     samples: u64,
+    system_samples: u64,
+    offset: f64,
+    line_generation: String,
     lines: Vec<Value>,
 }
 unsafe impl Send for Live {}
@@ -125,20 +135,26 @@ unsafe impl Send for Live {}
 pub struct Murmur {
     models_dir: PathBuf,
     data_dir: PathBuf,
-    models: Mutex<Option<SharedModels>>,
+    models: Mutex<Option<Arc<SharedModels>>>,
     db: Mutex<Db>,
     live: Mutex<Option<Live>>,
     /// Held while syncing with the computer: one sync at a time.
     syncing: Mutex<()>,
+    live_options: Mutex<(usize, f32)>,
 }
 
 fn now_ms() -> f64 {
-    SystemTime::now().duration_since(UNIX_EPOCH).map(|d| d.as_millis() as f64).unwrap_or(0.0)
+    SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .map(|d| d.as_millis() as f64)
+        .unwrap_or(0.0)
 }
 
 /// A meeting id as a folder name: never a path out of where it goes.
 fn safe_dir(id: &str) -> String {
-    id.chars().filter(|c| c.is_ascii_alphanumeric() || *c == '-' || *c == '_').collect()
+    id.chars()
+        .filter(|c| c.is_ascii_alphanumeric() || *c == '-' || *c == '_')
+        .collect()
 }
 
 fn lock<T>(m: &Mutex<T>) -> std::sync::MutexGuard<'_, T> {
@@ -151,13 +167,22 @@ impl Murmur {
     #[uniffi::constructor]
     pub fn new(models_dir: String, data_dir: String) -> Result<std::sync::Arc<Self>> {
         let data_dir = PathBuf::from(data_dir);
+        std::fs::create_dir_all(&data_dir).map_err(anyhow::Error::from)?;
         let db = Db::open(&data_dir.join("murmur.db"))?;
-        Ok(std::sync::Arc::new(Self { models_dir: PathBuf::from(models_dir), data_dir, models: Mutex::new(None), db: Mutex::new(db), live: Mutex::new(None), syncing: Mutex::new(()) }))
+        Ok(std::sync::Arc::new(Self {
+            models_dir: PathBuf::from(models_dir),
+            data_dir,
+            models: Mutex::new(None),
+            db: Mutex::new(db),
+            live: Mutex::new(None),
+            syncing: Mutex::new(()),
+            live_options: Mutex::new((MAX_SPEAKERS, THRESHOLD)),
+        }))
     }
 
     /// Loads the models now (they load on the first recording otherwise): about half a second.
     pub fn prepare(&self) -> Result<()> {
-        self.models().map(|_| ())
+        self.models_for(LiveModel::CatalanSpanish).map(|_| ())
     }
 
     /// The meetings, newest first.
@@ -169,11 +194,25 @@ impl Murmur {
             .into_iter()
             .map(|s| {
                 let full = db.get(&s.id).ok().flatten();
-                let last_line = full
-                    .as_ref()
-                    .and_then(|m| m["utterances"].as_array().and_then(|u| u.last()).and_then(|u| u["text"].as_str()).map(str::to_owned));
+                let last_line = full.as_ref().and_then(|m| {
+                    m["utterances"]
+                        .as_array()
+                        .and_then(|u| u.last())
+                        .and_then(|u| u["text"].as_str())
+                        .map(str::to_owned)
+                });
                 let (sent, revised) = (state.sent.contains(&s.id), state.revised.contains(&s.id));
-                MeetingRow { id: s.id, title: s.title, created_at: s.created_at, duration: s.duration, status: s.status, tags: s.tags, last_line, sent, revised }
+                MeetingRow {
+                    id: s.id,
+                    title: s.title,
+                    created_at: s.created_at,
+                    duration: s.duration,
+                    status: s.status,
+                    tags: s.tags,
+                    last_line,
+                    sent,
+                    revised,
+                }
             })
             .collect())
     }
@@ -184,14 +223,22 @@ impl Murmur {
         Ok(lock(&self.db)
             .search(&query, 60)?
             .into_iter()
-            .map(|h| SearchHit { meeting_id: h.meeting_id, title: h.title, created_at: h.created_at, kind: h.kind, t: h.t, snippet: h.snippet })
+            .map(|h| SearchHit {
+                meeting_id: h.meeting_id,
+                title: h.title,
+                created_at: h.created_at,
+                kind: h.kind,
+                t: h.t,
+                snippet: h.snippet,
+            })
             .collect())
     }
 
     /// Saves a whole meeting as the computer stores it (JSON): the sample meetings of the App
     /// Store's screenshots (`-demo`, development only).
     pub fn put_meeting(&self, json: String) -> Result<()> {
-        let meeting: Value = serde_json::from_str(&json).map_err(|e| MurmurError::Failed(e.to_string()))?;
+        let meeting: Value =
+            serde_json::from_str(&json).map_err(|e| MurmurError::Failed(e.to_string()))?;
         lock(&self.db).put(&meeting).map_err(Into::into)
     }
 
@@ -242,7 +289,8 @@ impl Murmur {
 
     /// The notes of a finished meeting, as the computer's editor stores them (a TipTap document).
     pub fn set_notes(&self, id: String, doc: String) -> Result<()> {
-        let doc: Value = serde_json::from_str(&doc).map_err(|e| MurmurError::Failed(e.to_string()))?;
+        let doc: Value =
+            serde_json::from_str(&doc).map_err(|e| MurmurError::Failed(e.to_string()))?;
         self.edit(&id, |m| m["notesDoc"] = doc)
     }
 
@@ -255,7 +303,9 @@ impl Murmur {
                 m["speakerNames"] = json!({});
             }
             if name.is_empty() {
-                m["speakerNames"].as_object_mut().map(|o| o.remove(&speaker.to_string()));
+                m["speakerNames"]
+                    .as_object_mut()
+                    .map(|o| o.remove(&speaker.to_string()));
             } else {
                 m["speakerNames"][speaker.to_string()] = json!(name);
             }
@@ -281,9 +331,12 @@ impl Murmur {
             for u in m["utterances"].as_array_mut().into_iter().flatten() {
                 if u["speaker"] == json!(from) {
                     u["speaker"] = json!(into);
+                    u["speakerLocked"] = json!(true);
                 }
             }
-            m["speakerNames"].as_object_mut().map(|o| o.remove(&from.to_string()));
+            m["speakerNames"]
+                .as_object_mut()
+                .map(|o| o.remove(&from.to_string()));
         })
     }
 
@@ -291,19 +344,74 @@ impl Murmur {
     /// `language` ("ca", "es", "ca-es", "en"), whether there are more people in the room (or
     /// it's only the user: one speaker), and how often the provisional text is redone (0: never).
     /// Returns the meeting's id.
-    pub fn start(&self, title: String, language: String, more_in_room: bool, partial_every: f32) -> Result<String> {
-        let models = self.models()?;
+    pub fn start(
+        &self,
+        title: String,
+        language: String,
+        more_in_room: bool,
+        partial_every: f32,
+    ) -> Result<String> {
+        self.start_with_sources(title, language, more_in_room, partial_every, true, false)
+    }
+
+    /// Android's two capture streams stay separate through echo cancellation and diarization.
+    pub fn start_with_sources(
+        &self,
+        title: String,
+        language: String,
+        more_in_room: bool,
+        partial_every: f32,
+        microphone: bool,
+        system_audio: bool,
+    ) -> Result<String> {
+        let mut live_slot = lock(&self.live);
+        if live_slot.is_some() {
+            return Err(MurmurError::Busy);
+        }
+        if !["ca", "es", "ca-es", "en"].contains(&language.as_str()) {
+            return Err(MurmurError::Failed("invalid language".into()));
+        }
+        if !microphone && !system_audio {
+            return Err(MurmurError::Failed("no audio source".into()));
+        }
+        let models = self.models_for(LiveModel::for_language(&language))?;
+        // SAFETY: Arc keeps this allocation stable. Live retains the Arc after pipeline, so
+        // pipeline is destroyed first. No function returns a borrowed pipeline or Models.
+        let model_ref = unsafe { &*(&models.0 as *const Models) };
         let created = now_ms();
-        let id = format!("phone-{}", created as u64);
+        let id = format!(
+            "phone-{}-{}",
+            created as u64,
+            SystemTime::now()
+                .duration_since(UNIX_EPOCH)
+                .unwrap_or_default()
+                .subsec_nanos()
+        );
         let audio = self.data_dir.join("recordings").join(format!("{id}.ogg"));
-        let recorder = Recorder::create(&audio, 1)?;
-        let mut pipeline = Pipeline::new(models, true, false, if more_in_room { MAX_SPEAKERS } else { 1 }, THRESHOLD, Some(recorder), vec![])?;
+        let recorder = Recorder::create(&audio, if microphone && system_audio { 2 } else { 1 })?;
+        let (max_speakers, threshold) = *lock(&self.live_options);
+        let mut pipeline = Pipeline::new(
+            model_ref,
+            microphone,
+            system_audio,
+            if more_in_room || system_audio {
+                max_speakers
+            } else {
+                1
+            },
+            threshold,
+            Some(recorder),
+            vec![],
+        )?;
+        if microphone && system_audio && !more_in_room {
+            pipeline.mic_speakers(1);
+        }
         pipeline.set_partials(partial_every > 0.0);
         if partial_every > 0.0 {
             pipeline.set_partial_every(partial_every);
         }
         // "Murmur" spelled right, so "Murmur, sóc la Laia" is heard as such (glossary.rs).
-        pipeline.set_glossary(glossary::with_guests(&[], &[]));
+        pipeline.set_glossary(glossary::with_guests(&lock(&self.db).glossary()?, &[]));
         // The user's voice (voice.rs), if saved: they're speaker 0, "Tu", from the first word.
         if let Some(voice) = voice::load(&self.data_dir) {
             pipeline.known_speakers(Channel::Mic, vec![(0, voice.embedding)], 1);
@@ -311,35 +419,89 @@ impl Murmur {
         let meeting = json!({
             "id": id, "title": title, "createdAt": created, "duration": 0.0, "status": "recording",
             "utterances": [], "speakerNames": {}, "notes": [], "language": language,
-            "sources": { "mic": true, "system": false }, "audioPath": audio.to_string_lossy(),
+            "sources": { "mic": microphone, "system": system_audio }, "audioPath": audio.to_string_lossy(),
         });
-        *lock(&self.live) = Some(Live { pipeline, meeting, samples: 0, lines: vec![] });
+        lock(&self.db).put(&meeting)?;
+        *live_slot = Some(Live {
+            pipeline,
+            _models: models,
+            meeting,
+            samples: 0,
+            system_samples: 0,
+            offset: 0.0,
+            line_generation: id.clone(),
+            lines: vec![],
+        });
         Ok(id)
     }
 
     /// 16 kHz mono samples from the microphone.
     pub fn push(&self, samples: Vec<f32>) -> Result<LiveUpdate> {
         let mut guard = lock(&self.live);
-        let live = guard.as_mut().ok_or_else(|| MurmurError::Failed("not recording".into()))?;
-        let level = if samples.is_empty() { 0.0 } else { (samples.iter().map(|s| s * s).sum::<f32>() / samples.len() as f32).sqrt() };
+        let live = guard
+            .as_mut()
+            .ok_or_else(|| MurmurError::Failed("not recording".into()))?;
+        let level = if samples.is_empty() {
+            0.0
+        } else {
+            (samples.iter().map(|s| s * s).sum::<f32>() / samples.len() as f32).sqrt()
+        };
         live.samples += samples.len() as u64;
         let events = live.pipeline.push(Source::Mic, &samples);
-        Ok(update(live, events, level))
+        let result = update(live, events, level);
+        if !result.finals.is_empty() {
+            self.persist_live(live)?;
+        }
+        Ok(result)
+    }
+
+    pub fn push_system(&self, samples: Vec<f32>) -> Result<LiveUpdate> {
+        let mut guard = lock(&self.live);
+        let live = guard
+            .as_mut()
+            .ok_or_else(|| MurmurError::Failed("not recording".into()))?;
+        live.system_samples += samples.len() as u64;
+        let events = live.pipeline.push(Source::System, &samples);
+        let result = update(live, events, 0.0);
+        if !result.finals.is_empty() {
+            self.persist_live(live)?;
+        }
+        Ok(result)
     }
 
     /// Stops and saves the meeting. `extra` is a JSON object the app adds to it: its notes
     /// (`notesDoc`), its photos (`screens`) and the moments marked as important (`marks`).
     pub fn stop(&self, extra: String) -> Result<String> {
-        let live = lock(&self.live).take().ok_or_else(|| MurmurError::Failed("not recording".into()))?;
-        let Live { pipeline, mut meeting, samples, mut lines } = live;
+        let live = lock(&self.live)
+            .take()
+            .ok_or_else(|| MurmurError::Failed("not recording".into()))?;
+        let Live {
+            pipeline,
+            _models,
+            mut meeting,
+            samples,
+            system_samples,
+            offset,
+            line_generation,
+            mut lines,
+        } = live;
         let (events, _) = pipeline.finish()?;
-        let prefix = meeting["id"].as_str().unwrap_or_default().to_owned();
+        let prefix = line_generation;
         for e in events {
-            if let Event::Final { id, start, end, speaker, text, .. } = e {
+            if let Event::Final {
+                id,
+                start,
+                end,
+                speaker,
+                text,
+                ..
+            } = e
+            {
                 lines.push(json!({ "id": line_id(&prefix, id), "start": start, "end": end, "speaker": speaker, "text": text }));
             }
         }
-        meeting["duration"] = json!(samples as f64 / SAMPLE_RATE as f64);
+        meeting["duration"] =
+            json!(offset + samples.max(system_samples) as f64 / SAMPLE_RATE as f64);
         meeting["status"] = json!("done");
         if let Ok(Value::Object(mut add)) = serde_json::from_str::<Value>(&extra) {
             // What was changed while recording: speakers merged (`speakerAliases`, from → into,
@@ -352,12 +514,27 @@ impl Murmur {
                 if let Some(s) = by_line.get(&id).and_then(Value::as_i64) {
                     u["speaker"] = json!(s);
                     u["speakerLocked"] = json!(true);
-                } else if let Some(s) = u["speaker"].as_i64().and_then(|s| aliases.get(s.to_string()).and_then(Value::as_i64)) {
+                } else if let Some(s) = u["speaker"]
+                    .as_i64()
+                    .and_then(|s| aliases.get(s.to_string()).and_then(Value::as_i64))
+                {
                     u["speaker"] = json!(s);
+                    u["speakerLocked"] = json!(true);
                 }
             }
             for (k, v) in add {
-                meeting[k] = v;
+                if ![
+                    "id",
+                    "status",
+                    "utterances",
+                    "duration",
+                    "audioPath",
+                    "sources",
+                ]
+                .contains(&k.as_str())
+                {
+                    meeting[k] = v;
+                }
             }
         }
         meeting["utterances"] = Value::Array(lines);
@@ -367,10 +544,16 @@ impl Murmur {
 
     /// Throws the recording away: nothing is saved, and its audio and photos are deleted.
     pub fn discard(&self) -> Result<()> {
-        let Some(live) = lock(&self.live).take() else { return Ok(()) };
+        let Some(live) = lock(&self.live).take() else {
+            return Ok(());
+        };
         let id = live.meeting["id"].as_str().unwrap_or_default().to_owned();
         drop(live);
-        let _ = std::fs::remove_file(self.data_dir.join("recordings").join(format!("{}.ogg", safe_dir(&id))));
+        let _ = std::fs::remove_file(
+            self.data_dir
+                .join("recordings")
+                .join(format!("{}.ogg", safe_dir(&id))),
+        );
         let _ = std::fs::remove_dir_all(self.data_dir.join("screens").join(safe_dir(&id)));
         Ok(())
     }
@@ -385,14 +568,22 @@ impl Murmur {
     /// How many words of `sentence` have been read so far in `samples` (the karaoke).
     pub fn voice_progress(&self, sentence: String, samples: Vec<f32>) -> Result<u32> {
         let words: Vec<&str> = sentence.split_whitespace().collect();
-        Ok(voice::progress(&words, &self.models()?.transcribe(&samples)) as u32)
+        Ok(voice::progress(
+            &words,
+            &self
+                .models_for(LiveModel::CatalanSpanish)?
+                .0
+                .transcribe(&samples),
+        ) as u32)
     }
 
     /// Makes and saves the print from the user reading the sentence. Fails (translated) with too
     /// little speech, to read it again.
     pub fn enroll_voice(&self, samples: Vec<f32>) -> Result<f64> {
-        self.models()?;
-        voice::enroll(&self.models_dir, &self.data_dir, &samples).map(|v| v.created_at).map_err(Into::into)
+        self.models_for(LiveModel::CatalanSpanish)?;
+        voice::enroll(&self.models_dir, &self.data_dir, &samples)
+            .map(|v| v.created_at)
+            .map_err(Into::into)
     }
 
     pub fn delete_voice(&self) -> Result<()> {
@@ -414,13 +605,18 @@ impl Murmur {
         if here.exists() {
             return Some(here);
         }
-        meeting["audioPath"].as_str().map(PathBuf::from).filter(|p| p.exists())
+        meeting["audioPath"]
+            .as_str()
+            .map(PathBuf::from)
+            .filter(|p| p.exists())
     }
 
     /// Reads a meeting, changes it and saves it back (nothing if it isn't there).
     fn edit(&self, id: &str, change: impl FnOnce(&mut Value)) -> Result<()> {
         let mut db = lock(&self.db);
-        let Some(mut meeting) = db.get(id)? else { return Ok(()) };
+        let Some(mut meeting) = db.get(id)? else {
+            return Ok(());
+        };
         change(&mut meeting);
         db.put(&meeting)?;
         drop(db);
@@ -429,14 +625,29 @@ impl Murmur {
         Ok(())
     }
 
-    fn models(&self) -> Result<&'static Models> {
+    fn models_for(&self, kind: LiveModel) -> Result<Arc<SharedModels>> {
         let mut slot = lock(&self.models);
-        if let Some(SharedModels(m)) = slot.as_ref() {
-            return Ok(m);
+        if let Some(m) = slot.as_ref() {
+            if m.0.kind == kind {
+                return Ok(Arc::clone(m));
+            }
         }
-        let loaded: &'static Models = Box::leak(Box::new(Models::load_with(Path::new(&self.models_dir), LiveModel::CatalanSpanish, LOAD)?));
-        *slot = Some(SharedModels(loaded));
+        let loaded = Arc::new(SharedModels(Models::load_with(
+            Path::new(&self.models_dir),
+            kind,
+            LOAD,
+        )?));
+        *slot = Some(Arc::clone(&loaded));
         Ok(loaded)
+    }
+
+    fn persist_live(&self, live: &Live) -> Result<()> {
+        let mut meeting = live.meeting.clone();
+        meeting["utterances"] = json!(live.lines);
+        meeting["duration"] =
+            json!(live.offset + live.samples.max(live.system_samples) as f64 / SAMPLE_RATE as f64);
+        lock(&self.db).put(&meeting)?;
+        Ok(())
     }
 }
 
@@ -447,20 +658,38 @@ fn line_id(meeting: &str, n: u32) -> String {
 }
 
 fn update(live: &mut Live, events: Vec<Event>, level: f32) -> LiveUpdate {
-    let prefix = live.meeting["id"].as_str().unwrap_or_default().to_owned();
+    let prefix = live.line_generation.clone();
     let mut finals = vec![];
     let mut partial = None;
     for e in events {
         match e {
-            Event::Final { id, start, end, speaker, text, .. } => {
-                let line = Line { id: line_id(&prefix, id), start: start as f64, end: end as f64, speaker: speaker as i64, text };
+            Event::Final {
+                id,
+                start,
+                end,
+                speaker,
+                text,
+                ..
+            } => {
+                let line = Line {
+                    id: line_id(&prefix, id),
+                    start: start as f64,
+                    end: end as f64,
+                    speaker: speaker as i64,
+                    text,
+                };
                 live.lines.push(json!({ "id": line.id, "start": line.start, "end": line.end, "speaker": line.speaker, "text": line.text }));
                 finals.push(line);
             }
             Event::Partial { text, .. } => partial = Some(text),
         }
     }
-    LiveUpdate { finals, partial, seconds: live.samples as f64 / SAMPLE_RATE as f64, level }
+    LiveUpdate {
+        finals,
+        partial,
+        seconds: live.offset + live.samples.max(live.system_samples) as f64 / SAMPLE_RATE as f64,
+        level,
+    }
 }
 
 #[cfg(test)]
@@ -484,20 +713,34 @@ mod tests {
             "utterances": [line("phone-1-0", 0), line("phone-1-1", 1), line("phone-1-2", 2)] });
         lock(&m.db).put(&meeting).unwrap();
 
-        m.set_speaker_name("phone-1".into(), 1, " Laia ".into()).unwrap();
-        m.set_speaker_name("phone-1".into(), 2, "Jordi".into()).unwrap();
-        m.set_line_speaker("phone-1".into(), "phone-1-0".into(), 1).unwrap();
+        m.set_speaker_name("phone-1".into(), 1, " Laia ".into())
+            .unwrap();
+        m.set_speaker_name("phone-1".into(), 2, "Jordi".into())
+            .unwrap();
+        m.set_line_speaker("phone-1".into(), "phone-1-0".into(), 1)
+            .unwrap();
         m.merge_speakers("phone-1".into(), 2, 1).unwrap();
-        m.rename_meeting("phone-1".into(), "Llançament".into()).unwrap();
+        m.rename_meeting("phone-1".into(), "Llançament".into())
+            .unwrap();
 
         let s = saved(&m);
         assert_eq!(s["title"], "Llançament");
         assert_eq!(s["speakerNames"]["1"], "Laia");
         assert!(s["speakerNames"].get("2").is_none());
-        let speakers: Vec<i64> = s["utterances"].as_array().unwrap().iter().map(|u| u["speaker"].as_i64().unwrap()).collect();
+        let speakers: Vec<i64> = s["utterances"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|u| u["speaker"].as_i64().unwrap())
+            .collect();
         assert_eq!(speakers, vec![1, 1, 1]);
-        let locked: Vec<bool> = s["utterances"].as_array().unwrap().iter().map(|u| u["speakerLocked"] == json!(true)).collect();
-        assert_eq!(locked, vec![true, false, false]);
+        let locked: Vec<bool> = s["utterances"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|u| u["speakerLocked"] == json!(true))
+            .collect();
+        assert_eq!(locked, vec![true, false, true]);
 
         // An empty name takes it away.
         m.set_speaker_name("phone-1".into(), 1, "".into()).unwrap();
@@ -507,22 +750,45 @@ mod tests {
 
     /// The computer's side as mobile.rs does it: stores what arrives, and sends back a revised
     /// version of each meeting it got.
-    fn computer(keys: murmur_core::sync::Keys, secret: Option<[u8; 32]>, paired: Vec<[u8; 32]>, dest: std::path::PathBuf) -> (u16, std::thread::JoinHandle<Vec<Value>>) {
+    fn computer(
+        keys: murmur_core::sync::Keys,
+        secret: Option<[u8; 32]>,
+        paired: Vec<[u8; 32]>,
+        dest: std::path::PathBuf,
+    ) -> (u16, std::thread::JoinHandle<Vec<Value>>) {
         use murmur_core::sync::{self, Accept, Incoming, Msg, Receiving};
         let listener = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
         let port = listener.local_addr().unwrap().port();
         let handle = std::thread::spawn(move || {
             let (stream, _) = listener.accept().unwrap();
-            let (mut s, _) = sync::accept(stream, &keys, &Accept { pairing_secret: secret.as_ref(), paired: &paired }, "MacBook de Quico").unwrap();
+            let (mut s, _) = sync::accept(
+                stream,
+                &keys,
+                &Accept {
+                    pairing_secret: secret.as_ref(),
+                    paired: &paired,
+                },
+                "MacBook de Quico",
+            )
+            .unwrap();
             let mut got = vec![];
             loop {
                 match s.recv() {
                     Ok(Incoming::Msg(Msg::PutMeeting { meeting, files })) => {
                         let id = meeting["id"].as_str().unwrap().to_owned();
                         let r = Receiving::new(dest.join(&id), files).unwrap();
-                        s.send(&Msg::Have { meeting_id: id.clone(), files: r.progress() }).unwrap();
+                        s.send(&Msg::Have {
+                            meeting_id: id.clone(),
+                            files: r.progress(),
+                        })
+                        .unwrap();
                         while !r.finish().unwrap() {
-                            let Incoming::Chunk { name, offset, data, .. } = s.recv().unwrap() else { panic!() };
+                            let Incoming::Chunk {
+                                name, offset, data, ..
+                            } = s.recv().unwrap()
+                            else {
+                                panic!()
+                            };
                             r.write(&name, offset, &data).unwrap();
                         }
                         s.send(&Msg::Stored { meeting_id: id }).unwrap();
@@ -535,7 +801,11 @@ mod tests {
                             revised["speakerNames"] = json!({ "0": "Marta" });
                             revised["utterances"] = json!([{ "id": "w-0", "start": 0.0, "end": 2.0, "speaker": 0, "text": "Text de Whisper." }]);
                             revised["cover"] = json!({ "summary": "Resum" });
-                            s.send(&Msg::Results { meeting: revised, revised_at: 100.0 }).unwrap();
+                            s.send(&Msg::Results {
+                                meeting: revised,
+                                revised_at: 100.0,
+                            })
+                            .unwrap();
                         }
                         s.send(&Msg::Bye).unwrap();
                     }
@@ -565,27 +835,68 @@ mod tests {
         assert_eq!(m.unsent_count().unwrap(), 1);
 
         // Pairing, with the QR's code.
-        let (pc, phone) = (Keys::generate().unwrap(), crate::pairing::new_sync_key().unwrap());
+        let (pc, phone) = (
+            Keys::generate().unwrap(),
+            crate::pairing::new_sync_key().unwrap(),
+        );
         let secret = [9u8; 32];
         let (port, handle) = computer(pc.clone(), Some(secret), vec![], dir.join("pc"));
-        let uri = PairingCode { version: VERSION, name: "MacBook de Quico".into(), key: pc.public, secret, addrs: vec!["127.0.0.1".into()], port }.to_uri();
-        assert_eq!(crate::pairing::read_pairing_code(uri.clone()).unwrap().computer_name, "MacBook de Quico");
-        assert!(matches!(crate::pairing::read_pairing_code("https://example.com".into()), Err(MurmurError::NotACode)));
-        let computer_info = m.pair(uri, vec![], phone.clone(), "iPhone de Quico".into()).unwrap();
-        assert_eq!((computer_info.name.as_str(), computer_info.key.as_slice()), ("MacBook de Quico", pc.public.as_slice()));
+        let uri = PairingCode {
+            version: VERSION,
+            name: "MacBook de Quico".into(),
+            key: pc.public,
+            secret,
+            addrs: vec!["127.0.0.1".into()],
+            port,
+        }
+        .to_uri();
+        assert_eq!(
+            crate::pairing::read_pairing_code(uri.clone())
+                .unwrap()
+                .computer_name,
+            "MacBook de Quico"
+        );
+        assert!(matches!(
+            crate::pairing::read_pairing_code("https://example.com".into()),
+            Err(MurmurError::NotACode)
+        ));
+        let computer_info = m
+            .pair(uri, vec![], phone.clone(), "iPhone de Quico".into())
+            .unwrap();
+        assert_eq!(
+            (computer_info.name.as_str(), computer_info.key.as_slice()),
+            ("MacBook de Quico", pc.public.as_slice())
+        );
         handle.join().unwrap();
 
         // Syncing: the meeting and its audio go; the revised version comes back.
         let phone_public = Keys::from_private(&phone).unwrap().public;
         let (port, handle) = computer(pc.clone(), None, vec![phone_public], dir.join("pc"));
-        let report = m.sync(vec![format!("127.0.0.1:{port}")], phone.clone(), pc.public.to_vec(), "iPhone de Quico".into(), true).unwrap();
+        let report = m
+            .sync(
+                vec![format!("127.0.0.1:{port}")],
+                phone.clone(),
+                pc.public.to_vec(),
+                "iPhone de Quico".into(),
+                true,
+            )
+            .unwrap();
         let got = handle.join().unwrap();
         assert_eq!((report.sent, report.revised, report.failed), (1, 1, 0));
-        assert!(got[0].get("audioPath").is_none(), "the phone's paths stay on the phone");
-        assert_eq!(std::fs::read(dir.join("pc/phone-1/audio.ogg")).unwrap(), vec![7u8; 300_000]);
+        assert!(
+            got[0].get("audioPath").is_none(),
+            "the phone's paths stay on the phone"
+        );
+        assert_eq!(
+            std::fs::read(dir.join("pc/phone-1/audio.ogg")).unwrap(),
+            vec![7u8; 300_000]
+        );
         // The photo goes as the computer's screenshot, by a plain name.
         assert_eq!(got[0]["screens"][0]["path"], "screens/12000.jpg");
-        assert_eq!(std::fs::read(dir.join("pc/phone-1/screens/12000.jpg")).unwrap(), b"jpeg");
+        assert_eq!(
+            std::fs::read(dir.join("pc/phone-1/screens/12000.jpg")).unwrap(),
+            b"jpeg"
+        );
 
         let back = saved(&m);
         assert_eq!(back["utterances"][0]["text"], "Text de Whisper.");
@@ -598,7 +909,8 @@ mod tests {
         assert_eq!(m.unsent_count().unwrap(), 0);
 
         // Renamed on the phone after sending: the phone's name wins when it comes back again.
-        m.rename_meeting("phone-1".into(), "El meu títol".into()).unwrap();
+        m.rename_meeting("phone-1".into(), "El meu títol".into())
+            .unwrap();
         assert!(m.load_sync().edited.contains("phone-1"));
         // The fake computer only answers for what it gets in the same connection: send it again.
         let mut state = m.load_sync();
@@ -606,20 +918,48 @@ mod tests {
         state.since = 0.0;
         m.save_sync(&state).unwrap();
         let (port, handle) = computer(pc.clone(), None, vec![phone_public], dir.join("pc2"));
-        m.sync(vec![format!("127.0.0.1:{port}")], phone.clone(), pc.public.to_vec(), "iPhone de Quico".into(), false).unwrap();
+        m.sync(
+            vec![format!("127.0.0.1:{port}")],
+            phone.clone(),
+            pc.public.to_vec(),
+            "iPhone de Quico".into(),
+            false,
+        )
+        .unwrap();
         handle.join().unwrap();
         assert_eq!(saved(&m)["title"], "El meu títol");
         assert_eq!(saved(&m)["utterances"][0]["text"], "Text de Whisper.");
         // Without "Desa l'àudio al telèfon", the audio goes once the computer has it.
         assert!(!audio.exists());
-        assert_eq!(std::fs::read(dir.join("pc2/phone-1/audio.ogg")).unwrap(), vec![7u8; 300_000]);
+        assert_eq!(
+            std::fs::read(dir.join("pc2/phone-1/audio.ogg")).unwrap(),
+            vec![7u8; 300_000]
+        );
 
         // A computer that doesn't know this phone: refused, and said so.
         let (port, handle) = computer(pc.clone(), None, vec![], dir.join("pc"));
-        assert!(matches!(m.sync(vec![format!("127.0.0.1:{port}")], phone.clone(), pc.public.to_vec(), "iPhone".into(), true), Err(MurmurError::NotPaired)));
+        assert!(matches!(
+            m.sync(
+                vec![format!("127.0.0.1:{port}")],
+                phone.clone(),
+                pc.public.to_vec(),
+                "iPhone".into(),
+                true
+            ),
+            Err(MurmurError::NotPaired)
+        ));
         let _ = handle.join();
         // Nobody there.
-        assert!(matches!(m.sync(vec!["127.0.0.1:1".into()], phone, pc.public.to_vec(), "iPhone".into(), true), Err(MurmurError::Unreachable)));
+        assert!(matches!(
+            m.sync(
+                vec!["127.0.0.1:1".into()],
+                phone,
+                pc.public.to_vec(),
+                "iPhone".into(),
+                true
+            ),
+            Err(MurmurError::Unreachable)
+        ));
         let _ = std::fs::remove_dir_all(&dir);
     }
 }

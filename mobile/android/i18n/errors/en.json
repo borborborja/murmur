@@ -1,0 +1,17 @@
+{
+  "cloud_bad_key": "The API key is invalid or lacks permission.",
+  "cloud_rate_limited": "The rate limit or quota has been reached. Please try again later.",
+  "cloud_unavailable": "The provider is unavailable.",
+  "cloud_offline": "Could not connect to the provider.",
+  "cloud_empty": "The model returned an empty response.",
+  "cloud_invalid_json": "The model did not return the required data format.",
+  "cloud_refused": "The provider declined the request.",
+  "cloud_too_long": "The model reached its output limit.",
+  "cloud_no_key": "Configure an API key for this provider.",
+  "cloud_no_model": "Choose a model before continuing.",
+  "local_model_missing": "Download the local model before continuing.",
+  "local_model_failed": "Could not run the local model.",
+  "empty_transcript": "A transcript is required to generate a summary.",
+  "network_https_required": "The connection must use HTTPS.",
+  "export_failed": "Could not save the export."
+}

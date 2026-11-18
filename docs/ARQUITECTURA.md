@@ -19,7 +19,8 @@ Fases del projecte:
 1. **Banc de proves** (`bench/`): comparar motors amb gravacions reals, en precisió (WER) i velocitat (factor de temps real, RTF).
 2. **Prototip** (`mvp/`): Python amb una interfície web local, per validar la idea.
 3. **Producte** (`app/`): Tauri 2 amb un motor en Rust. És la fase actual.
-4. **Mòbil**: el mateix nucli en Rust (Tauri mobile o una interfície nativa).
+4. **Mòbil iOS**: interfície SwiftUI i el nucli Rust compartit.
+5. **Android autònom** (aquesta adaptació): Kotlin/Jetpack Compose, UniFFI, gravació nativa i models locals o proveïdor opcional; vegeu [ANDROID.md](ANDROID.md).
 
 L'app final no porta Python ni PyTorch.
 
@@ -404,3 +405,18 @@ Un fitxer de text a la carpeta de registres de l'app (al Mac `~/Library/Logs/com
 - Opcional: un pas a l'onboarding, després dels models (l'empremta necessita el model de parlants), i a Configuració › Transcripció › Parlants en directe. L'usuari llegeix una frase com en un karaoke: cada mig segon, el model del directe (el mateix de les reunions, ja carregat) transcriu el que porta gravat i `voice::progress` ho compara amb la frase, paraula per paraula i tolerant paraules mal sentides o saltades; «voice-progress» diu quantes se n'han llegit. Mig segon després de l'última, la gravació s'atura sola (com a molt 20 s, o `stop_voice_recording`). Primer es va provar de fer avançar la guia amb el nivell del micròfon, i no seguia el ritme de qui llegeix. `record_voice` grava el micròfon (amb «voice-level» per al nivell), `voice::enroll` en treu la veu amb Silero VAD (n'ha de quedar com a mínim 4 s) i en calcula l'empremta amb TitaNet, el mateix model que agrupa les veus en directe, normalitzada.
 - Només es desa l'empremta, mai la gravació: `voice.json` a la carpeta de dades de l'app, amb el model que la va fer (una empremta d'un altre model s'ignora). No surt mai de l'ordinador i es pot esborrar. És una dada biomètrica, i la interfície ho diu.
 - En començar a gravar (no en un fitxer ni en una reunió que continua), el canal del micròfon comença amb aquesta veu com a parlant 0, «Tu» (`LiveSession::known_speakers`, el mateix que fa «Continua»).
+
+
+## Android autònom (aquesta adaptació)
+
+`mobile/android/` és una app nativa per a Android 10 o posterior, ARM64, amb SDK objectiu 36. La interfície Compose consumeix el format JSON de reunió original i crida `murmur-mobile` amb UniFFI. El nucli segueix essent l'únic magatzem de reunions, notes i cerca SQLite/FTS5; no hi ha una base Room paral·lela.
+
+- **Captura:** `RecordingService` manté AudioRecord i la notificació. L'àudio passa primer per fitxers PCM privats, perquè la inferència no bloquegi la lectura del micròfon; després entra al Pipeline original amb el canal de procedència. L'estat de la gravació i els treballs es poden recuperar sense dependre de l'Activity.
+- **Passades finals:** la cua és persistent i serialitza parlants, Whisper, puntuació i portada. Whisper i el model de llenguatge viuen en processos Android diferents, `:whisper` i `:llm`: tots dos incorporen ggml, i l'aïllament evita col·lisions de símbols. No s'executa el sidecar d'escriptori amb `Command::spawn`. Els arguments i resultats grans d'IPC passen per fitxers privats.
+- **Memòria:** el motor mòbil té propietat explícita dels models i es pot descarregar. El resum local utilitza fragments i context limitat. El perfil inicial és Gemma 4 E2B Q4_0, i el Gemma E4B original continua essent opcional. Aquesta decisió de mida no acredita encara qualitat equivalent ni rendiment al Pixel.
+- **Dades i edicions:** text i assignacions manuals es conserven durant les passades; les aplicacions de resultats tornen a llegir l'estat actual. Les notes són el JSON TipTap original amb marques temporals. L'editor s'executa en un WebView de recursos locals, amb navegació i xarxa bloquejades.
+- **Núvol:** els adaptadors d'Anthropic, OpenAI, OpenRouter, Gemini i Ollama Cloud comparteixen els prompts i la validació. Les claus es xifren amb Android Keystore. En el cas d'Ollama Cloud no s'assumeix suport d'esquemes; es valida la resposta i es pot demanar una correcció.
+- **Integracions:** CalendarContract, permisos SAF persistents per a carpetes i Obsidian, OAuth/PKCE per a Notion i el format original xifrat per a Cloudflare. La sincronització mòbil conserva Noise v1; no s'hi afegeix una sincronització general de la biblioteca d'escriptori.
+- **MCP directe:** el servidor opcional escolta només a la xarxa local amb TLS. El pont stdio de l'ordinador fixa el certificat i usa una credencial pròpia per client, que el telèfon pot revocar. Les pujades d'àudio només són d'ordinador a telèfon; Claude rep text dels resultats, no l'enregistrament. Vegeu [el pont](../tools/android-mcp/README.md).
+
+Les diferències imposades per Android i les comprovacions que encara necessiten un telèfon o un compte real estan registrades a [PARITAT_ANDROID.md](PARITAT_ANDROID.md). La compilació de les biblioteques i l'APK no acredita la captura universal de trucades, el consum d'una hora ni l'execució remota del workflow.

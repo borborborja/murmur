@@ -7,6 +7,12 @@ __pycache__/
 data/
 models/
 results/
+dist/
+*.apk
+*.aab
+*.p12
+*.jks
+*.keystore
 
 # Superdesign temp files
 .superdesign/tmp/

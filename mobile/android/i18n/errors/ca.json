@@ -1,0 +1,17 @@
+{
+  "cloud_bad_key": "La clau d’API no és vàlida o no té permisos.",
+  "cloud_rate_limited": "S’ha arribat al límit de peticions o de quota. Torna-ho a provar més tard.",
+  "cloud_unavailable": "El proveïdor no està disponible.",
+  "cloud_offline": "No s’ha pogut connectar amb el proveïdor.",
+  "cloud_empty": "El model ha retornat una resposta buida.",
+  "cloud_invalid_json": "El model no ha retornat les dades amb el format necessari.",
+  "cloud_refused": "El proveïdor ha rebutjat la petició.",
+  "cloud_too_long": "El model ha esgotat el límit de resposta.",
+  "cloud_no_key": "Configura una clau d’API per a aquest proveïdor.",
+  "cloud_no_model": "Tria un model abans de continuar.",
+  "local_model_missing": "Descarrega el model local abans de continuar.",
+  "local_model_failed": "No s’ha pogut executar el model local.",
+  "empty_transcript": "Cal una transcripció per generar el resum.",
+  "network_https_required": "La connexió ha de ser HTTPS.",
+  "export_failed": "No s’ha pogut desar l’exportació."
+}

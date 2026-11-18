@@ -1,0 +1,17 @@
+{
+  "cloud_bad_key": "La clave API no es válida o no tiene permisos.",
+  "cloud_rate_limited": "Se ha alcanzado el límite de peticiones o cuota. Inténtalo más tarde.",
+  "cloud_unavailable": "El proveedor no está disponible.",
+  "cloud_offline": "No se ha podido conectar con el proveedor.",
+  "cloud_empty": "El modelo ha devuelto una respuesta vacía.",
+  "cloud_invalid_json": "El modelo no ha devuelto los datos con el formato necesario.",
+  "cloud_refused": "El proveedor ha rechazado la solicitud.",
+  "cloud_too_long": "El modelo ha agotado el límite de respuesta.",
+  "cloud_no_key": "Configura una clave API para este proveedor.",
+  "cloud_no_model": "Elige un modelo antes de continuar.",
+  "local_model_missing": "Descarga el modelo local antes de continuar.",
+  "local_model_failed": "No se ha podido ejecutar el modelo local.",
+  "empty_transcript": "Se necesita una transcripción para generar el resumen.",
+  "network_https_required": "La conexión debe ser HTTPS.",
+  "export_failed": "No se ha podido guardar la exportación."
+}

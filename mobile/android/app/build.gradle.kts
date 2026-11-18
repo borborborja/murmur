@@ -20,6 +20,15 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
     signingConfigs {
+        providers.environmentVariable("MURMUR_DEBUG_KEYSTORE").orNull?.let { keystore ->
+            getByName("debug") {
+                storeFile = file(keystore)
+                storeType = "PKCS12"
+                storePassword = "android"
+                keyAlias = "androiddebugkey"
+                keyPassword = "android"
+            }
+        }
         create("release") {
             val store = providers.environmentVariable("MURMUR_KEYSTORE").orNull
             if (store != null) {

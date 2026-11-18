@@ -68,19 +68,29 @@ jobs:
         run: |
           test -n "$ANDROID_DEBUG_KEYSTORE_BASE64"
           umask 077
-          mkdir -p "$HOME/.android"
-          printf '%s' "$ANDROID_DEBUG_KEYSTORE_BASE64" | base64 --decode > "$HOME/.android/debug.keystore"
-          keytool -list -keystore "$HOME/.android/debug.keystore" -storepass android -alias androiddebugkey >/dev/null
+          key_file="$RUNNER_TEMP/murmur-debug.p12"
+          printf '%s' "$ANDROID_DEBUG_KEYSTORE_BASE64" | base64 --decode > "$key_file"
+          keytool -list -keystore "$key_file" -storepass android -alias androiddebugkey >/dev/null
+          printf 'MURMUR_DEBUG_KEYSTORE=%s\n' "$key_file" >> "$GITHUB_ENV"
       - name: Kotlin tests and installable debug APK
         working-directory: mobile/android
         run: ./gradlew --no-daemon :app:testDebugUnitTest :app:lintDebug :app:assembleDebug
       - name: Verify signature, native runtimes and bundled resources
+        shell: bash
         run: |
           mkdir -p "$RUNNER_TEMP/android-apk"
           cp mobile/android/app/build/outputs/apk/debug/app-debug.apk "$RUNNER_TEMP/android-apk/Murmur-Android-arm64-debug.apk"
           cd "$RUNNER_TEMP/android-apk"
           apk=Murmur-Android-arm64-debug.apk
           "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose --print-certs "$apk" | tee signature.txt
+          if [[ -n "${MURMUR_DEBUG_KEYSTORE:-}" ]]; then
+            expected="$(keytool -exportcert -keystore "$MURMUR_DEBUG_KEYSTORE" -storepass android -alias androiddebugkey | sha256sum | cut -d ' ' -f 1)"
+            actual="$(awk '/^Signer #1 certificate SHA-256 digest:/ { print $NF }' signature.txt)"
+            if [[ "$expected" != "$actual" ]]; then
+              echo "The APK was signed with a different key than the fork expects." >&2
+              exit 1
+            fi
+          fi
           "$ANDROID_HOME/build-tools/35.0.0/zipalign" -c -P 16 4 "$apk"
           python3 "$GITHUB_WORKSPACE/mobile/android/scripts/verify-apk.py" "$apk" > verification.json
           sha256sum "$apk" > "$apk.sha256"
